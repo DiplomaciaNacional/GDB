@@ -392,7 +392,7 @@
 
                 <div class="contact-form">
                     <h3>Formulario de Contacto</h3>
-                    <form id="contactForm">
+                    <form id="contactForm" action="https://formsubmit.co/carlitosyverjustiniano@gmail.com" method="POST">
                         <div class="form-group">
                             <label for="name">Nombre Completo</label>
                             <input type="text" id="name" name="name" required>
@@ -420,6 +420,9 @@
                             <label for="message">Mensaje / Consulta</label>
                             <textarea id="message" name="message" rows="4" required></textarea>
                         </div>
+
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_next" value="https://yourdomain.com/agradecimientos.html">
 
                         <button type="submit" class="btn-submit">Enviar Mensaje</button>
                     </form>
@@ -497,10 +500,8 @@
         const contactForm = document.getElementById('contactForm');
         if (contactForm) {
             contactForm.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                alert('¡Gracias por tu mensaje! Nos pondremos en contacto contigo pronto para informarte sobre el proceso de inscripción a GDB.');
-                contactForm.reset();
+                // El formulario se enviará automáticamente a FormSubmit.co
+                // No es necesario prevenir el evento por defecto
             });
         }
 
