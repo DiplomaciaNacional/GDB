@@ -18,79 +18,71 @@
             background-position: center;
             color: white;
             text-align: center;
-            padding: 120px 5% 60px;
-            margin-bottom: 40px;
-            margin-top: 70px;
+            padding: 150px 5% 100px;
+            margin-bottom: 60px;
         }
 
         .directorio-hero h1 {
             color: white;
-            font-size: 2rem;
-            margin-bottom: 15px;
+            font-size: 3rem;
+            margin-bottom: 20px;
         }
 
         .directorio-hero p {
-            font-size: 1rem;
-            max-width: 100%;
+            font-size: 1.2rem;
+            max-width: 700px;
             margin: 0 auto;
             opacity: 0.9;
-            padding: 0 10px;
         }
 
         .directorio-container {
-            padding: 30px 5% 60px;
+            padding: 40px 5% 80px;
         }
 
         .directorio-header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 0 10px;
+            margin-bottom: 50px;
         }
 
         .directorio-header h2 {
             color: var(--dark-green);
-            font-size: 1.8rem;
-        }
-
-        .directorio-header p {
-            font-size: 1rem;
         }
 
         .directorio-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 25px;
-            margin-bottom: 40px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
         }
 
         .miembro-card {
             background-color: white;
             border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             transition: var(--transition);
             border-top: 4px solid var(--burgundy);
         }
 
         .miembro-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
         }
 
         .miembro-header {
             background-color: var(--dark-green);
             color: white;
-            padding: 20px 15px;
+            padding: 25px;
             text-align: center;
             position: relative;
-            min-height: 200px;
+            min-height: 220px;
         }
 
         .miembro-avatar {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
-            margin: 0 auto 12px;
+            margin: 0 auto 15px;
             overflow: hidden;
             border: 3px solid var(--gold);
             background-color: white;
@@ -106,53 +98,51 @@
         }
 
         .miembro-avatar i {
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: var(--burgundy);
         }
 
         .miembro-nombre {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             margin-bottom: 5px;
             font-weight: 600;
-            line-height: 1.3;
         }
 
         .miembro-cargo {
-            font-size: 0.95rem;
+            font-size: 1rem;
             opacity: 0.9;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .miembro-departamento {
             display: inline-block;
             background-color: rgba(255, 255, 255, 0.2);
-            padding: 4px 12px;
+            padding: 5px 15px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
 
         .miembro-info {
-            padding: 20px 15px;
+            padding: 25px;
         }
 
         .miembro-descripcion {
             color: var(--medium-gray);
-            margin-bottom: 15px;
-            line-height: 1.5;
-            font-size: 0.95rem;
+            margin-bottom: 20px;
+            line-height: 1.6;
         }
 
         .miembro-contacto {
             border-top: 1px solid #eee;
-            padding-top: 15px;
+            padding-top: 20px;
         }
 
         .contacto-item {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
         }
 
         .contacto-item i {
@@ -163,205 +153,497 @@
         .estructura-organizativa {
             background-color: var(--light-gray);
             border-radius: 10px;
-            padding: 30px 15px;
-            margin-bottom: 40px;
+            padding: 40px;
+            margin-bottom: 60px;
         }
 
         .estructura-organizativa h3 {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             color: var(--dark-green);
-            font-size: 1.6rem;
         }
 
         .organigrama {
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: auto;
         }
 
         .nivel {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 40px;
             position: relative;
-            width: 100%;
         }
 
         .nivel-1 {
-            margin-bottom: 30px;
+            margin-bottom: 50px;
         }
 
         .nivel-1 .puesto {
             background-color: var(--burgundy);
             color: white;
-            width: 100%;
-            max-width: 280px;
+            width: 250px;
         }
 
         .nivel-2 {
-            margin-bottom: 25px;
+            margin-bottom: 40px;
         }
 
         .nivel-2 .puesto {
             background-color: var(--dark-green);
             color: white;
-            width: 100%;
-            max-width: 250px;
+            width: 200px;
         }
 
         .nivel-3 .puesto {
             background-color: var(--gold);
             color: var(--dark-gray);
-            width: 100%;
-            max-width: 220px;
+            width: 180px;
         }
 
         .puesto {
-            padding: 18px 15px;
+            padding: 20px;
             border-radius: 8px;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            width: 100%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
         }
 
         .puesto h4 {
             margin-bottom: 5px;
             color: inherit;
-            font-size: 1.1rem;
         }
 
         .puesto p {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             opacity: 0.9;
             margin-bottom: 0;
-            line-height: 1.3;
         }
 
         .linea-conexion {
-            display: none;
+            position: absolute;
+            background-color: var(--medium-gray);
+            height: 30px;
+            width: 2px;
+            bottom: -30px;
+        }
+
+        .linea-conexion.horizontal {
+            width: 100px;
+            height: 2px;
+            bottom: -15px;
         }
 
         .departamentos-directorio {
-            margin-bottom: 40px;
-            padding: 0 10px;
+            margin-bottom: 60px;
         }
 
         .departamentos-directorio h3 {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             color: var(--dark-green);
-            font-size: 1.6rem;
         }
 
         .departamentos-lista {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
+            display: flex;
+            flex-wrap: wrap;
             justify-content: center;
+            gap: 15px;
         }
 
         .depto-item {
-            padding: 15px 20px;
+            padding: 15px 25px;
             background-color: white;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-weight: 600;
             border-left: 4px solid var(--dark-green);
-            font-size: 0.95rem;
         }
 
         .depto-item i {
             color: var(--gold);
-            font-size: 1.2rem;
         }
 
         .depto-coordinadores {
-            margin-top: 5px;
-            font-size: 0.85rem;
+            margin-top: 10px;
+            font-size: 0.9rem;
             color: var(--medium-gray);
             font-weight: normal;
         }
 
         .directorio-back {
             text-align: center;
-            margin-top: 30px;
-            padding: 0 10px;
-        }
-
-        .directorio-back .btn-primary {
-            width: 100%;
-            max-width: 300px;
-            padding: 12px 20px;
-            font-size: 1rem;
+            margin-top: 40px;
         }
 
         .cargo-tag {
             display: inline-block;
             background-color: var(--gold);
             color: var(--dark-gray);
-            padding: 3px 10px;
+            padding: 3px 12px;
             border-radius: 12px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             margin-top: 5px;
             font-weight: 600;
         }
 
         .regional-badge {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
             background-color: var(--gold);
             color: var(--dark-gray);
-            padding: 4px 12px;
+            padding: 5px 15px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             font-weight: 600;
         }
 
-        /* Media queries para pantallas más grandes */
-        @media (min-width: 601px) {
-            .directorio-hero {
-                padding: 140px 5% 80px;
-            }
-
+        @media (max-width: 768px) {
             .directorio-hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
             }
 
-            .directorio-grid {
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            .directorio-hero {
+                padding: 130px 5% 70px;
+            }
+
+            .organigrama {
+                overflow-x: auto;
             }
 
             .nivel {
-                flex-direction: row;
-                justify-content: center;
-                flex-wrap: wrap;
+                flex-direction: column;
+                align-items: center;
             }
 
-            .departamentos-lista {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            .linea-conexion {
+                display: none;
+            }
+
+            .estructura-organizativa {
+                padding: 30px 20px;
+            }
+
+            .regional-badge {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-top: 10px;
             }
         }
 
-        @media (min-width: 768px) {
-            .directorio-hero {
-                padding: 150px 5% 100px;
+        /* ... (todo el CSS anterior se mantiene igual hasta el final del archivo) ... */
+
+        /* Media Queries específicas para 600px */
+        @media (max-width: 600px) {
+
+            /* Ajustes generales */
+            body {
+                font-size: 14px;
             }
 
-            .directorio-hero h1 {
-                font-size: 3rem;
+            section {
+                padding: 40px 0;
             }
 
-            .directorio-hero p {
+            .container {
+                width: 95%;
+                padding: 0 10px;
+            }
+
+            /* Tipografía */
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 1.2rem;
+            }
+
+            h2::after {
+                width: 50px;
+                bottom: -6px;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            .section-subtitle {
+                font-size: 0.95rem;
+                margin-bottom: 2rem;
+            }
+
+            /* Navegación */
+            .navbar {
+                padding: 12px 4%;
+                height: 65px;
+            }
+
+            .logo {
+                width: 45px;
+                height: 45px;
+            }
+
+            .logo-bird {
+                width: 25px;
+                height: 20px;
+            }
+
+            .logo-map {
+                width: 35px;
+                height: 35px;
+            }
+
+            .gdb {
+                font-size: 1.3rem;
+            }
+
+            .full-name {
+                font-size: 0.65rem;
+                max-width: 100px;
+            }
+
+            .nav-links {
+                top: 65px;
+            }
+
+            .nav-links a {
+                padding: 12px 15px;
+                font-size: 0.95rem;
+            }
+
+            /* Hero Section */
+            .hero {
+                padding: 100px 4% 40px;
+                min-height: auto;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-content {
+                width: 100%;
+            }
+
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .tagline {
                 font-size: 1.1rem;
-                max-width: 700px;
+            }
+
+            .description {
+                font-size: 0.95rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 12px;
+                margin-top: 20px;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                max-width: 250px;
+                padding: 10px 20px;
+                font-size: 0.95rem;
+            }
+
+            .hero-image {
+                margin-top: 30px;
+            }
+
+            .floating-elements {
+                width: 250px;
+                height: 250px;
+            }
+
+            .floating-element {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+
+            /* Presencia Nacional */
+            .presence-section {
+                padding: 40px 0;
+            }
+
+            .departments-container {
+                gap: 8px;
+            }
+
+            .department {
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
+
+            /* Sección Nosotros */
+            .about-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .image-frame {
+                padding: 20px 15px;
+                margin-bottom: 15px;
+            }
+
+            .image-content {
+                margin-top: 25px;
+            }
+
+            .image-content p {
+                font-size: 0.9rem;
+            }
+
+            .age-range {
+                padding: 15px;
+            }
+
+            .age-bar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .age-line {
+                width: 100%;
+                height: 3px;
+                margin: 5px 0;
+            }
+
+            .age-marker {
+                padding: 4px 8px;
+                font-size: 0.85rem;
+            }
+
+            /* Sección Identidad */
+            .logo-details {
+                flex-direction: column;
+                gap: 25px;
+            }
+
+            .logo-large {
+                width: 150px;
+                height: 150px;
+            }
+
+            .logo-bird-large {
+                width: 85px;
+                height: 65px;
+            }
+
+            .logo-map-large {
+                width: 120px;
+                height: 120px;
+            }
+
+            .symbolism-item {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+            }
+
+            .colors-container {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            /* Sección Actividades */
+            .activities-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .activity-card {
+                padding: 20px 15px;
+            }
+
+            .activity-icon {
+                width: 55px;
+                height: 55px;
+                font-size: 1.4rem;
+            }
+
+            /* Sección Membresía */
+            .membership-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .membership-card {
+                padding: 25px 15px;
+            }
+
+            .amount {
+                font-size: 2.2rem;
+            }
+
+            .benefits-list li {
+                font-size: 0.9rem;
+            }
+
+            .btn-join {
+                width: 100%;
+                max-width: 280px;
+                padding: 12px 20px;
+            }
+
+            .testimonial {
+                padding: 18px;
+            }
+
+            /* Sección Contacto */
+            .contact-content {
+                flex-direction: column;
+                gap: 30px;
+            }
+
+            .contact-form {
+                padding: 20px 15px;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+            }
+
+            /* Footer */
+            footer {
+                padding: 40px 0 20px;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 25px;
+                padding: 0 10px;
+            }
+
+            .footer-logo .logo {
+                width: 50px;
+                height: 50px;
+            }
+
+            .footer-logo-text h3 {
+                font-size: 1.1rem;
+            }
+
+            .social-icons a {
+                width: 38px;
+                height: 38px;
+            }
+
+            .hashtags span {
+                font-size: 0.7rem;
+                padding: 4px 8px;
             }
         }
     </style>
