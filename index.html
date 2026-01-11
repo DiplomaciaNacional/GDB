@@ -392,7 +392,8 @@
 
                 <div class="contact-form">
                     <h3>Formulario de Contacto</h3>
-                    <form id="contactForm" action="https://formsubmit.co/carlitosyverjustiniano@gmail.com" method="POST">
+                    <form id="contactForm" action="https://formsubmit.co/carlitosyverjustiniano@gmail.com"
+                        method="POST">
                         <div class="form-group">
                             <label for="name">Nombre Completo</label>
                             <input type="text" id="name" name="name" required>
@@ -422,7 +423,8 @@
                         </div>
 
                         <input type="hidden" name="_captcha" value="false">
-                        <input type="hidden" name="_next" value="https://diplomacianacional.github.io/GDB/agradecimientos.html">
+                        <input type="hidden" name="_next"
+                            value="https://diplomacianacional.github.io/GDB/agradecimientos.html">
 
                         <button type="submit" class="btn-submit">Enviar Mensaje</button>
                     </form>
@@ -489,19 +491,16 @@
             navLinks.classList.toggle('active');
         });
 
-        // Cerrar menú al hacer clic en un enlace
+
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
             });
         });
-
-        // Formulario de contacto
         const contactForm = document.getElementById('contactForm');
         if (contactForm) {
             contactForm.addEventListener('submit', function (e) {
-                // El formulario se enviará automáticamente a FormSubmit.co
-                // No es necesario prevenir el evento por defecto
+
             });
         }
 
@@ -523,7 +522,7 @@
             });
         });
 
-        // Efecto de aparición al hacer scroll
+
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -537,7 +536,6 @@
             });
         }, observerOptions);
 
-        // Observar elementos para animación
         document.querySelectorAll('.activity-card, .color-card, .testimonial, .department').forEach(el => {
             observer.observe(el);
         });

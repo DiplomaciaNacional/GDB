@@ -338,12 +338,12 @@
             }
         }
 
-        /* ... (todo el CSS anterior se mantiene igual hasta el final del archivo) ... */
 
-        /* Media Queries específicas para 600px */
+
+        /*AJUSTE DE PANTALLA PARA CELULARES FUNCIONAL Y SIN ERRORES (DE MOMENTO)*/
         @media (max-width: 600px) {
 
-            /* Ajustes generales */
+
             body {
                 font-size: 14px;
             }
@@ -357,7 +357,7 @@
                 padding: 0 10px;
             }
 
-            /* Tipografía */
+
             h1 {
                 font-size: 1.8rem;
             }
@@ -381,7 +381,7 @@
                 margin-bottom: 2rem;
             }
 
-            /* Navegación */
+
             .navbar {
                 padding: 12px 4%;
                 height: 65px;
@@ -420,7 +420,7 @@
                 font-size: 0.95rem;
             }
 
-            /* Hero Section */
+
             .hero {
                 padding: 100px 4% 40px;
                 min-height: auto;
@@ -473,7 +473,6 @@
                 font-size: 1.3rem;
             }
 
-            /* Presencia Nacional */
             .presence-section {
                 padding: 40px 0;
             }
@@ -487,7 +486,7 @@
                 font-size: 0.85rem;
             }
 
-            /* Sección Nosotros */
+
             .about-content {
                 flex-direction: column;
                 gap: 30px;
@@ -527,7 +526,7 @@
                 font-size: 0.85rem;
             }
 
-            /* Sección Identidad */
+
             .logo-details {
                 flex-direction: column;
                 gap: 25px;
@@ -558,7 +557,7 @@
                 gap: 15px;
             }
 
-            /* Sección Actividades */
+
             .activities-container {
                 grid-template-columns: 1fr;
                 gap: 20px;
@@ -574,7 +573,6 @@
                 font-size: 1.4rem;
             }
 
-            /* Sección Membresía */
             .membership-content {
                 flex-direction: column;
                 gap: 30px;
@@ -602,7 +600,6 @@
                 padding: 18px;
             }
 
-            /* Sección Contacto */
             .contact-content {
                 flex-direction: column;
                 gap: 30px;
@@ -616,7 +613,6 @@
                 margin-bottom: 15px;
             }
 
-            /* Footer */
             footer {
                 padding: 40px 0 20px;
             }
@@ -650,7 +646,7 @@
 </head>
 
 <body>
-    <!-- Navegación -->
+
     <header>
         <nav class="navbar">
             <div class="logo-container">
@@ -677,14 +673,14 @@
         </nav>
     </header>
 
-    <!-- Hero Directorio -->
+
     <section class="directorio-hero">
         <h1>Directorio GDB-Beni</h1>
         <p>Conoce al equipo que lidera la Generación Diplomática del Beni. Jóvenes benianos comprometidos con la
             formación de líderes y la proyección internacional de nuestro departamento.</p>
     </section>
 
-    <!-- Directorio Principal -->
+
     <div class="directorio-container">
         <div class="directorio-header">
             <h2>Equipo Directivo Departamental</h2>
@@ -1128,7 +1124,6 @@
         </div>
     </div>
 
-    <!-- Representación en Municipios -->
     <div class="departamentos-directorio">
         <h3>Representación en el Beni</h3>
         <p class="section-subtitle">GDB Beni cuenta con presencia en los principales municipios del departamento</p>
@@ -1196,16 +1191,8 @@
         </p>
     </div>
 
-    <!-- Volver al inicio -->
-    <div class="directorio-back">
-        <a href="index.html" class="btn-primary">
-            <i class="fas fa-arrow-left"></i> Volver a la Página Principal
-        </a>
-    </div>
-    </div>
     <br>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -1255,7 +1242,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Menú móvil
+
             const menuToggle = document.querySelector('.menu-toggle');
             const navLinks = document.querySelector('.nav-links');
 
@@ -1263,14 +1250,14 @@
                 navLinks.classList.toggle('active');
             });
 
-            // Cerrar menú al hacer clic en un enlace
+
             document.querySelectorAll('.nav-links a').forEach(link => {
                 link.addEventListener('click', () => {
                     navLinks.classList.remove('active');
                 });
             });
 
-            // Animación de aparición para las tarjetas
+
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -1279,7 +1266,7 @@
                 });
             }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-            // Observar elementos para animación
+
             document.querySelectorAll('.miembro-card, .puesto, .depto-item').forEach(el => {
                 observer.observe(el);
             });
