@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Mi Membresía - GDB</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .verificar-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.03) 0%, rgba(0, 100, 0, 0.03) 100%);
+        }
+        
+        .verificar-header {
+            background-color: var(--dark-green);
+            color: white;
+            padding: 20px 5%;
+            text-align: center;
+        }
+        
+        .verificar-header h1 {
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .verificar-header p {
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .verificar-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 5%;
+        }
+        
+        .verificar-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .verificar-form .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .verificar-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .verificar-form input {
+            width: 100%;
+            padding: 14px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .verificar-form input:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
+        }
+        
+        .verificar-btn {
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+        
+        .verificar-btn:hover {
+            background-color: #004d00;
+        }
+        
+        .resultado-container {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+        }
+        
+        .resultado-al-dia {
+            border-left: 5px solid #2e7d32;
+        }
+        
+        .resultado-deudor {
+            border-left: 5px solid #d32f2f;
+        }
+        
+        .resultado-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .resultado-icon {
+            font-size: 2.5rem;
+        }
+        
+        .al-dia-icon {
+            color: #2e7d32;
+        }
+        
+        .deudor-icon {
+            color: #d32f2f;
+        }
+        
+        .resultado-info h3 {
+            margin-bottom: 5px;
+        }
+        
+        .resultado-info p {
+            margin-bottom: 0;
+            color: var(--medium-gray);
+        }
+        
+        .resultado-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .detail-item {
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+        
+        .detail-label {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .verificar-actions {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .action-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 5px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .action-link.pagar {
+            background-color: var(--burgundy);
+            color: white;
+        }
+        
+        .action-link.pagar:hover {
+            background-color: #6a0000;
+        }
+        
+        .action-link.contacto {
+            background-color: rgba(139, 0, 0, 0.1);
+            color: var(--burgundy);
+        }
+        
+        .action-link.contacto:hover {
+            background-color: rgba(139, 0, 0, 0.2);
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--burgundy);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .renewal-notice {
+            background-color: #e3f2fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .renewal-notice i {
+            color: #2196f3;
+            margin-right: 10px;
+        }
+        
+        @media (max-width: 576px) {
+            .verificar-card {
+                padding: 30px 20px;
+            }
+            
+            .resultado-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .resultado-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="verificar-page">
+        <div class="verificar-header">
+            <h1>Verificar Estado de Membresía</h1>
+            <p>Consulta el estado de tu membresía en la Generación Diplomática del Beni</p>
+        </div>
+        
+        <div class="verificar-container">
+            <div class="verificar-card">
+                <div class="renewal-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Recordatorio:</strong> La membresía se renueva automáticamente cada 14 de mes. 
+                    Pasada esta fecha sin pago, el estado cambia a "Deudor".
+                </div>
+                
+                <form id="verificarForm" class="verificar-form">
+                    <div class="form-group">
+                        <label for="nombreVerificar">Nombre Completo</label>
+                        <input type="text" id="nombreVerificar" name="nombreVerificar" placeholder="Ej: ADRIAN SUAREZ SUAREZ" required>
+                    </div>
+                    
+                    <button type="submit" class="verificar-btn">Verificar Mi Estado</button>
+                </form>
+                
+                <div id="resultadoContainer" class="resultado-container">
+                    <!-- Resultado se mostrará aquí -->
+                </div>
+                
+                <div class="verificar-actions" id="verificarActions" style="display: none;">
+                    <a href="enviar-comprobante.html" class="action-link pagar">
+                        <i class="fas fa-qrcode"></i> Pagar Membresía con QR
+                    </a>
+                    <a href="#contacto" class="action-link contacto">
+                        <i class="fas fa-envelope"></i> Contactar al Secretario de Finanzas
+                    </a>
+                </div>
+                
+                <a href="login-membresias.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Volver al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Función para verificar si un miembro está al día basado en fecha de renovación (14 de cada mes)
+        function verificarEstadoPorFecha(ultimaActualizacion) {
+            const hoy = new Date();
+            const fechaActualizacion = new Date(ultimaActualizacion);
+            
+            // Obtener el día del mes actual
+            const diaDelMes = hoy.getDate();
+            
+            // Si hoy es después del 14 y la última actualización fue antes del 14 del mes actual
+            if (diaDelMes >= 14) {
+                const mesActual = hoy.getMonth();
+                const añoActual = hoy.getFullYear();
+                const fechaLimite = new Date(añoActual, mesActual, 14);
+                
+                // Si la última actualización es anterior al 14 del mes actual
+                if (fechaActualizacion < fechaLimite) {
+                    return 'deudor';
+                }
+            }
+            
+            // Verificar si la última actualización fue en el mes anterior
+            const mesPasado = new Date();
+            mesPasado.setMonth(mesPasado.getMonth() - 1);
+            
+            if (fechaActualizacion.getMonth() < mesPasado.getMonth() || 
+                fechaActualizacion.getFullYear() < mesPasado.getFullYear()) {
+                return 'deudor';
+            }
+            
+            return 'al-dia';
+        }
+        
+        // Cargar datos de miembros desde localStorage
+        function cargarMiembrosDesdeLocalStorage() {
+            const datosGuardados = localStorage.getItem('miembrosGDB');
+            if (datosGuardados) {
+                return JSON.parse(datosGuardados);
+            }
+            
+            // Datos por defecto si no hay nada en localStorage
+            return [
+                { 
+                    id: 1, 
+                    nombre: "ADRIAN SUAREZ SUAREZ", 
+                    cargo: "Presidente Departamental", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-20",
+                    imagen: "img/adrian.jpeg" 
+                },
+                { 
+                    id: 2, 
+                    nombre: "ARIANA QUIROZ ORTIZ", 
+                    cargo: "Vicepresidente Departamental", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-15",
+                    imagen: "img/ariana.jpeg" 
+                },
+                { 
+                    id: 3, 
+                    nombre: "MILTON THIAGO VACA VALDEZ", 
+                    cargo: "Secretario General Adjunto", 
+                    departamento: "Beni", 
+                    estado: "deudor", 
+                    ultimaActualizacion: "2024-12-10",
+                    imagen: "img/milton.jpeg" 
+                },
+                { 
+                    id: 4, 
+                    nombre: "JULIO ANTONIO NUNEZ VELA BALCAZAR", 
+                    cargo: "Subsecretario Adjunto", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-18",
+                    imagen: "img/julio.jpeg" 
+                },
+                { 
+                    id: 5, 
+                    nombre: "MATÍAS JUSTINIANO ELORRIAGA", 
+                    cargo: "Secretario de Relaciones Internacionales", 
+                    departamento: "Beni", 
+                    estado: "deudor", 
+                    ultimaActualizacion: "2024-11-30",
+                    imagen: "img/matias.jpeg" 
+                },
+                { 
+                    id: 6, 
+                    nombre: "GUSTAVO GABRIEL ARAMAYO TELLEZ", 
+                    cargo: "Secretario de Recursos Financieros", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-10",
+                    imagen: "img/gustabo.jpeg" 
+                },
+                { 
+                    id: 7, 
+                    nombre: "JORGE GABRIEL CHAVEZ BABERY", 
+                    cargo: "Organizador Social", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-12",
+                    imagen: "img/jorge.jpeg" 
+                },
+                { 
+                    id: 8, 
+                    nombre: "AYLA SANCHEZ ANEZ", 
+                    cargo: "Sub Organizador Social", 
+                    departamento: "Beni", 
+                    estado: "deudor", 
+                    ultimaActualizacion: "2024-12-20",
+                    imagen: "img/Ayla.jpeg" 
+                },
+                { 
+                    id: 9, 
+                    nombre: "VICTORIA LLAPIZ BURTON", 
+                    cargo: "Secretaria de Protocolo", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-05",
+                    imagen: "img/victoria.jpeg" 
+                },
+                { 
+                    id: 10, 
+                    nombre: "MIGUEL MORALES VARGAS", 
+                    cargo: "Secretario de Capacitación", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-08",
+                    imagen: "img/miguel.jpeg" 
+                },
+                { 
+                    id: 11, 
+                    nombre: "NATANAEL VARGAS ARIAS", 
+                    cargo: "Subsecretario de Capacitación", 
+                    departamento: "Beni", 
+                    estado: "deudor", 
+                    ultimaActualizacion: "2024-12-15",
+                    imagen: "img/nata.jpeg" 
+                },
+                { 
+                    id: 12, 
+                    nombre: "WENDY STEPHANY ROJAS CORTEZ", 
+                    cargo: "Secretaria de Marketing y Comunicación", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-14",
+                    imagen: "img/wendy.jpeg" 
+                },
+                { 
+                    id: 13, 
+                    nombre: "VIVIANA ISABELLA SAUMA GARCIA", 
+                    cargo: "Subsecretaria de Marketing y Comunicación", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-16",
+                    imagen: "img/isabela.jpeg" 
+                },
+                { 
+                    id: 14, 
+                    nombre: "BIANKA ISABELLA SUAREZ SUAREZ", 
+                    cargo: "Delegada de Marketing", 
+                    departamento: "Beni", 
+                    estado: "al-dia", 
+                    ultimaActualizacion: "2025-01-19",
+                    imagen: "img/bianka.jpeg" 
+                }
+            ];
+        }
+        
+        document.getElementById('verificarForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nombre = document.getElementById('nombreVerificar').value.trim().toUpperCase();
+            const resultadoContainer = document.getElementById('resultadoContainer');
+            const verificarActions = document.getElementById('verificarActions');
+            
+            // Cargar miembros
+            const miembrosGDB = cargarMiembrosDesdeLocalStorage();
+            
+            // Buscar miembro (búsqueda más flexible que incluya coincidencias parciales)
+            const miembro = miembrosGDB.find(m => 
+                m.nombre.toUpperCase() === nombre || 
+                m.nombre.toUpperCase().includes(nombre) ||
+                nombre.includes(m.nombre.toUpperCase())
+            );
+            
+            if (!miembro) {
+                resultadoContainer.innerHTML = `
+                    <div style="text-align: center; padding: 30px;">
+                        <i class="fas fa-user-slash" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+                        <h3>Miembro no encontrado</h3>
+                        <p>No se encontró un miembro con ese nombre. Verifica que el nombre esté escrito correctamente.</p>
+                        <p style="font-size: 0.9rem; color: #777; margin-top: 15px;">
+                            <strong>Ejemplos de nombres válidos:</strong><br>
+                            ADRIAN SUAREZ SUAREZ<br>
+                            ARIANA QUIROZ ORTIZ<br>
+                            MILTON THIAGO VACA VALDEZ<br>
+                            MATÍAS JUSTINIANO ELORRIAGA
+                        </p>
+                        <p style="font-size: 0.9rem; color: #777; margin-top: 10px;">
+                            <strong>Nota:</strong> Asegúrate de escribir tu nombre completo tal como aparece en el directorio de GDB.
+                        </p>
+                    </div>
+                `;
+                resultadoContainer.className = 'resultado-container';
+                resultadoContainer.style.display = 'block';
+                verificarActions.style.display = 'none';
+                return;
+            }
+            
+            // Verificar estado basado en fecha
+            const estadoActual = verificarEstadoPorFecha(miembro.ultimaActualizacion);
+            const esAlDia = estadoActual === 'al-dia';
+            const estadoTexto = esAlDia ? 'Al Día' : 'Deudor';
+            const estadoClase = esAlDia ? 'resultado-al-dia' : 'resultado-deudor';
+            const icono = esAlDia ? 'fa-check-circle' : 'fa-exclamation-circle';
+            const iconoClase = esAlDia ? 'al-dia-icon' : 'deudor-icon';
+            
+            // Obtener información de la fecha
+            const hoy = new Date();
+            const diaDelMes = hoy.getDate();
+            let mensajeRenovacion = '';
+            
+            if (diaDelMes >= 14 && !esAlDia) {
+                mensajeRenovacion = `
+                    <div style="margin-top: 15px; padding: 12px; border-radius: 5px; background-color: #fff3cd; border-left: 4px solid #ffc107;">
+                        <p style="margin: 0; color: #856404;">
+                            <i class="fas fa-calendar-exclamation"></i>
+                            <strong>Recordatorio:</strong> La membresía se renovó automáticamente el 14/${hoy.getMonth() + 1}. 
+                            Para regularizar tu estado, realiza el pago y envía el comprobante.
+                        </p>
+                    </div>
+                `;
+            }
+            
+            resultadoContainer.innerHTML = `
+                <div class="resultado-header">
+                    <div class="resultado-icon ${iconoClase}">
+                        <i class="fas ${icono}"></i>
+                    </div>
+                    <div class="resultado-info">
+                        <h3>${miembro.nombre}</h3>
+                        <p><strong>Estado:</strong> ${estadoTexto}</p>
+                    </div>
+                </div>
+                
+                <div class="resultado-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Cargo</div>
+                        <div class="detail-value">${miembro.cargo}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Departamento</div>
+                        <div class="detail-value">${miembro.departamento}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Última Actualización</div>
+                        <div class="detail-value">${miembro.ultimaActualizacion}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Estado de Membresía</div>
+                        <div class="detail-value"><strong>${estadoTexto}</strong></div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 25px; padding: 15px; border-radius: 5px; background-color: ${esAlDia ? 'rgba(46, 125, 50, 0.1)' : 'rgba(211, 47, 47, 0.1)'};">
+                    <p style="margin: 0; color: ${esAlDia ? '#2e7d32' : '#d32f2f'}; font-weight: 500;">
+                        <i class="fas ${esAlDia ? 'fa-check' : 'fa-exclamation-triangle'}"></i>
+                        ${esAlDia ? 
+                            '¡Tu membresía está al día! Gracias por mantenerte al corriente con los pagos.' : 
+                            'Tu membresía está pendiente de pago. Regulariza tu situación lo antes posible.'}
+                    </p>
+                </div>
+                
+                ${mensajeRenovacion}
+            `;
+            
+            resultadoContainer.className = `resultado-container ${estadoClase}`;
+            resultadoContainer.style.display = 'block';
+            
+            // Mostrar acciones si está en deudor
+            verificarActions.style.display = !esAlDia ? 'block' : 'none';
+        });
+        
+        // Sugerencia automática de nombres
+        const nombreInput = document.getElementById('nombreVerificar');
+        
+        nombreInput.addEventListener('input', function() {
+            const valor = this.value.toUpperCase();
+            if (valor.length > 2) {
+                const miembrosGDB = cargarMiembrosDesdeLocalStorage();
+                const nombresMiembros = miembrosGDB.map(m => m.nombre);
+                
+                // Buscar coincidencias
+                const sugerencias = nombresMiembros.filter(nombre => 
+                    nombre.toUpperCase().includes(valor)
+                );
+                
+                if (sugerencias.length > 0) {
+                    // Podrías implementar un dropdown de sugerencias aquí si lo deseas
+                    console.log('Sugerencias encontradas:', sugerencias);
+                }
+            }
+        });
+        
+        // Establecer placeholder dinámico con ejemplo
+        window.addEventListener('DOMContentLoaded', () => {
+            const miembrosGDB = cargarMiembrosDesdeLocalStorage();
+            if (miembrosGDB.length > 0) {
+                nombreInput.placeholder = `Ej: ${miembrosGDB[0].nombre}`;
+            }
+        });
+    </script>
+</body>
+</html>

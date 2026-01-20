@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enviar Comprobante de Pago - GDB</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .comprobante-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.03) 0%, rgba(0, 100, 0, 0.03) 100%);
+        }
+        
+        .comprobante-header {
+            background-color: var(--dark-green);
+            color: white;
+            padding: 20px 5%;
+            text-align: center;
+        }
+        
+        .comprobante-header h1 {
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .comprobante-header p {
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .comprobante-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 5%;
+        }
+        
+        .comprobante-card {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+        }
+        
+        .qr-section {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .qr-code img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .qr-info {
+            text-align: left;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .qr-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .qr-info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .qr-info-label {
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .comprobante-form .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .comprobante-form label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        
+        .comprobante-form input,
+        .comprobante-form select,
+        .comprobante-form textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+        
+        .comprobante-form input:focus,
+        .comprobante-form select:focus,
+        .comprobante-form textarea:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
+        }
+        
+        .file-upload {
+            position: relative;
+            border: 2px dashed #ddd;
+            border-radius: 5px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .file-upload:hover {
+            border-color: var(--burgundy);
+            background-color: rgba(139, 0, 0, 0.02);
+        }
+        
+        .file-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-upload i {
+            font-size: 2.5rem;
+            color: var(--burgundy);
+            margin-bottom: 15px;
+        }
+        
+        .file-upload p {
+            margin-bottom: 0;
+        }
+        
+        .file-name {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+            font-weight: 500;
+        }
+        
+        .comprobante-btn {
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 5px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+        
+        .comprobante-btn:hover {
+            background-color: #004d00;
+        }
+        
+        .mensaje-exito {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            background-color: rgba(46, 125, 50, 0.1);
+            border-radius: 10px;
+            border-left: 5px solid #2e7d32;
+            margin-top: 30px;
+        }
+        
+        .mensaje-exito i {
+            font-size: 3rem;
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--burgundy);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .renewal-info {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .renewal-info i {
+            color: #856404;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .comprobante-card {
+                padding: 30px 20px;
+            }
+            
+            .qr-section {
+                padding: 20px;
+            }
+            
+            .qr-code {
+                width: 180px;
+                height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="comprobante-page">
+        <div class="comprobante-header">
+            <h1>Enviar Comprobante de Pago</h1>
+            <p>Realiza el pago de tu membresía y envía el comprobante al Secretario de Finanzas</p>
+        </div>
+        
+        <div class="comprobante-container">
+            <div class="comprobante-card">
+                <div class="renewal-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Recordatorio:</strong> La membresía se renueva automáticamente cada 14 de mes. 
+                    Si realizas el pago después de esta fecha, tu estado se actualizará a "Al Día" una vez verificado el comprobante.
+                </div>
+                
+                <div class="qr-section">
+                    <h3>Pago por QR</h3>
+                    <div class="qr-code">
+                        <!-- Aquí iría el código QR real -->
+                        <div style="text-align: center;">
+                            <div style="width: 150px; height: 150px; background-color: #f0f0f0; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 5px;">
+                                <i class="fas fa-qrcode" style="font-size: 4rem; color: #ccc;"></i>
+                                <div style="margin-top: 10px; font-size: 0.8rem; color: #999;">QR de Pago</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="qr-info">
+                        <h4 style="text-align: center; margin-bottom: 15px;">Información para Transferencia</h4>
+                        <div class="qr-info-item">
+                            <span class="qr-info-label">Banco:</span>
+                            <span>Mercantil Santa Cruz</span>
+                        </div>
+                        <div class="qr-info-item">
+                            <span class="qr-info-label">Número de Cuenta:</span>
+                            <span>4076431397</span>
+                        </div>
+                        <div class="qr-info-item">
+                            <span class="qr-info-label">Titular:</span>
+                            <span>GUSTAVO GABRIEL ARAMAYO TELLEZ</span>
+                        </div>
+                        <div class="qr-info-item">
+                            <span class="qr-info-label">Monto:</span>
+                            <span><strong>Bs 40.00</strong></span>
+                        </div>
+                        <div class="qr-info-item">
+                            <span class="qr-info-label">Concepto:</span>
+                            <span>Membresía GDB</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <form id="comprobanteForm" class="comprobante-form">
+                    <h3>Formulario de Envío de Comprobante</h3>
+                    
+                    <div class="form-group">
+                        <label for="nombreComprobante">Nombre Completo</label>
+                        <input type="text" id="nombreComprobante" name="nombreComprobante" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cargoComprobante">Cargo en GDB</label>
+                        <input type="text" id="cargoComprobante" name="cargoComprobante" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telefonoComprobante">Número de Teléfono</label>
+                        <input type="tel" id="telefonoComprobante" name="telefonoComprobante" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="emailComprobante">Correo Electrónico</label>
+                        <input type="email" id="emailComprobante" name="emailComprobante" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fechaPago">Fecha de Pago</label>
+                        <input type="date" id="fechaPago" name="fechaPago" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="metodoPago">Método de Pago</label>
+                        <select id="metodoPago" name="metodoPago" required>
+                            <option value="">Seleccionar método</option>
+                            <option value="transferencia">Transferencia Bancaria</option>
+                            <option value="qr">Pago por QR</option>
+                            <option value="efectivo">Pago en Efectivo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Comprobante de Pago (Imagen o PDF)</label>
+                        <div class="file-upload">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>Haz clic para subir tu comprobante</p>
+                            <p style="font-size: 0.9rem; color: #777;">Formatos aceptados: JPG, PNG, PDF (Máx. 5MB)</p>
+                            <input type="file" id="comprobanteFile" name="comprobanteFile" accept=".jpg,.jpeg,.png,.pdf" required>
+                        </div>
+                        <div id="fileName" class="file-name"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="observaciones">Observaciones (Opcional)</label>
+                        <textarea id="observaciones" name="observaciones" rows="3" placeholder="Agrega cualquier información adicional sobre tu pago..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="comprobante-btn">
+                        <i class="fas fa-paper-plane"></i> Enviar Comprobante
+                    </button>
+                </form>
+                
+                <div id="mensajeExito" class="mensaje-exito">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>¡Comprobante Enviado con Éxito!</h3>
+                    <p>Tu comprobante de pago ha sido enviado al Secretario de Finanzas.</p>
+                    <p>Recibirás una confirmación por correo electrónico en un plazo de 24-48 horas.</p>
+                    <p>Tu estado de membresía se actualizará a "Al Día" una vez verificado el pago.</p>
+                    <p style="margin-top: 20px;">
+                        <a href="verificar-membresia.html" class="back-link">Verificar estado de mi membresía</a>
+                    </p>
+                </div>
+                
+                <a href="login-membresias.html" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Volver al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Mostrar nombre del archivo seleccionado
+        document.getElementById('comprobanteFile').addEventListener('change', function(e) {
+            const fileName = document.getElementById('fileName');
+            if (this.files.length > 0) {
+                fileName.textContent = `Archivo seleccionado: ${this.files[0].name}`;
+            } else {
+                fileName.textContent = '';
+            }
+        });
+        
+        // Enviar formulario
+        document.getElementById('comprobanteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validar archivo
+            const fileInput = document.getElementById('comprobanteFile');
+            if (fileInput.files.length === 0) {
+                alert('Por favor, selecciona un comprobante de pago.');
+                return;
+            }
+            
+            // Aquí normalmente se enviaría el formulario a un servidor
+            // Para este prototipo, simularemos el envío
+            
+            // Mostrar mensaje de éxito
+            document.getElementById('mensajeExito').style.display = 'block';
+            document.getElementById('comprobanteForm').style.display = 'none';
+            
+            // Guardar en localStorage para que el admin pueda verlo
+            const datos = {
+                nombre: document.getElementById('nombreComprobante').value,
+                cargo: document.getElementById('cargoComprobante').value,
+                telefono: document.getElementById('telefonoComprobante').value,
+                email: document.getElementById('emailComprobante').value,
+                fechaPago: document.getElementById('fechaPago').value,
+                metodoPago: document.getElementById('metodoPago').value,
+                observaciones: document.getElementById('observaciones').value,
+                fechaEnvio: new Date().toISOString(),
+                estado: 'pendiente'
+            };
+            
+            // Obtener comprobantes existentes o crear array nuevo
+            let comprobantes = JSON.parse(localStorage.getItem('comprobantesGDB') || '[]');
+            comprobantes.push(datos);
+            localStorage.setItem('comprobantesGDB', JSON.stringify(comprobantes));
+            
+            // También podríamos enviar un correo al secretario de finanzas aquí
+            // utilizando un servicio como EmailJS o Formspree
+        });
+        
+        // Establecer fecha máxima como hoy y mínima como 30 días atrás
+        const hoy = new Date();
+        const fechaMax = hoy.toISOString().split('T')[0];
+        const fechaMin = new Date();
+        fechaMin.setDate(fechaMin.getDate() - 30);
+        const fechaMinStr = fechaMin.toISOString().split('T')[0];
+        
+        document.getElementById('fechaPago').max = fechaMax;
+        document.getElementById('fechaPago').min = fechaMinStr;
+        document.getElementById('fechaPago').value = fechaMax;
+        
+        // Añadir mensaje sobre renovación automática
+        const hoyObj = new Date();
+        const diaDelMes = hoyObj.getDate();
+        
+        if (diaDelMes >= 14) {
+            const header = document.querySelector('.comprobante-header p');
+            header.innerHTML += '<br><small><i class="fas fa-calendar-alt"></i> Recuerda: La membresía se renueva automáticamente cada 14 de mes.</small>';
+        }
+    </script>
+</body>
+</html>

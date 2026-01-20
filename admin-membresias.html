@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Membresías GDB</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --al-dia-color: #2e7d32;
+            --deudor-color: #d32f2f;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+        }
+        
+        .admin-header {
+            background-color: var(--dark-green);
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .admin-header h1 {
+            color: white;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .admin-header h1 i {
+            margin-right: 10px;
+        }
+        
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .admin-container {
+            padding: 30px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            text-align: center;
+            border-top: 4px solid var(--dark-green);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+        
+        .stat-number.al-dia {
+            color: var(--al-dia-color);
+        }
+        
+        .stat-number.deudor {
+            color: var(--deudor-color);
+        }
+        
+        .stat-label {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+        
+        .search-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .search-btn {
+            background-color: var(--burgundy);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .membership-table-container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        
+        .membership-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .membership-table th {
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            font-weight: 600;
+            text-align: left;
+            padding: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .membership-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        
+        .membership-table tbody tr:hover {
+            background-color: rgba(139, 0, 0, 0.02);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-al-dia {
+            background-color: rgba(46, 125, 50, 0.1);
+            color: var(--al-dia-color);
+        }
+        
+        .status-deudor {
+            background-color: rgba(211, 47, 47, 0.1);
+            color: var(--deudor-color);
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-edit {
+            background-color: rgba(0, 100, 0, 0.1);
+            color: var(--dark-green);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .btn-edit:hover {
+            background-color: rgba(0, 100, 0, 0.2);
+        }
+        
+        .btn-update {
+            background-color: rgba(212, 175, 55, 0.1);
+            color: #b08d00;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+        
+        .btn-update:hover {
+            background-color: rgba(212, 175, 55, 0.2);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--medium-gray);
+        }
+        
+        .modal-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .modal-option {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .modal-option:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .modal-option.al-dia {
+            border-color: var(--al-dia-color);
+            color: var(--al-dia-color);
+        }
+        
+        .modal-option.deudor {
+            border-color: var(--deudor-color);
+            color: var(--deudor-color);
+        }
+        
+        .modal-option.selected {
+            background-color: rgba(139, 0, 0, 0.05);
+            border-color: var(--burgundy);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+        
+        .btn-cancel {
+            background-color: #f0f0f0;
+            color: var(--dark-gray);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .btn-save {
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: var(--medium-gray);
+        }
+        
+        .export-btn {
+            background-color: var(--burgundy);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        
+        .renewal-info {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .renewal-info i {
+            color: #2196f3;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .membership-table th,
+            .membership-table td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Verificar sesión -->
+    <script>
+        if (localStorage.getItem('gdbAdminLoggedIn') !== 'true') {
+            window.location.href = 'login-membresias.html';
+        }
+    </script>
+    
+    <div class="admin-header">
+        <h1><i class="fas fa-user-shield"></i> Panel de Administración - Membresías GDB</h1>
+        <button class="logout-btn" id="logoutBtn">Cerrar Sesión</button>
+    </div>
+    
+    <div class="admin-container">
+        <div class="renewal-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Sistema de Renovación Automática:</strong> Las membresías se renuevan automáticamente cada 14 de mes. 
+            Los miembros que no hayan sido actualizados después del 14 aparecerán como "Deudores".
+        </div>
+        
+        <div class="admin-stats" id="statsContainer">
+            <!-- Las estadísticas se cargarán con JavaScript -->
+        </div>
+        
+        <div class="search-section">
+            <h3>Buscar Miembro</h3>
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nombre, cargo o departamento...">
+                <button class="search-btn" id="searchBtn">Buscar</button>
+            </div>
+        </div>
+        
+        <div class="membership-table-container">
+            <table class="membership-table" id="membershipTable">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Cargo</th>
+                        <th>Departamento</th>
+                        <th>Estado</th>
+                        <th>Última Actualización</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="membershipTableBody">
+                    <!-- Los datos se cargarán con JavaScript -->
+                </tbody>
+            </table>
+            <div id="noDataMessage" class="no-data" style="display: none;">
+                <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 15px; color: #ddd;"></i>
+                <h3>No se encontraron miembros</h3>
+                <p>Intenta con otros términos de búsqueda</p>
+            </div>
+        </div>
+        
+        <button class="export-btn" id="exportBtn">
+            <i class="fas fa-file-export"></i> Exportar a Excel
+        </button>
+    </div>
+    
+    <!-- Modal para cambiar estado -->
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Cambiar Estado de Membresía</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <p id="modalDescription">Selecciona el nuevo estado para este miembro:</p>
+            
+            <div class="modal-options">
+                <div class="modal-option al-dia" data-status="al-dia">
+                    <i class="fas fa-check-circle"></i> Al Día
+                </div>
+                <div class="modal-option deudor" data-status="deudor">
+                    <i class="fas fa-exclamation-circle"></i> Deudor
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelBtn">Cancelar</button>
+                <button class="btn-save" id="saveBtn">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Datos iniciales de los miembros (basados en el directorio)
+        const miembrosGDB = [
+            { 
+                id: 1, 
+                nombre: "ADRIAN SUAREZ SUAREZ", 
+                cargo: "Presidente Departamental", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-20",
+                imagen: "img/adrian.jpeg" 
+            },
+            { 
+                id: 2, 
+                nombre: "ARIANA QUIROZ ORTIZ", 
+                cargo: "Vicepresidente Departamental", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-15",
+                imagen: "img/ariana.jpeg" 
+            },
+            { 
+                id: 3, 
+                nombre: "MILTON THIAGO VACA VALDEZ", 
+                cargo: "Secretario General Adjunto", 
+                departamento: "Beni", 
+                estado: "deudor", 
+                ultimaActualizacion: "2024-12-10",
+                imagen: "img/milton.jpeg" 
+            },
+            { 
+                id: 4, 
+                nombre: "JULIO ANTONIO NUNEZ VELA BALCAZAR", 
+                cargo: "Subsecretario Adjunto", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-18",
+                imagen: "img/julio.jpeg" 
+            },
+            { 
+                id: 5, 
+                nombre: "MATÍAS JUSTINIANO ELORRIAGA", 
+                cargo: "Secretario de Relaciones Internacionales", 
+                departamento: "Beni", 
+                estado: "deudor", 
+                ultimaActualizacion: "2024-11-30",
+                imagen: "img/matias.jpeg" 
+            },
+            { 
+                id: 6, 
+                nombre: "GUSTAVO GABRIEL ARAMAYO TELLEZ", 
+                cargo: "Secretario de Recursos Financieros", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-10",
+                imagen: "img/gustabo.jpeg" 
+            },
+            { 
+                id: 7, 
+                nombre: "JORGE GABRIEL CHAVEZ BABERY", 
+                cargo: "Organizador Social", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-12",
+                imagen: "img/jorge.jpeg" 
+            },
+            { 
+                id: 8, 
+                nombre: "AYLA SANCHEZ ANEZ", 
+                cargo: "Sub Organizador Social", 
+                departamento: "Beni", 
+                estado: "deudor", 
+                ultimaActualizacion: "2024-12-20",
+                imagen: "img/Ayla.jpeg" 
+            },
+            { 
+                id: 9, 
+                nombre: "VICTORIA LLAPIZ BURTON", 
+                cargo: "Secretaria de Protocolo", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-05",
+                imagen: "img/victoria.jpeg" 
+            },
+            { 
+                id: 10, 
+                nombre: "MIGUEL MORALES VARGAS", 
+                cargo: "Secretario de Capacitación", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-08",
+                imagen: "img/miguel.jpeg" 
+            },
+            { 
+                id: 11, 
+                nombre: "NATANAEL VARGAS ARIAS", 
+                cargo: "Subsecretario de Capacitación", 
+                departamento: "Beni", 
+                estado: "deudor", 
+                ultimaActualizacion: "2024-12-15",
+                imagen: "img/nata.jpeg" 
+            },
+            { 
+                id: 12, 
+                nombre: "WENDY STEPHANY ROJAS CORTEZ", 
+                cargo: "Secretaria de Marketing y Comunicación", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-14",
+                imagen: "img/wendy.jpeg" 
+            },
+            { 
+                id: 13, 
+                nombre: "VIVIANA ISABELLA SAUMA GARCIA", 
+                cargo: "Subsecretaria de Marketing y Comunicación", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-16",
+                imagen: "img/isabela.jpeg" 
+            },
+            { 
+                id: 14, 
+                nombre: "BIANKA ISABELLA SUAREZ SUAREZ", 
+                cargo: "Delegada de Marketing", 
+                departamento: "Beni", 
+                estado: "al-dia", 
+                ultimaActualizacion: "2025-01-19",
+                imagen: "img/bianka.jpeg" 
+            }
+        ];
+        
+        // Función para verificar si un miembro está al día basado en fecha de renovación (14 de cada mes)
+        function verificarEstadoPorFecha(ultimaActualizacion) {
+            const hoy = new Date();
+            const fechaActualizacion = new Date(ultimaActualizacion);
+            
+            // Obtener el día del mes actual
+            const diaDelMes = hoy.getDate();
+            
+            // Si hoy es después del 14 y la última actualización fue antes del 14 del mes actual
+            if (diaDelMes >= 14) {
+                const mesActual = hoy.getMonth();
+                const añoActual = hoy.getFullYear();
+                const fechaLimite = new Date(añoActual, mesActual, 14);
+                
+                // Si la última actualización es anterior al 14 del mes actual
+                if (fechaActualizacion < fechaLimite) {
+                    return 'deudor';
+                }
+            }
+            
+            // Verificar si la última actualización fue en el mes anterior
+            const mesPasado = new Date();
+            mesPasado.setMonth(mesPasado.getMonth() - 1);
+            
+            if (fechaActualizacion.getMonth() < mesPasado.getMonth() || 
+                fechaActualizacion.getFullYear() < mesPasado.getFullYear()) {
+                return 'deudor';
+            }
+            
+            return 'al-dia';
+        }
+        
+        // Función para convertir fecha a formato YYYY-MM-DD
+        function formatDate(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Variables globales
+        let miembrosFiltrados = [];
+        let miembroSeleccionado = null;
+        let estadoSeleccionado = "";
+        
+        // Función para cargar los miembros en la tabla
+        function cargarMiembros() {
+            const tbody = document.getElementById('membershipTableBody');
+            const noDataMessage = document.getElementById('noDataMessage');
+            
+            // Inicializar miembros filtrados si está vacío
+            if (miembrosFiltrados.length === 0) {
+                miembrosFiltrados = [...miembrosGDB];
+            }
+            
+            // Actualizar estados basados en fecha antes de mostrar
+            miembrosGDB.forEach(miembro => {
+                // Solo actualizar si el estado actual es "al-dia"
+                const estadoCalculado = verificarEstadoPorFecha(miembro.ultimaActualizacion);
+                if (estadoCalculado !== miembro.estado) {
+                    miembro.estado = estadoCalculado;
+                }
+            });
+            
+            // Guardar cambios en localStorage
+            localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
+            
+            if (miembrosFiltrados.length === 0) {
+                tbody.innerHTML = '';
+                noDataMessage.style.display = 'block';
+                return;
+            }
+            
+            noDataMessage.style.display = 'none';
+            
+            tbody.innerHTML = miembrosFiltrados.map(miembro => {
+                // Verificar estado actual basado en fecha
+                const estadoActual = verificarEstadoPorFecha(miembro.ultimaActualizacion);
+                
+                return `
+                    <tr data-id="${miembro.id}">
+                        <td>
+                            <strong>${miembro.nombre}</strong>
+                        </td>
+                        <td>${miembro.cargo}</td>
+                        <td>${miembro.departamento}</td>
+                        <td>
+                            <span class="status-badge status-${estadoActual}">
+                                ${estadoActual === 'al-dia' ? 'Al Día' : 'Deudor'}
+                            </span>
+                        </td>
+                        <td>${miembro.ultimaActualizacion}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-edit" onclick="editarMiembro(${miembro.id})">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button class="btn-update" onclick="actualizarEstado(${miembro.id})">
+                                    <i class="fas fa-sync-alt"></i> Estado
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            
+            actualizarEstadisticas();
+        }
+        
+        // Función para actualizar estadísticas
+        function actualizarEstadisticas() {
+            // Calcular estados basados en fecha
+            const estadosReales = miembrosFiltrados.map(m => verificarEstadoPorFecha(m.ultimaActualizacion));
+            
+            const total = miembrosFiltrados.length;
+            const alDia = estadosReales.filter(estado => estado === 'al-dia').length;
+            const deudor = estadosReales.filter(estado => estado === 'deudor').length;
+            const porcentajeAlDia = total > 0 ? Math.round((alDia / total) * 100) : 0;
+            
+            const hoy = new Date();
+            const diaDelMes = hoy.getDate();
+            const mensajeDia = diaDelMes >= 14 ? 
+                `(Renovación: Después del 14/${hoy.getMonth() + 1})` : 
+                `(Renovación: Próximo 14/${hoy.getMonth() + 1})`;
+            
+            document.getElementById('statsContainer').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Total de Miembros</div>
+                    <div class="stat-number">${total}</div>
+                    <div class="stat-label">Mostrando ${total} de ${miembrosGDB.length}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Miembros al Día</div>
+                    <div class="stat-number al-dia">${alDia}</div>
+                    <div class="stat-label">${porcentajeAlDia}% del total ${mensajeDia}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Miembros Deudores</div>
+                    <div class="stat-number deudor">${deudor}</div>
+                    <div class="stat-label">${100 - porcentajeAlDia}% del total</div>
+                </div>
+            `;
+        }
+        
+        // Función para buscar miembros
+        function buscarMiembros() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm.trim() === '') {
+                miembrosFiltrados = [...miembrosGDB];
+            } else {
+                miembrosFiltrados = miembrosGDB.filter(miembro => 
+                    miembro.nombre.toLowerCase().includes(searchTerm) ||
+                    miembro.cargo.toLowerCase().includes(searchTerm) ||
+                    miembro.departamento.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            cargarMiembros();
+        }
+        
+        // Función para actualizar estado de un miembro
+        function actualizarEstado(id) {
+            miembroSeleccionado = miembrosGDB.find(m => m.id === id);
+            
+            if (!miembroSeleccionado) return;
+            
+            // Verificar estado actual basado en fecha
+            const estadoActual = verificarEstadoPorFecha(miembroSeleccionado.ultimaActualizacion);
+            
+            // Configurar modal
+            document.getElementById('modalTitle').textContent = `Actualizar Estado: ${miembroSeleccionado.nombre}`;
+            document.getElementById('modalDescription').innerHTML = `
+                Estado actual: <strong>${estadoActual === 'al-dia' ? 'Al Día' : 'Deudor'}</strong><br>
+                Última actualización: ${miembroSeleccionado.ultimaActualizacion}<br>
+                <small>La membresía se renueva automáticamente cada 14 de mes</small>
+            `;
+            
+            // Seleccionar opción actual
+            document.querySelectorAll('.modal-option').forEach(option => {
+                option.classList.remove('selected');
+                if (option.dataset.status === estadoActual) {
+                    option.classList.add('selected');
+                    estadoSeleccionado = estadoActual;
+                }
+            });
+            
+            // Mostrar modal
+            document.getElementById('statusModal').style.display = 'flex';
+        }
+        
+        // Función para editar miembro
+        function editarMiembro(id) {
+            alert("Función de edición completa aún no implementada. Para este prototipo, use el botón 'Estado' para cambiar el estado del miembro.");
+        }
+        
+        // Función para exportar a Excel
+        function exportarAExcel() {
+            // Crear datos para exportar
+            const datos = miembrosGDB.map(m => ({
+                "Nombre": m.nombre,
+                "Cargo": m.cargo,
+                "Departamento": m.departamento,
+                "Estado": verificarEstadoPorFecha(m.ultimaActualizacion) === 'al-dia' ? 'Al Día' : 'Deudor',
+                "Última Actualización": m.ultimaActualizacion,
+                "Estado Calculado": "Basado en renovación cada 14 de mes"
+            }));
+            
+            // Convertir a CSV
+            const csv = convertirAExcel(datos);
+            
+            // Descargar archivo
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `membresias_gdb_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        function convertirAExcel(datos) {
+            if (datos.length === 0) return '';
+            
+            const encabezados = Object.keys(datos[0]);
+            const filas = datos.map(fila => 
+                encabezados.map(encabezado => 
+                    `"${fila[encabezado]}"`
+                ).join(',')
+            );
+            
+            return [encabezados.join(','), ...filas].join('\n');
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cargar datos desde localStorage si existen
+            const datosGuardados = localStorage.getItem('miembrosGDB');
+            if (datosGuardados) {
+                const datos = JSON.parse(datosGuardados);
+                // Actualizar los datos con los guardados
+                datos.forEach(miembroGuardado => {
+                    const index = miembrosGDB.findIndex(m => m.id === miembroGuardado.id);
+                    if (index !== -1) {
+                        miembrosGDB[index] = { ...miembrosGDB[index], ...miembroGuardado };
+                    }
+                });
+            } else {
+                // Guardar datos iniciales en localStorage
+                localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
+            }
+            
+            cargarMiembros();
+            
+            // Buscar
+            document.getElementById('searchBtn').addEventListener('click', buscarMiembros);
+            document.getElementById('searchInput').addEventListener('keyup', (e) => {
+                if (e.key === 'Enter') buscarMiembros();
+            });
+            
+            // Modal
+            document.getElementById('modalClose').addEventListener('click', () => {
+                document.getElementById('statusModal').style.display = 'none';
+            });
+            
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                document.getElementById('statusModal').style.display = 'none';
+            });
+            
+            // Seleccionar opción en modal
+            document.querySelectorAll('.modal-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.modal-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    estadoSeleccionado = option.dataset.status;
+                });
+            });
+            
+            // Guardar cambios en modal
+            document.getElementById('saveBtn').addEventListener('click', () => {
+                if (miembroSeleccionado && estadoSeleccionado) {
+                    // Actualizar estado en datos
+                    const index = miembrosGDB.findIndex(m => m.id === miembroSeleccionado.id);
+                    if (index !== -1) {
+                        miembrosGDB[index].estado = estadoSeleccionado;
+                        
+                        // Si se marca como "al-dia", actualizar fecha al día actual
+                        if (estadoSeleccionado === 'al-dia') {
+                            miembrosGDB[index].ultimaActualizacion = formatDate(new Date());
+                        }
+                        
+                        // Actualizar localStorage
+                        localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
+                        
+                        // Recargar tabla
+                        buscarMiembros();
+                    }
+                    
+                    // Cerrar modal
+                    document.getElementById('statusModal').style.display = 'none';
+                }
+            });
+            
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('statusModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('statusModal')) {
+                    document.getElementById('statusModal').style.display = 'none';
+                }
+            });
+            
+            // Exportar
+            document.getElementById('exportBtn').addEventListener('click', exportarAExcel);
+            
+            // Cerrar sesión
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('gdbAdminLoggedIn');
+                window.location.href = 'login-membresias.html';
+            });
+        });
+    </script>
+</body>
+</html>
