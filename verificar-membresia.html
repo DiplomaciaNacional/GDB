@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificar Mi Membresía - GDB</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         .verificar-page {
             min-height: 100vh;
@@ -14,25 +16,25 @@
             flex-direction: column;
             background: linear-gradient(135deg, rgba(139, 0, 0, 0.03) 0%, rgba(0, 100, 0, 0.03) 100%);
         }
-        
+
         .verificar-header {
             background-color: var(--dark-green);
             color: white;
             padding: 20px 5%;
             text-align: center;
         }
-        
+
         .verificar-header h1 {
             color: white;
             margin-bottom: 10px;
         }
-        
+
         .verificar-header p {
             opacity: 0.9;
             max-width: 600px;
             margin: 0 auto;
         }
-        
+
         .verificar-container {
             flex: 1;
             display: flex;
@@ -40,7 +42,7 @@
             align-items: center;
             padding: 40px 5%;
         }
-        
+
         .verificar-card {
             background-color: white;
             border-radius: 15px;
@@ -49,18 +51,18 @@
             width: 100%;
             max-width: 600px;
         }
-        
+
         .verificar-form .form-group {
             margin-bottom: 25px;
         }
-        
+
         .verificar-form label {
             display: block;
             margin-bottom: 10px;
             font-weight: 600;
             color: var(--dark-gray);
         }
-        
+
         .verificar-form input {
             width: 100%;
             padding: 14px 15px;
@@ -69,13 +71,13 @@
             font-size: 1rem;
             transition: var(--transition);
         }
-        
+
         .verificar-form input:focus {
             outline: none;
             border-color: var(--burgundy);
             box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
         }
-        
+
         .verificar-btn {
             background-color: var(--dark-green);
             color: white;
@@ -89,11 +91,11 @@
             transition: var(--transition);
             margin-top: 10px;
         }
-        
+
         .verificar-btn:hover {
             background-color: #004d00;
         }
-        
+
         .resultado-container {
             display: none;
             margin-top: 30px;
@@ -101,75 +103,75 @@
             border-radius: 10px;
             background-color: #f8f9fa;
         }
-        
+
         .resultado-al-dia {
             border-left: 5px solid #2e7d32;
         }
-        
+
         .resultado-deudor {
             border-left: 5px solid #d32f2f;
         }
-        
+
         .resultado-header {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 20px;
         }
-        
+
         .resultado-icon {
             font-size: 2.5rem;
         }
-        
+
         .al-dia-icon {
             color: #2e7d32;
         }
-        
+
         .deudor-icon {
             color: #d32f2f;
         }
-        
+
         .resultado-info h3 {
             margin-bottom: 5px;
         }
-        
+
         .resultado-info p {
             margin-bottom: 0;
             color: var(--medium-gray);
         }
-        
+
         .resultado-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
-        
+
         .detail-item {
             padding: 15px;
             background-color: white;
             border-radius: 5px;
             border: 1px solid #eee;
         }
-        
+
         .detail-label {
             font-size: 0.9rem;
             color: var(--medium-gray);
             margin-bottom: 5px;
         }
-        
+
         .detail-value {
             font-weight: 600;
             color: var(--dark-gray);
         }
-        
+
         .verificar-actions {
             margin-top: 30px;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .action-link {
             display: flex;
             align-items: center;
@@ -181,25 +183,25 @@
             text-decoration: none;
             transition: var(--transition);
         }
-        
+
         .action-link.pagar {
             background-color: var(--burgundy);
             color: white;
         }
-        
+
         .action-link.pagar:hover {
             background-color: #6a0000;
         }
-        
+
         .action-link.contacto {
             background-color: rgba(139, 0, 0, 0.1);
             color: var(--burgundy);
         }
-        
+
         .action-link.contacto:hover {
             background-color: rgba(139, 0, 0, 0.2);
         }
-        
+
         .back-link {
             display: inline-block;
             margin-top: 20px;
@@ -207,7 +209,7 @@
             text-decoration: none;
             font-weight: 500;
         }
-        
+
         .renewal-notice {
             background-color: #e3f2fd;
             border-radius: 8px;
@@ -215,57 +217,78 @@
             margin-bottom: 20px;
             border-left: 4px solid #2196f3;
         }
-        
+
         .renewal-notice i {
             color: #2196f3;
             margin-right: 10px;
         }
-        
+
+        .tipo-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .tipo-directiva {
+            background-color: rgba(0, 100, 0, 0.1);
+            color: var(--dark-green);
+        }
+
+        .tipo-delegado {
+            background-color: rgba(212, 175, 55, 0.1);
+            color: #b08d00;
+        }
+
         @media (max-width: 576px) {
             .verificar-card {
                 padding: 30px 20px;
             }
-            
+
             .resultado-header {
                 flex-direction: column;
                 text-align: center;
                 gap: 10px;
             }
-            
+
             .resultado-details {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="verificar-page">
         <div class="verificar-header">
             <h1>Verificar Estado de Membresía</h1>
             <p>Consulta el estado de tu membresía en la Generación Diplomática del Beni</p>
         </div>
-        
+
         <div class="verificar-container">
             <div class="verificar-card">
                 <div class="renewal-notice">
                     <i class="fas fa-info-circle"></i>
-                    <strong>Recordatorio:</strong> La membresía se renueva automáticamente cada 14 de mes. 
+                    <strong>Recordatorio:</strong> La membresía se renueva automáticamente cada 14 de mes.
                     Pasada esta fecha sin pago, el estado cambia a "Deudor".
                 </div>
-                
+
                 <form id="verificarForm" class="verificar-form">
                     <div class="form-group">
                         <label for="nombreVerificar">Nombre Completo</label>
-                        <input type="text" id="nombreVerificar" name="nombreVerificar" placeholder="Ej: ADRIAN SUAREZ SUAREZ" required>
+                        <input type="text" id="nombreVerificar" name="nombreVerificar"
+                            placeholder="Ej: ADRIAN SUAREZ SUAREZ" required>
                     </div>
-                    
+
                     <button type="submit" class="verificar-btn">Verificar Mi Estado</button>
                 </form>
-                
+
                 <div id="resultadoContainer" class="resultado-container">
                     <!-- Resultado se mostrará aquí -->
                 </div>
-                
+
                 <div class="verificar-actions" id="verificarActions" style="display: none;">
                     <a href="enviar-comprobante.html" class="action-link pagar">
                         <i class="fas fa-qrcode"></i> Pagar Membresía con QR
@@ -274,202 +297,130 @@
                         <i class="fas fa-envelope"></i> Contactar al Secretario de Finanzas
                     </a>
                 </div>
-                
+
                 <a href="login-membresias.html" class="back-link">
                     <i class="fas fa-arrow-left"></i> Volver al inicio
                 </a>
             </div>
         </div>
     </div>
-    
+
     <script>
         // Función para verificar si un miembro está al día basado en fecha de renovación (14 de cada mes)
         function verificarEstadoPorFecha(ultimaActualizacion) {
             const hoy = new Date();
             const fechaActualizacion = new Date(ultimaActualizacion);
-            
+
             // Obtener el día del mes actual
             const diaDelMes = hoy.getDate();
-            
+
             // Si hoy es después del 14 y la última actualización fue antes del 14 del mes actual
             if (diaDelMes >= 14) {
                 const mesActual = hoy.getMonth();
                 const añoActual = hoy.getFullYear();
                 const fechaLimite = new Date(añoActual, mesActual, 14);
-                
+
                 // Si la última actualización es anterior al 14 del mes actual
                 if (fechaActualizacion < fechaLimite) {
                     return 'deudor';
                 }
             }
-            
+
             // Verificar si la última actualización fue en el mes anterior
             const mesPasado = new Date();
             mesPasado.setMonth(mesPasado.getMonth() - 1);
-            
-            if (fechaActualizacion.getMonth() < mesPasado.getMonth() || 
+
+            if (fechaActualizacion.getMonth() < mesPasado.getMonth() ||
                 fechaActualizacion.getFullYear() < mesPasado.getFullYear()) {
                 return 'deudor';
             }
-            
+
             return 'al-dia';
         }
-        
+
         // Cargar datos de miembros desde localStorage
         function cargarMiembrosDesdeLocalStorage() {
             const datosGuardados = localStorage.getItem('miembrosGDB');
             if (datosGuardados) {
                 return JSON.parse(datosGuardados);
             }
-            
+
             // Datos por defecto si no hay nada en localStorage
             return [
-                { 
-                    id: 1, 
-                    nombre: "ADRIAN SUAREZ SUAREZ", 
-                    cargo: "Presidente Departamental", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-20",
-                    imagen: "img/adrian.jpeg" 
-                },
-                { 
-                    id: 2, 
-                    nombre: "ARIANA QUIROZ ORTIZ", 
-                    cargo: "Vicepresidente Departamental", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-15",
-                    imagen: "img/ariana.jpeg" 
-                },
-                { 
-                    id: 3, 
-                    nombre: "MILTON THIAGO VACA VALDEZ", 
-                    cargo: "Secretario General Adjunto", 
-                    departamento: "Beni", 
-                    estado: "deudor", 
-                    ultimaActualizacion: "2024-12-10",
-                    imagen: "img/milton.jpeg" 
-                },
-                { 
-                    id: 4, 
-                    nombre: "JULIO ANTONIO NUNEZ VELA BALCAZAR", 
-                    cargo: "Subsecretario Adjunto", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-18",
-                    imagen: "img/julio.jpeg" 
-                },
-                { 
-                    id: 5, 
-                    nombre: "MATÍAS JUSTINIANO ELORRIAGA", 
-                    cargo: "Secretario de Relaciones Internacionales", 
-                    departamento: "Beni", 
-                    estado: "deudor", 
-                    ultimaActualizacion: "2024-11-30",
-                    imagen: "img/matias.jpeg" 
-                },
-                { 
-                    id: 6, 
-                    nombre: "GUSTAVO GABRIEL ARAMAYO TELLEZ", 
-                    cargo: "Secretario de Recursos Financieros", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-10",
-                    imagen: "img/gustabo.jpeg" 
-                },
-                { 
-                    id: 7, 
-                    nombre: "JORGE GABRIEL CHAVEZ BABERY", 
-                    cargo: "Organizador Social", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-12",
-                    imagen: "img/jorge.jpeg" 
-                },
-                { 
-                    id: 8, 
-                    nombre: "AYLA SANCHEZ ANEZ", 
-                    cargo: "Sub Organizador Social", 
-                    departamento: "Beni", 
-                    estado: "deudor", 
-                    ultimaActualizacion: "2024-12-20",
-                    imagen: "img/Ayla.jpeg" 
-                },
-                { 
-                    id: 9, 
-                    nombre: "VICTORIA LLAPIZ BURTON", 
-                    cargo: "Secretaria de Protocolo", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-05",
-                    imagen: "img/victoria.jpeg" 
-                },
-                { 
-                    id: 10, 
-                    nombre: "MIGUEL MORALES VARGAS", 
-                    cargo: "Secretario de Capacitación", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-08",
-                    imagen: "img/miguel.jpeg" 
-                },
-                { 
-                    id: 11, 
-                    nombre: "NATANAEL VARGAS ARIAS", 
-                    cargo: "Subsecretario de Capacitación", 
-                    departamento: "Beni", 
-                    estado: "deudor", 
-                    ultimaActualizacion: "2024-12-15",
-                    imagen: "img/nata.jpeg" 
-                },
-                { 
-                    id: 12, 
-                    nombre: "WENDY STEPHANY ROJAS CORTEZ", 
-                    cargo: "Secretaria de Marketing y Comunicación", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-14",
-                    imagen: "img/wendy.jpeg" 
-                },
-                { 
-                    id: 13, 
-                    nombre: "VIVIANA ISABELLA SAUMA GARCIA", 
-                    cargo: "Subsecretaria de Marketing y Comunicación", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-16",
-                    imagen: "img/isabela.jpeg" 
-                },
-                { 
-                    id: 14, 
-                    nombre: "BIANKA ISABELLA SUAREZ SUAREZ", 
-                    cargo: "Delegada de Marketing", 
-                    departamento: "Beni", 
-                    estado: "al-dia", 
-                    ultimaActualizacion: "2025-01-19",
-                    imagen: "img/bianka.jpeg" 
-                }
+                // Directiva
+                { id: 1, nombre: "ADRIAN SUAREZ SUAREZ", cargo: "Presidente Departamental", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-20", tipo: "directiva" },
+                { id: 2, nombre: "ARIANA QUIROZ ORTIZ", cargo: "Vicepresidente Departamental", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-15", tipo: "directiva" },
+                { id: 3, nombre: "MILTON THIAGO VACA VALDEZ", cargo: "Secretario General Adjunto", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-12-10", tipo: "directiva" },
+                { id: 4, nombre: "JULIO ANTONIO NUNEZ VELA BALCAZAR", cargo: "Subsecretario Adjunto", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-18", tipo: "directiva" },
+                { id: 5, nombre: "MATÍAS JUSTINIANO ELORRIAGA", cargo: "Secretario de Relaciones Internacionales", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-11-30", tipo: "directiva" },
+                { id: 6, nombre: "GUSTAVO GABRIEL ARAMAYO TELLEZ", cargo: "Secretario de Recursos Financieros", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-10", tipo: "directiva" },
+                { id: 7, nombre: "JORGE GABRIEL CHAVEZ BABERY", cargo: "Organizador Social", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-12", tipo: "directiva" },
+                { id: 8, nombre: "AYLA SANCHEZ ANEZ", cargo: "Sub Organizador Social", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-12-20", tipo: "directiva" },
+                { id: 9, nombre: "VICTORIA LLAPIZ BURTON", cargo: "Secretaria de Protocolo", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-05", tipo: "directiva" },
+                { id: 10, nombre: "MIGUEL MORALES VARGAS", cargo: "Secretario de Capacitación", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-08", tipo: "directiva" },
+                { id: 11, nombre: "NATANAEL VARGAS ARIAS", cargo: "Subsecretario de Capacitación", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-12-15", tipo: "directiva" },
+                { id: 12, nombre: "WENDY STEPHANY ROJAS CORTEZ", cargo: "Secretaria de Marketing y Comunicación", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-14", tipo: "directiva" },
+                { id: 13, nombre: "VIVIANA ISABELLA SAUMA GARCIA", cargo: "Subsecretaria de Marketing y Comunicación", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-16", tipo: "directiva" },
+                { id: 14, nombre: "BIANKA ISABELLA SUAREZ SUAREZ", cargo: "Delegada de Marketing", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-19", tipo: "directiva" },
+
+                // Delegados
+                { id: 15, nombre: "ANGEL PADILLA TEREBA", cargo: "Debate y Representación", telefono: "67351540", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+                { id: 16, nombre: "AVRIL FABIANA LUIZAGA MARTINEZ", cargo: "Debate y Representación", telefono: "63276492", estado: "al-dia", ultimaActualizacion: "2025-01-15", tipo: "delegado" },
+                { id: 17, nombre: "BIANCA PAOLA BARRIOS PERALTA", cargo: "Marketing", telefono: "73948684", estado: "al-dia", ultimaActualizacion: "2025-01-10", tipo: "delegado" },
+                { id: 18, nombre: "BIANKA ISABELA SUÁREZ SUÁREZ", cargo: "Marketing", telefono: "69363992", estado: "al-dia", ultimaActualizacion: "2025-01-19", tipo: "delegado" },
+                { id: 19, nombre: "CARLA VILLARROEL BERNABE", cargo: "Acción Social y Voluntariado", telefono: "71899871", estado: "al-dia", ultimaActualizacion: "2025-01-12", tipo: "delegado" },
+                { id: 20, nombre: "CLAUDIA COIMBRA ALGARAÑAZ", cargo: "Debate y Representación", telefono: "75564076", estado: "deudor", ultimaActualizacion: "2024-11-20", tipo: "delegado" },
+                { id: 21, nombre: "EXHAL CRISTAL GÓMEZ CAERO", cargo: "Acción Social y Voluntariado", telefono: "72815812", estado: "deudor", ultimaActualizacion: "2024-11-25", tipo: "delegado" },
+                { id: 22, nombre: "FREDDY HURTADO QUEVEDO", cargo: "Acción Social y Voluntariado", telefono: "67876310", estado: "al-dia", ultimaActualizacion: "2025-01-18", tipo: "delegado" },
+                { id: 23, nombre: "GUSTAVOHOF HURTADO HURTADO", cargo: "Debate y Representación", telefono: "76861487", estado: "deudor", ultimaActualizacion: "2024-10-15", tipo: "delegado" },
+                { id: 24, nombre: "HERNAN GUITERAS ALCAZAR", cargo: "Acción Social y Voluntariado", telefono: "71125125", estado: "deudor", ultimaActualizacion: "2024-10-10", tipo: "delegado" },
+                { id: 25, nombre: "JHOAN SEBASTIAN SUÁREZ LEIGUE", cargo: "Marketing", telefono: "74605590", estado: "deudor", ultimaActualizacion: "2024-11-30", tipo: "delegado" },
+                { id: 26, nombre: "JHONNY SUÁREZ JUSTINIANO", cargo: "Acción Social y Voluntariado", telefono: "63281245", estado: "al-dia", ultimaActualizacion: "2025-01-14", tipo: "delegado" },
+                { id: 27, nombre: "JOSE ELIAS MUÑOZ NAJAR SAUCEDO", cargo: "Debate y Representación", telefono: "69685426", estado: "al-dia", ultimaActualizacion: "2025-01-16", tipo: "delegado" },
+                { id: 28, nombre: "LUCKAS SUÁREZ HEREDIA", cargo: "Debate y Representación", telefono: "67075492", estado: "al-dia", ultimaActualizacion: "2025-01-17", tipo: "delegado" },
+                { id: 29, nombre: "JOSUÉ DAVID GUTIÉRREZ ORTIZ", cargo: "Debate y Representación", telefono: "63503244", estado: "deudor", ultimaActualizacion: "2024-12-05", tipo: "delegado" },
+                { id: 30, nombre: "JUAN PABLO CHÁVEZ ZAMBRANO", cargo: "Debate y Representación", telefono: "71131445", estado: "al-dia", ultimaActualizacion: "2025-01-13", tipo: "delegado" },
+                { id: 31, nombre: "JUAN PABLO GÓMEZ MEJÍA", cargo: "Debate y Representación", telefono: "71123433", estado: "deudor", ultimaActualizacion: "2024-11-28", tipo: "delegado" },
+                { id: 32, nombre: "JULIANA RIBEIRO BARBA", cargo: "Marketing", telefono: "69389288", estado: "al-dia", ultimaActualizacion: "2025-01-11", tipo: "delegado" },
+                { id: 33, nombre: "KAMILA RUBI CALLE ZAMBRANA", cargo: "Acción Social y Voluntariado", telefono: "72827570", estado: "al-dia", ultimaActualizacion: "2025-01-20", tipo: "delegado" },
+                { id: 34, nombre: "KLAUS WENDES MONASTERIO", cargo: "Acción Social y Voluntariado", telefono: "75620015", estado: "al-dia", ultimaActualizacion: "2025-01-09", tipo: "delegado" },
+                { id: 35, nombre: "LINA SOFÍA MASCAYA MOCHO", cargo: "Debate y Representación", telefono: "73908607", estado: "al-dia", ultimaActualizacion: "2025-01-21", tipo: "delegado" },
+                { id: 36, nombre: "LUCIANA EMILY HERRERA CAERO", cargo: "Acción Social y Voluntariado", telefono: "74704715", estado: "al-dia", ultimaActualizacion: "2025-01-07", tipo: "delegado" },
+                { id: 37, nombre: "MARÍA TERESA SOTOMAYOR RODRIGUEZ", cargo: "Acción Social y Voluntariado", telefono: "68950816", estado: "al-dia", ultimaActualizacion: "2025-01-08", tipo: "delegado" },
+                { id: 38, nombre: "MARIANA NIKOL ARAUZ ARDAYA", cargo: "Debate y Representación", telefono: "68129069", estado: "al-dia", ultimaActualizacion: "2025-01-06", tipo: "delegado" },
+                { id: 39, nombre: "MARIEL TRUJILLO MONTENEGRO", cargo: "Marketing", telefono: "69042176", estado: "al-dia", ultimaActualizacion: "2025-01-22", tipo: "delegado" },
+                { id: 40, nombre: "MARY CARMEN SAAVEDRA SARAVIA", cargo: "Debate y Representación", telefono: "76881151", estado: "al-dia", ultimaActualizacion: "2025-01-23", tipo: "delegado" },
+                { id: 41, nombre: "MELANY ACEVEDO CÓRDOVA", cargo: "Debate y Representación", telefono: "72129193", estado: "al-dia", ultimaActualizacion: "2025-01-24", tipo: "delegado" },
+                { id: 42, nombre: "NURIA ANGELICA ENRIQUEZ LLAPIZ", cargo: "Debate y Representación", telefono: "67289121", estado: "al-dia", ultimaActualizacion: "2025-01-25", tipo: "delegado" },
+                { id: 43, nombre: "PEDRO JOEL ROJAS PEÑA", cargo: "Acción Social y Voluntariado", telefono: "77676001", estado: "al-dia", ultimaActualizacion: "2025-01-26", tipo: "delegado" },
+                { id: 44, nombre: "SARAH STHEFANNY FLORES LIMACHI", cargo: "Debate y Representación", telefono: "68958125", estado: "al-dia", ultimaActualizacion: "2025-01-27", tipo: "delegado" },
+                { id: 45, nombre: "SHARLOTTE SUÁREZ ARTEAGA", cargo: "Marketing", telefono: "78379147", estado: "al-dia", ultimaActualizacion: "2025-01-28", tipo: "delegado" },
+                { id: 46, nombre: "THIAGO PUERTA CHÁVEZ", cargo: "Acción Social y Voluntariado", telefono: "76872767", estado: "al-dia", ultimaActualizacion: "2025-01-29", tipo: "delegado" },
+                { id: 47, nombre: "XIOMARA AÑEZ ROCHA", cargo: "Debate y Representación", telefono: "72811925", estado: "al-dia", ultimaActualizacion: "2025-01-30", tipo: "delegado" },
+                { id: 48, nombre: "ZAMARA MOTORRA LÓPEZ", cargo: "Acción Social y Voluntariado", telefono: "73916775", estado: "al-dia", ultimaActualizacion: "2025-01-31", tipo: "delegado" },
+                { id: 49, nombre: "ZAMIRA JAZMÍN DÍEZ SORIA", cargo: "Debate y Representación", telefono: "76861777", estado: "al-dia", ultimaActualizacion: "2025-02-01", tipo: "delegado" },
+                { id: 50, nombre: "KIARA ZAMIRA COCA JARE", cargo: "Debate y Representación", telefono: "77466005", estado: "al-dia", ultimaActualizacion: "2025-02-02", tipo: "delegado" },
+                { id: 51, nombre: "SAMANTHA NATALIA CORTEZ VEGA", cargo: "Debate y Representación", telefono: "73779747", estado: "deudor", ultimaActualizacion: "2024-12-25", tipo: "delegado" }
             ];
         }
-        
-        document.getElementById('verificarForm').addEventListener('submit', function(e) {
+
+        document.getElementById('verificarForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const nombre = document.getElementById('nombreVerificar').value.trim().toUpperCase();
             const resultadoContainer = document.getElementById('resultadoContainer');
             const verificarActions = document.getElementById('verificarActions');
-            
+
             // Cargar miembros
             const miembrosGDB = cargarMiembrosDesdeLocalStorage();
-            
+
             // Buscar miembro (búsqueda más flexible que incluya coincidencias parciales)
-            const miembro = miembrosGDB.find(m => 
-                m.nombre.toUpperCase() === nombre || 
+            const miembro = miembrosGDB.find(m =>
+                m.nombre.toUpperCase() === nombre ||
                 m.nombre.toUpperCase().includes(nombre) ||
                 nombre.includes(m.nombre.toUpperCase())
             );
-            
+
             if (!miembro) {
                 resultadoContainer.innerHTML = `
                     <div style="text-align: center; padding: 30px;">
@@ -478,13 +429,13 @@
                         <p>No se encontró un miembro con ese nombre. Verifica que el nombre esté escrito correctamente.</p>
                         <p style="font-size: 0.9rem; color: #777; margin-top: 15px;">
                             <strong>Ejemplos de nombres válidos:</strong><br>
-                            ADRIAN SUAREZ SUAREZ<br>
-                            ARIANA QUIROZ ORTIZ<br>
-                            MILTON THIAGO VACA VALDEZ<br>
-                            MATÍAS JUSTINIANO ELORRIAGA
+                            ADRIAN SUAREZ SUAREZ (Directiva)<br>
+                            ANGEL PADILLA TEREBA (Delegado)<br>
+                            AVRIL FABIANA LUIZAGA MARTINEZ (Delegado)<br>
+                            BIANCA PAOLA BARRIOS PERALTA (Delegado)
                         </p>
                         <p style="font-size: 0.9rem; color: #777; margin-top: 10px;">
-                            <strong>Nota:</strong> Asegúrate de escribir tu nombre completo tal como aparece en el directorio de GDB.
+                            <strong>Nota:</strong> Asegúrate de escribir tu nombre completo tal como aparece en el registro de GDB.
                         </p>
                     </div>
                 `;
@@ -493,7 +444,7 @@
                 verificarActions.style.display = 'none';
                 return;
             }
-            
+
             // Verificar estado basado en fecha
             const estadoActual = verificarEstadoPorFecha(miembro.ultimaActualizacion);
             const esAlDia = estadoActual === 'al-dia';
@@ -501,12 +452,12 @@
             const estadoClase = esAlDia ? 'resultado-al-dia' : 'resultado-deudor';
             const icono = esAlDia ? 'fa-check-circle' : 'fa-exclamation-circle';
             const iconoClase = esAlDia ? 'al-dia-icon' : 'deudor-icon';
-            
+
             // Obtener información de la fecha
             const hoy = new Date();
             const diaDelMes = hoy.getDate();
             let mensajeRenovacion = '';
-            
+
             if (diaDelMes >= 14 && !esAlDia) {
                 mensajeRenovacion = `
                     <div style="margin-top: 15px; padding: 12px; border-radius: 5px; background-color: #fff3cd; border-left: 4px solid #ffc107;">
@@ -518,26 +469,31 @@
                     </div>
                 `;
             }
-            
+
             resultadoContainer.innerHTML = `
                 <div class="resultado-header">
                     <div class="resultado-icon ${iconoClase}">
                         <i class="fas ${icono}"></i>
                     </div>
                     <div class="resultado-info">
-                        <h3>${miembro.nombre}</h3>
+                        <h3>
+                            ${miembro.nombre}
+                            <span class="tipo-badge tipo-${miembro.tipo}">
+                                ${miembro.tipo === 'directiva' ? 'Directiva' : 'Delegado'}
+                            </span>
+                        </h3>
                         <p><strong>Estado:</strong> ${estadoTexto}</p>
                     </div>
                 </div>
                 
                 <div class="resultado-details">
                     <div class="detail-item">
-                        <div class="detail-label">Cargo</div>
+                        <div class="detail-label">Cargo/Comisión</div>
                         <div class="detail-value">${miembro.cargo}</div>
                     </div>
                     <div class="detail-item">
-                        <div class="detail-label">Departamento</div>
-                        <div class="detail-value">${miembro.departamento}</div>
+                        <div class="detail-label">${miembro.tipo === 'directiva' ? 'Departamento' : 'Teléfono'}</div>
+                        <div class="detail-value">${miembro.tipo === 'directiva' ? (miembro.departamento || 'Beni') : (miembro.telefono || 'N/A')}</div>
                     </div>
                     <div class="detail-item">
                         <div class="detail-label">Última Actualización</div>
@@ -552,43 +508,43 @@
                 <div style="margin-top: 25px; padding: 15px; border-radius: 5px; background-color: ${esAlDia ? 'rgba(46, 125, 50, 0.1)' : 'rgba(211, 47, 47, 0.1)'};">
                     <p style="margin: 0; color: ${esAlDia ? '#2e7d32' : '#d32f2f'}; font-weight: 500;">
                         <i class="fas ${esAlDia ? 'fa-check' : 'fa-exclamation-triangle'}"></i>
-                        ${esAlDia ? 
-                            '¡Tu membresía está al día! Gracias por mantenerte al corriente con los pagos.' : 
-                            'Tu membresía está pendiente de pago. Regulariza tu situación lo antes posible.'}
+                        ${esAlDia ?
+                    '¡Tu membresía está al día! Gracias por mantenerte al corriente con los pagos.' :
+                    'Tu membresía está pendiente de pago. Regulariza tu situación lo antes posible.'}
                     </p>
                 </div>
                 
                 ${mensajeRenovacion}
             `;
-            
+
             resultadoContainer.className = `resultado-container ${estadoClase}`;
             resultadoContainer.style.display = 'block';
-            
+
             // Mostrar acciones si está en deudor
             verificarActions.style.display = !esAlDia ? 'block' : 'none';
         });
-        
+
         // Sugerencia automática de nombres
         const nombreInput = document.getElementById('nombreVerificar');
-        
-        nombreInput.addEventListener('input', function() {
+
+        nombreInput.addEventListener('input', function () {
             const valor = this.value.toUpperCase();
             if (valor.length > 2) {
                 const miembrosGDB = cargarMiembrosDesdeLocalStorage();
                 const nombresMiembros = miembrosGDB.map(m => m.nombre);
-                
+
                 // Buscar coincidencias
-                const sugerencias = nombresMiembros.filter(nombre => 
+                const sugerencias = nombresMiembros.filter(nombre =>
                     nombre.toUpperCase().includes(valor)
                 );
-                
+
                 if (sugerencias.length > 0) {
                     // Podrías implementar un dropdown de sugerencias aquí si lo deseas
                     console.log('Sugerencias encontradas:', sugerencias);
                 }
             }
         });
-        
+
         // Establecer placeholder dinámico con ejemplo
         window.addEventListener('DOMContentLoaded', () => {
             const miembrosGDB = cargarMiembrosDesdeLocalStorage();
@@ -598,4 +554,5 @@
         });
     </script>
 </body>
+
 </html>

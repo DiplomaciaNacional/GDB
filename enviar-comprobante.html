@@ -7,8 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        .comprobante-page {
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <style>   
+    .comprobante-page {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -260,13 +261,7 @@
                 <div class="qr-section">
                     <h3>Pago por QR</h3>
                     <div class="qr-code">
-                        <!-- Aquí iría el código QR real -->
-                        <div style="text-align: center;">
-                            <div style="width: 150px; height: 150px; background-color: #f0f0f0; display: flex; flex-direction: column; justify-content: center; align-items: center; border-radius: 5px;">
-                                <i class="fas fa-qrcode" style="font-size: 4rem; color: #ccc;"></i>
-                                <div style="margin-top: 10px; font-size: 0.8rem; color: #999;">QR de Pago</div>
-                            </div>
-                        </div>
+                        <img src="img/qr.jpeg" alt="Código QR para Pago de Membresía GDB">
                     </div>
                     
                     <div class="qr-info">
@@ -372,6 +367,9 @@
     </div>
     
     <script>
+        // Inicializar EmailJS con tu Public Key (debes obtenerla de https://www.emailjs.com/)
+        emailjs.init("CoxO9GtieHz00HadP"); // Reemplaza con tu clave pública de EmailJS
+        
         // Mostrar nombre del archivo seleccionado
         document.getElementById('comprobanteFile').addEventListener('change', function(e) {
             const fileName = document.getElementById('fileName');
@@ -393,33 +391,63 @@
                 return;
             }
             
-            // Aquí normalmente se enviaría el formulario a un servidor
-            // Para este prototipo, simularemos el envío
+            // Mostrar indicador de carga
+            const submitBtn = document.querySelector('.comprobante-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            submitBtn.disabled = true;
             
-            // Mostrar mensaje de éxito
-            document.getElementById('mensajeExito').style.display = 'block';
-            document.getElementById('comprobanteForm').style.display = 'none';
+            // Preparar datos para EmailJS
+            const file = fileInput.files[0];
             
-            // Guardar en localStorage para que el admin pueda verlo
-            const datos = {
-                nombre: document.getElementById('nombreComprobante').value,
+            const templateParams = {
+                from_name: document.getElementById('nombreComprobante').value,
+                from_email: document.getElementById('emailComprobante').value,
                 cargo: document.getElementById('cargoComprobante').value,
                 telefono: document.getElementById('telefonoComprobante').value,
-                email: document.getElementById('emailComprobante').value,
-                fechaPago: document.getElementById('fechaPago').value,
-                metodoPago: document.getElementById('metodoPago').value,
+                fecha_pago: document.getElementById('fechaPago').value,
+                metodo_pago: document.getElementById('metodoPago').value,
                 observaciones: document.getElementById('observaciones').value,
-                fechaEnvio: new Date().toISOString(),
-                estado: 'pendiente'
+                to_email: 'carlitosyverjustiniano@gmail.com',
+                subject: 'Nuevo Comprobante de Pago - GDB',
+                message: `Se ha recibido un nuevo comprobante de pago de ${document.getElementById('nombreComprobante').value}`,
+                attachment: file // Adjuntar el archivo
             };
             
-            // Obtener comprobantes existentes o crear array nuevo
-            let comprobantes = JSON.parse(localStorage.getItem('comprobantesGDB') || '[]');
-            comprobantes.push(datos);
-            localStorage.setItem('comprobantesGDB', JSON.stringify(comprobantes));
-            
-            // También podríamos enviar un correo al secretario de finanzas aquí
-            // utilizando un servicio como EmailJS o Formspree
+            // Enviar email con EmailJS
+            emailjs.send('service_il9f34h', 'template_zmfjth6', templateParams)
+                .then(function(response) {
+                    console.log('Email enviado exitosamente!', response.status, response.text);
+                    
+                    // Mostrar mensaje de éxito
+                    document.getElementById('mensajeExito').style.display = 'block';
+                    document.getElementById('comprobanteForm').style.display = 'none';
+                    
+                    // También guardar en localStorage como respaldo
+                    const datos = {
+                        nombre: document.getElementById('nombreComprobante').value,
+                        cargo: document.getElementById('cargoComprobante').value,
+                        telefono: document.getElementById('telefonoComprobante').value,
+                        email: document.getElementById('emailComprobante').value,
+                        fechaPago: document.getElementById('fechaPago').value,
+                        metodoPago: document.getElementById('metodoPago').value,
+                        observaciones: document.getElementById('observaciones').value,
+                        fechaEnvio: new Date().toISOString(),
+                        estado: 'enviado'
+                    };
+                    
+                    let comprobantes = JSON.parse(localStorage.getItem('comprobantesGDB') || '[]');
+                    comprobantes.push(datos);
+                    localStorage.setItem('comprobantesGDB', JSON.stringify(comprobantes));
+                    
+                }, function(error) {
+                    console.log('Error al enviar email:', error);
+                    alert('Error al enviar el comprobante. Por favor, intenta nuevamente o contacta al administrador.');
+                    
+                    // Restaurar botón
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
         });
         
         // Establecer fecha máxima como hoy y mínima como 30 días atrás
