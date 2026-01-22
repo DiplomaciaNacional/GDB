@@ -317,20 +317,6 @@
             color: var(--medium-gray);
         }
 
-        .export-btn {
-            background-color: var(--burgundy);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
         .renewal-info {
             background-color: #e3f2fd;
             border-left: 4px solid #2196f3;
@@ -414,31 +400,6 @@
                 font-size: 0.9rem;
             }
         }
-
-        /* Agregar al final del bloque <style> en el head */
-        .loading-export {
-            position: relative;
-        }
-
-        .loading-export::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 20px;
-            height: 20px;
-            margin: -10px 0 0 -10px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
     </style>
 </head>
 
@@ -507,10 +468,6 @@
                 <p>Intenta con otros términos de búsqueda</p>
             </div>
         </div>
-
-        <button class="export-btn" id="exportBtn">
-            <i class="fas fa-file-export"></i> Exportar a Excel
-        </button>
     </div>
 
     <!-- Modal para cambiar estado -->
@@ -539,7 +496,7 @@
     </div>
 
     <script>
-        // Datos de la directiva (manteniendo los existentes)
+        // Datos de la directiva
         const directivaGDB = [
             {
                 id: 1,
@@ -683,7 +640,7 @@
             }
         ];
 
-        // Datos de delegados (extraídos del Excel)
+        // Datos de delegados
         const delegadosGDB = [
             { id: 15, nombre: "ANGEL PADILLA TEREBA", cargo: "Debate y Representación", telefono: "67351540", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
             { id: 16, nombre: "AVRIL FABIANA LUIZAGA MARTINEZ", cargo: "Debate y Representación", telefono: "63276492", estado: "al-dia", ultimaActualizacion: "2025-01-15", tipo: "delegado" },
@@ -973,49 +930,6 @@
             document.getElementById('statusModal').style.display = 'flex';
         }
 
-        // Función para exportar a Excel
-        function exportarAExcel() {
-            // Crear datos para exportar
-            const datos = miembrosGDB.map(m => ({
-                "Tipo": m.tipo === 'directiva' ? 'Directiva' : 'Delegado',
-                "Nombre": m.nombre,
-                "Cargo/Comisión": m.cargo,
-                "Departamento": m.departamento || 'Beni',
-                "Teléfono": m.telefono || 'N/A',
-                "Estado": m.estado === 'al-dia' ? 'Al Día' : 'Deudor',
-                "Última Actualización": m.ultimaActualizacion
-            }));
-
-            // Convertir a CSV
-            const csv = convertirAExcel(datos);
-
-            // Descargar archivo
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-
-            link.setAttribute('href', url);
-            link.setAttribute('download', `membresias_gdb_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function convertirAExcel(datos) {
-            if (datos.length === 0) return '';
-
-            const encabezados = Object.keys(datos[0]);
-            const filas = datos.map(fila =>
-                encabezados.map(encabezado =>
-                    `"${fila[encabezado]}"`
-                ).join(',')
-            );
-
-            return [encabezados.join(','), ...filas].join('\n');
-        }
-
         // Event Listeners
         document.addEventListener('DOMContentLoaded', () => {
             // Cargar datos desde localStorage si existen
@@ -1036,7 +950,7 @@
 
             // Inicializar estados
             inicializarEstados();
-
+            
             cargarMiembros();
 
             // Pestañas
@@ -1115,9 +1029,6 @@
                     estadoSeleccionado = "";
                 }
             });
-
-            // Exportar
-            document.getElementById('exportBtn').addEventListener('click', exportarAExcel);
 
             // Cerrar sesión
             document.getElementById('logoutBtn').addEventListener('click', () => {
