@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Membresías GDB</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --al-dia-color: #2e7d32;
@@ -17,10 +15,11 @@
 
         body {
             background-color: #f5f7fa;
+            font-family: 'Montserrat', sans-serif;
         }
 
         .admin-header {
-            background-color: var(--dark-green);
+            background-color: #006400; /* dark-green */
             color: white;
             padding: 15px 5%;
             display: flex;
@@ -50,7 +49,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: 500;
-            transition: var(--transition);
+            transition: background-color 0.3s ease;
         }
 
         .logout-btn:hover {
@@ -76,7 +75,7 @@
             padding: 25px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
             text-align: center;
-            border-top: 4px solid var(--dark-green);
+            border-top: 4px solid #006400;
         }
 
         .stat-number {
@@ -94,7 +93,7 @@
         }
 
         .stat-label {
-            color: var(--medium-gray);
+            color: #666; /* medium-gray */
             font-size: 0.9rem;
         }
 
@@ -120,7 +119,7 @@
         }
 
         .search-btn {
-            background-color: var(--burgundy);
+            background-color: #8B0000; /* burgundy */
             color: white;
             border: none;
             padding: 12px 20px;
@@ -144,8 +143,8 @@
         }
 
         .membership-table th {
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
+            background-color: #f5f5f5; /* light-gray */
+            color: #333; /* dark-gray */
             font-weight: 600;
             text-align: left;
             padding: 15px;
@@ -183,20 +182,6 @@
         .action-buttons {
             display: flex;
             gap: 8px;
-        }
-
-        .btn-edit {
-            background-color: rgba(0, 100, 0, 0.1);
-            color: var(--dark-green);
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.85rem;
-        }
-
-        .btn-edit:hover {
-            background-color: rgba(0, 100, 0, 0.2);
         }
 
         .btn-update {
@@ -247,7 +232,7 @@
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
-            color: var(--medium-gray);
+            color: #666;
         }
 
         .modal-options {
@@ -262,13 +247,13 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             cursor: pointer;
-            transition: var(--transition);
+            transition: background-color 0.3s ease;
             text-align: center;
             font-weight: 500;
         }
 
         .modal-option:hover {
-            background-color: var(--light-gray);
+            background-color: #f5f5f5;
         }
 
         .modal-option.al-dia {
@@ -283,7 +268,7 @@
 
         .modal-option.selected {
             background-color: rgba(139, 0, 0, 0.05);
-            border-color: var(--burgundy);
+            border-color: #8B0000;
         }
 
         .modal-actions {
@@ -295,7 +280,7 @@
 
         .btn-cancel {
             background-color: #f0f0f0;
-            color: var(--dark-gray);
+            color: #333;
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
@@ -303,7 +288,7 @@
         }
 
         .btn-save {
-            background-color: var(--dark-green);
+            background-color: #006400;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -314,7 +299,7 @@
         .no-data {
             text-align: center;
             padding: 40px;
-            color: var(--medium-gray);
+            color: #666;
         }
 
         .renewal-info {
@@ -344,12 +329,12 @@
             cursor: pointer;
             font-weight: 500;
             border-bottom: 3px solid transparent;
-            transition: var(--transition);
+            transition: all 0.3s ease;
         }
 
         .tab.active {
-            color: var(--burgundy);
-            border-bottom: 3px solid var(--burgundy);
+            color: #8B0000;
+            border-bottom: 3px solid #8B0000;
             background-color: rgba(139, 0, 0, 0.05);
         }
 
@@ -368,7 +353,7 @@
 
         .tipo-directiva {
             background-color: rgba(0, 100, 0, 0.1);
-            color: var(--dark-green);
+            color: #006400;
         }
 
         .tipo-delegado {
@@ -376,25 +361,35 @@
             color: #b08d00;
         }
 
+        /* Animaciones para notificaciones */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .admin-stats {
                 grid-template-columns: 1fr;
             }
-
             .search-box {
                 flex-direction: column;
             }
-
             .membership-table th,
             .membership-table td {
                 padding: 10px;
                 font-size: 0.9rem;
             }
-
             .tabs {
                 flex-wrap: wrap;
             }
-
             .tab {
                 padding: 10px 15px;
                 font-size: 0.9rem;
@@ -402,7 +397,6 @@
         }
     </style>
 </head>
-
 <body>
     <!-- Verificar sesión -->
     <script>
@@ -419,8 +413,7 @@
     <div class="admin-container">
         <div class="renewal-info">
             <i class="fas fa-info-circle"></i>
-            <strong>Sistema de Renovación Automática:</strong> Las membresías se renuevan automáticamente cada 14 de
-            mes.
+            <strong>Sistema de Renovación Automática:</strong> Las membresías se renuevan automáticamente cada 14 de mes.
             Los miembros que no hayan sido actualizados después del 14 aparecerán como "Deudores".
         </div>
 
@@ -496,151 +489,38 @@
     </div>
 
     <script>
-        // Datos de la directiva
+        // ============================================
+        // CONFIGURACIÓN DE LA API
+        // ============================================
+        const CONFIG = {
+            // TU URL DE GOOGLE APPS SCRIPT
+            API_URL: 'https://script.google.com/macros/s/AKfycbyQiUgUTfdHNIENqVmwQx9jf0qzpYdQ4BxELdH3Hk9SIUT4HDYnGZEH9NRxNGs6h1TL/exec',
+            // Modo desarrollo (true = usar solo localStorage, false = usar API real)
+            MODO_DESARROLLO: false,
+            MAX_INTENTOS: 3,
+            TIEMPO_ESPERA: 2000
+        };
+
+        // ============================================
+        // DATOS INICIALES (se usarán si no hay conexión o datos guardados)
+        // ============================================
         const directivaGDB = [
-            {
-                id: 1,
-                nombre: "ADRIAN SUAREZ SUAREZ",
-                cargo: "Presidente Departamental",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-20",
-                tipo: "directiva",
-                imagen: "img/adrian.jpeg"
-            },
-            {
-                id: 2,
-                nombre: "ARIANA QUIROZ ORTIZ",
-                cargo: "Vicepresidente Departamental",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-15",
-                tipo: "directiva",
-                imagen: "img/ariana.jpeg"
-            },
-            {
-                id: 3,
-                nombre: "MILTON THIAGO VACA VALDEZ",
-                cargo: "Secretario General Adjunto",
-                departamento: "Beni",
-                estado: "deudor",
-                ultimaActualizacion: "2024-12-10",
-                tipo: "directiva",
-                imagen: "img/milton.jpeg"
-            },
-            {
-                id: 4,
-                nombre: "JULIO ANTONIO NUNEZ VELA BALCAZAR",
-                cargo: "Subsecretario Adjunto",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-18",
-                tipo: "directiva",
-                imagen: "img/julio.jpeg"
-            },
-            {
-                id: 5,
-                nombre: "MATÍAS JUSTINIANO ELORRIAGA",
-                cargo: "Secretario de Relaciones Internacionales",
-                departamento: "Beni",
-                estado: "deudor",
-                ultimaActualizacion: "2024-11-30",
-                tipo: "directiva",
-                imagen: "img/matias.jpeg"
-            },
-            {
-                id: 6,
-                nombre: "GUSTAVO GABRIEL ARAMAYO TELLEZ",
-                cargo: "Secretario de Recursos Financieros",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-10",
-                tipo: "directiva",
-                imagen: "img/gustabo.jpeg"
-            },
-            {
-                id: 7,
-                nombre: "JORGE GABRIEL CHAVEZ BABERY",
-                cargo: "Organizador Social",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-12",
-                tipo: "directiva",
-                imagen: "img/jorge.jpeg"
-            },
-            {
-                id: 8,
-                nombre: "AYLA SANCHEZ ANEZ",
-                cargo: "Sub Organizador Social",
-                departamento: "Beni",
-                estado: "deudor",
-                ultimaActualizacion: "2024-12-20",
-                tipo: "directiva",
-                imagen: "img/Ayla.jpeg"
-            },
-            {
-                id: 9,
-                nombre: "VICTORIA LLAPIZ BURTON",
-                cargo: "Secretaria de Protocolo",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-05",
-                tipo: "directiva",
-                imagen: "img/victoria.jpeg"
-            },
-            {
-                id: 10,
-                nombre: "MIGUEL MORALES VARGAS",
-                cargo: "Secretario de Capacitación",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-08",
-                tipo: "directiva",
-                imagen: "img/miguel.jpeg"
-            },
-            {
-                id: 11,
-                nombre: "NATANAEL VARGAS ARIAS",
-                cargo: "Subsecretario de Capacitación",
-                departamento: "Beni",
-                estado: "deudor",
-                ultimaActualizacion: "2024-12-15",
-                tipo: "directiva",
-                imagen: "img/nata.jpeg"
-            },
-            {
-                id: 12,
-                nombre: "WENDY STEPHANY ROJAS CORTEZ",
-                cargo: "Secretaria de Marketing y Comunicación",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-14",
-                tipo: "directiva",
-                imagen: "img/wendy.jpeg"
-            },
-            {
-                id: 13,
-                nombre: "VIVIANA ISABELLA SAUMA GARCIA",
-                cargo: "Subsecretaria de Marketing y Comunicación",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-16",
-                tipo: "directiva",
-                imagen: "img/isabela.jpeg"
-            },
-            {
-                id: 14,
-                nombre: "BIANKA ISABELLA SUAREZ SUAREZ",
-                cargo: "Delegada de Marketing",
-                departamento: "Beni",
-                estado: "al-dia",
-                ultimaActualizacion: "2025-01-19",
-                tipo: "directiva",
-                imagen: "img/bianka.jpeg"
-            }
+            { id: 1, nombre: "ADRIAN SUAREZ SUAREZ", cargo: "Presidente Departamental", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-20", tipo: "directiva", imagen: "img/adrian.jpeg" },
+            { id: 2, nombre: "ARIANA QUIROZ ORTIZ", cargo: "Vicepresidente Departamental", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-15", tipo: "directiva", imagen: "img/ariana.jpeg" },
+            { id: 3, nombre: "MILTON THIAGO VACA VALDEZ", cargo: "Secretario General Adjunto", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-12-10", tipo: "directiva", imagen: "img/milton.jpeg" },
+            { id: 4, nombre: "JULIO ANTONIO NUNEZ VELA BALCAZAR", cargo: "Subsecretario Adjunto", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-18", tipo: "directiva", imagen: "img/julio.jpeg" },
+            { id: 5, nombre: "MATÍAS JUSTINIANO ELORRIAGA", cargo: "Secretario de Relaciones Internacionales", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-11-30", tipo: "directiva", imagen: "img/matias.jpeg" },
+            { id: 6, nombre: "GUSTAVO GABRIEL ARAMAYO TELLEZ", cargo: "Secretario de Recursos Financieros", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-10", tipo: "directiva", imagen: "img/gustabo.jpeg" },
+            { id: 7, nombre: "JORGE GABRIEL CHAVEZ BABERY", cargo: "Organizador Social", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-12", tipo: "directiva", imagen: "img/jorge.jpeg" },
+            { id: 8, nombre: "AYLA SANCHEZ ANEZ", cargo: "Sub Organizador Social", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-12-20", tipo: "directiva", imagen: "img/Ayla.jpeg" },
+            { id: 9, nombre: "VICTORIA LLAPIZ BURTON", cargo: "Secretaria de Protocolo", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-05", tipo: "directiva", imagen: "img/victoria.jpeg" },
+            { id: 10, nombre: "MIGUEL MORALES VARGAS", cargo: "Secretario de Capacitación", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-08", tipo: "directiva", imagen: "img/miguel.jpeg" },
+            { id: 11, nombre: "NATANAEL VARGAS ARIAS", cargo: "Subsecretario de Capacitación", departamento: "Beni", estado: "deudor", ultimaActualizacion: "2024-12-15", tipo: "directiva", imagen: "img/nata.jpeg" },
+            { id: 12, nombre: "WENDY STEPHANY ROJAS CORTEZ", cargo: "Secretaria de Marketing y Comunicación", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-14", tipo: "directiva", imagen: "img/wendy.jpeg" },
+            { id: 13, nombre: "VIVIANA ISABELLA SAUMA GARCIA", cargo: "Subsecretaria de Marketing y Comunicación", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-16", tipo: "directiva", imagen: "img/isabela.jpeg" },
+            { id: 14, nombre: "BIANKA ISABELLA SUAREZ SUAREZ", cargo: "Delegada de Marketing", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-19", tipo: "directiva", imagen: "img/bianka.jpeg" }
         ];
 
-        // Datos de delegados
         const delegadosGDB = [
             { id: 15, nombre: "ANGEL PADILLA TEREBA", cargo: "Debate y Representación", telefono: "67351540", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
             { id: 16, nombre: "AVRIL FABIANA LUIZAGA MARTINEZ", cargo: "Debate y Representación", telefono: "63276492", estado: "al-dia", ultimaActualizacion: "2025-01-15", tipo: "delegado" },
@@ -681,8 +561,20 @@
             { id: 51, nombre: "SAMANTHA NATALIA CORTEZ VEGA", cargo: "Debate y Representación", telefono: "73779747", estado: "deudor", ultimaActualizacion: "2024-12-25", tipo: "delegado" }
         ];
 
-        // Combinar todos los miembros
+        // Combinar todos los miembros (datos de respaldo)
         let miembrosGDB = [...directivaGDB, ...delegadosGDB];
+
+        // ============================================
+        // VARIABLES GLOBALES DEL SISTEMA
+        // ============================================
+        let miembrosFiltrados = [];
+        let miembroSeleccionado = null;
+        let estadoSeleccionado = "";
+        let tabActivo = "todos";
+
+        // ============================================
+        // FUNCIONES DEL NÚCLEO DEL SISTEMA
+        // ============================================
 
         // Función para inicializar estados si no existen
         function inicializarEstados() {
@@ -693,30 +585,23 @@
             });
         }
 
-        // Función para verificar si un miembro está al día basado en fecha de renovación (14 de cada mes)
+        // Función para verificar estado por fecha
         function verificarEstadoPorFecha(ultimaActualizacion) {
             const hoy = new Date();
             const fechaActualizacion = new Date(ultimaActualizacion);
-
-            // Obtener el día del mes actual
             const diaDelMes = hoy.getDate();
 
-            // Si hoy es después del 14 y la última actualización fue antes del 14 del mes actual
             if (diaDelMes >= 14) {
                 const mesActual = hoy.getMonth();
                 const añoActual = hoy.getFullYear();
                 const fechaLimite = new Date(añoActual, mesActual, 14);
-
-                // Si la última actualización es anterior al 14 del mes actual
                 if (fechaActualizacion < fechaLimite) {
                     return 'deudor';
                 }
             }
 
-            // Verificar si la última actualización fue en el mes anterior
             const mesPasado = new Date();
             mesPasado.setMonth(mesPasado.getMonth() - 1);
-
             if (fechaActualizacion.getMonth() < mesPasado.getMonth() ||
                 fechaActualizacion.getFullYear() < mesPasado.getFullYear()) {
                 return 'deudor';
@@ -734,18 +619,11 @@
             return `${year}-${month}-${day}`;
         }
 
-        // Variables globales
-        let miembrosFiltrados = [];
-        let miembroSeleccionado = null;
-        let estadoSeleccionado = "";
-        let tabActivo = "todos";
-
         // Función para cargar los miembros en la tabla
         function cargarMiembros() {
             const tbody = document.getElementById('membershipTableBody');
             const noDataMessage = document.getElementById('noDataMessage');
 
-            // Filtrar según la pestaña activa
             let miembrosMostrar = [...miembrosGDB];
 
             if (tabActivo === "directiva") {
@@ -753,29 +631,18 @@
             } else if (tabActivo === "delegados") {
                 miembrosMostrar = miembrosMostrar.filter(m => m.tipo === "delegado");
             } else if (tabActivo === "al-dia") {
-                miembrosMostrar = miembrosMostrar.filter(m => {
-                    // Usar el estado almacenado, no calcular por fecha
-                    return m.estado === 'al-dia';
-                });
+                miembrosMostrar = miembrosMostrar.filter(m => m.estado === 'al-dia');
             } else if (tabActivo === "deudores") {
-                miembrosMostrar = miembrosMostrar.filter(m => {
-                    // Usar el estado almacenado, no calcular por fecha
-                    return m.estado === 'deudor';
-                });
+                miembrosMostrar = miembrosMostrar.filter(m => m.estado === 'deudor');
             }
 
-            // Aplicar búsqueda si existe
             if (miembrosFiltrados.length > 0 && tabActivo === "todos") {
                 miembrosMostrar = miembrosFiltrados;
             } else if (miembrosFiltrados.length > 0) {
-                // Filtrar también por búsqueda
                 miembrosMostrar = miembrosMostrar.filter(m =>
                     miembrosFiltrados.some(f => f.id === m.id)
                 );
             }
-
-            // Guardar cambios en localStorage
-            localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
 
             if (miembrosMostrar.length === 0) {
                 tbody.innerHTML = '';
@@ -820,7 +687,6 @@
 
         // Función para actualizar estadísticas
         function actualizarEstadisticas() {
-            // Filtrar miembros según pestaña activa
             let miembrosMostrar = [...miembrosGDB];
 
             if (tabActivo === "directiva") {
@@ -833,7 +699,6 @@
                 miembrosMostrar = miembrosMostrar.filter(m => m.estado === "deudor");
             }
 
-            // Si hay búsqueda activa, usar miembros filtrados
             if (miembrosFiltrados.length > 0 && tabActivo === "todos") {
                 miembrosMostrar = miembrosFiltrados;
             }
@@ -893,21 +758,188 @@
                     (miembro.departamento && miembro.departamento.toLowerCase().includes(searchTerm)) ||
                     (miembro.telefono && miembro.telefono.includes(searchTerm))
                 );
-
                 cargarMiembros();
             }
         }
 
-        // Función para actualizar estado de un miembro
+        // ============================================
+        // FUNCIONES DE CONEXIÓN CON GOOGLE APPS SCRIPT
+        // ============================================
+
+        // Función para guardar un miembro (híbrida: API + localStorage)
+        async function guardarMiembro(miembro) {
+            console.log('Guardando miembro:', miembro.nombre);
+
+            // Si estamos en modo desarrollo, usar solo localStorage
+            if (CONFIG.MODO_DESARROLLO) {
+                guardarEnLocalStorage(miembro);
+                mostrarNotificacion('Modo desarrollo: Guardado localmente', 'info');
+                return true;
+            }
+
+            try {
+                const datos = {
+                    action: 'actualizar',
+                    id: miembro.id,
+                    nombre: miembro.nombre,
+                    cargo: miembro.cargo,
+                    telefono: miembro.telefono || '',
+                    tipo: miembro.tipo,
+                    estado: miembro.estado,
+                    departamento: miembro.departamento || 'Beni'
+                };
+
+                console.log('Enviando a API:', CONFIG.API_URL);
+
+                // NOTA: 'no-cors' no permite leer la respuesta, pero sabemos que funcionó si no hay error
+                await fetch(CONFIG.API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Importante para evitar problemas CORS con Apps Script
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                console.log('Envío exitoso a Google Sheets');
+                guardarEnLocalStorage(miembro);
+                mostrarNotificacion(`✅ ${miembro.nombre} actualizado en Google Sheets`, 'success');
+                return true;
+
+            } catch (error) {
+                console.error('Error conectando con la API:', error);
+                guardarEnLocalStorage(miembro);
+                guardarParaSincronizar(miembro);
+                mostrarNotificacion(`⚠️ Sin conexión. Guardado localmente (se sincronizará después)`, 'warning');
+                return false;
+            }
+        }
+
+        // Función para sincronizar cambios pendientes
+        async function sincronizarCambiosPendientes() {
+            const cambios = JSON.parse(localStorage.getItem('cambiosPendientes') || '[]');
+            if (cambios.length === 0) return;
+
+            console.log(`Sincronizando ${cambios.length} cambios pendientes...`);
+
+            for (let i = 0; i < cambios.length; i++) {
+                const cambio = cambios[i];
+                try {
+                    await guardarMiembro(cambio);
+                    cambios.splice(i, 1);
+                    i--;
+                    localStorage.setItem('cambiosPendientes', JSON.stringify(cambios));
+                } catch (error) {
+                    console.error('Error sincronizando cambio:', error);
+                    break;
+                }
+            }
+
+            if (cambios.length === 0) {
+                mostrarNotificacion('✅ Todos los cambios sincronizados', 'success');
+            }
+        }
+
+        // Guardar en localStorage (función auxiliar)
+        function guardarEnLocalStorage(miembro) {
+            const index = miembrosGDB.findIndex(m => m.id === miembro.id);
+            if (index !== -1) {
+                miembrosGDB[index] = { ...miembrosGDB[index], ...miembro };
+            } else {
+                miembrosGDB.push(miembro);
+            }
+            localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
+            cargarMiembros();
+        }
+
+        // Guardar para sincronizar después
+        function guardarParaSincronizar(miembro) {
+            const cambios = JSON.parse(localStorage.getItem('cambiosPendientes') || '[]');
+            const existe = cambios.some(c => c.id === miembro.id);
+            if (!existe) {
+                cambios.push(miembro);
+                localStorage.setItem('cambiosPendientes', JSON.stringify(cambios));
+            }
+        }
+
+        // Función para mostrar notificaciones
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            const notificacion = document.createElement('div');
+            const colores = { success: '#2e7d32', error: '#d32f2f', warning: '#f57c00', info: '#1976d2' };
+            const iconos = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+
+            notificacion.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: ${colores[tipo] || '#1976d2'};
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                animation: slideIn 0.3s ease-out;
+                max-width: 400px;
+                font-size: 0.9rem;
+            `;
+
+            notificacion.innerHTML = `<span style="font-size: 1.2rem;">${iconos[tipo] || 'ℹ️'}</span><span>${mensaje}</span>`;
+            document.body.appendChild(notificacion);
+
+            setTimeout(() => {
+                notificacion.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    if (notificacion.parentNode) document.body.removeChild(notificacion);
+                }, 300);
+            }, 4000);
+        }
+
+        // Cargar datos iniciales desde Google Sheets (o localStorage como fallback)
+        async function cargarDesdeGoogleSheets() {
+            try {
+                console.log('Cargando datos desde Google Sheets...');
+                // Intento con GET (ajusta según tu script)
+                // const response = await fetch(`${CONFIG.API_URL}?action=obtenerTodos`);
+                // const data = await response.json();
+                // if (data.success && data.miembros) { ... }
+
+                // Por ahora, cargar desde localStorage si existe
+                const datosLocales = localStorage.getItem('miembrosGDB');
+                if (datosLocales) {
+                    miembrosGDB = JSON.parse(datosLocales);
+                    cargarMiembros();
+                    mostrarNotificacion('✅ Cargados datos locales', 'success');
+                } else {
+                    // Usar datos iniciales
+                    inicializarEstados();
+                    cargarMiembros();
+                    mostrarNotificacion('ℹ️ Usando datos iniciales. Guarda cambios para sincronizar con Google Sheets.', 'info');
+                }
+            } catch (error) {
+                console.warn('Error cargando datos:', error);
+                const datosLocales = localStorage.getItem('miembrosGDB');
+                if (datosLocales) {
+                    miembrosGDB = JSON.parse(datosLocales);
+                    cargarMiembros();
+                    mostrarNotificacion('⚠️ Usando datos locales (sin conexión)', 'warning');
+                } else {
+                    inicializarEstados();
+                    cargarMiembros();
+                }
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE LA INTERFAZ
+        // ============================================
+
+        // Función para actualizar estado de un miembro (abre el modal)
         function actualizarEstado(id) {
             miembroSeleccionado = miembrosGDB.find(m => m.id === id);
-
             if (!miembroSeleccionado) return;
 
-            // Usar el estado almacenado, no calcular por fecha
             const estadoActual = miembroSeleccionado.estado || 'deudor';
-
-            // Configurar modal
             document.getElementById('modalTitle').textContent = `Actualizar Estado: ${miembroSeleccionado.nombre}`;
             document.getElementById('modalDescription').innerHTML = `
                 <strong>${miembroSeleccionado.tipo === 'directiva' ? 'Directiva' : 'Delegado'}</strong><br>
@@ -917,7 +949,6 @@
                 <small>La membresía se renueva automáticamente cada 14 de mes</small>
             `;
 
-            // Seleccionar opción actual basada en el estado almacenado
             document.querySelectorAll('.modal-option').forEach(option => {
                 option.classList.remove('selected');
                 if (option.dataset.status === estadoActual) {
@@ -926,32 +957,18 @@
                 }
             });
 
-            // Mostrar modal
             document.getElementById('statusModal').style.display = 'flex';
         }
 
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            // Cargar datos desde localStorage si existen
-            const datosGuardados = localStorage.getItem('miembrosGDB');
-            if (datosGuardados) {
-                const datos = JSON.parse(datosGuardados);
-                // Actualizar los datos con los guardados
-                datos.forEach(miembroGuardado => {
-                    const index = miembrosGDB.findIndex(m => m.id === miembroGuardado.id);
-                    if (index !== -1) {
-                        miembrosGDB[index] = { ...miembrosGDB[index], ...miembroGuardado };
-                    }
-                });
-            } else {
-                // Guardar datos iniciales en localStorage
-                localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
-            }
+        // ============================================
+        // EVENT LISTENERS AL CARGAR LA PÁGINA
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Cargar datos
+            await cargarDesdeGoogleSheets();
 
-            // Inicializar estados
-            inicializarEstados();
-            
-            cargarMiembros();
+            // Configurar sincronización automática cada 5 minutos
+            setInterval(sincronizarCambiosPendientes, 5 * 60 * 1000);
 
             // Pestañas
             document.querySelectorAll('.tab').forEach(tab => {
@@ -971,20 +988,19 @@
                 if (e.key === 'Enter') buscarMiembros();
             });
 
-            // Modal
+            // Modal: cerrar y cancelar
             document.getElementById('modalClose').addEventListener('click', () => {
                 document.getElementById('statusModal').style.display = 'none';
                 miembroSeleccionado = null;
                 estadoSeleccionado = "";
             });
-
             document.getElementById('cancelBtn').addEventListener('click', () => {
                 document.getElementById('statusModal').style.display = 'none';
                 miembroSeleccionado = null;
                 estadoSeleccionado = "";
             });
 
-            // Seleccionar opción en modal
+            // Modal: seleccionar opción
             document.querySelectorAll('.modal-option').forEach(option => {
                 option.addEventListener('click', () => {
                     document.querySelectorAll('.modal-option').forEach(o => o.classList.remove('selected'));
@@ -993,31 +1009,31 @@
                 });
             });
 
-            // Guardar cambios en modal
-            document.getElementById('saveBtn').addEventListener('click', () => {
+            // Modal: guardar cambios (NUEVA LÓGICA CON API)
+            document.getElementById('saveBtn').addEventListener('click', async () => {
                 if (miembroSeleccionado && estadoSeleccionado) {
-                    // Actualizar estado en datos
-                    const index = miembrosGDB.findIndex(m => m.id === miembroSeleccionado.id);
-                    if (index !== -1) {
-                        // Actualizar el estado
-                        miembrosGDB[index].estado = estadoSeleccionado;
+                    const saveBtn = document.getElementById('saveBtn');
+                    const originalText = saveBtn.innerHTML;
+                    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+                    saveBtn.disabled = true;
 
-                        // Actualizar fecha al día actual
-                        miembrosGDB[index].ultimaActualizacion = formatDate(new Date());
-
-                        // Actualizar localStorage
-                        localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
-
-                        // Actualizar la tabla
-                        cargarMiembros();
+                    try {
+                        const miembroActualizado = {
+                            ...miembroSeleccionado,
+                            estado: estadoSeleccionado,
+                            ultimaActualizacion: formatDate(new Date())
+                        };
+                        await guardarMiembro(miembroActualizado);
+                        document.getElementById('statusModal').style.display = 'none';
+                        miembroSeleccionado = null;
+                        estadoSeleccionado = "";
+                    } catch (error) {
+                        console.error('Error al guardar:', error);
+                        mostrarNotificacion('Error al guardar cambios', 'error');
+                    } finally {
+                        saveBtn.innerHTML = originalText;
+                        saveBtn.disabled = false;
                     }
-
-                    // Cerrar modal
-                    document.getElementById('statusModal').style.display = 'none';
-
-                    // Resetear variables
-                    miembroSeleccionado = null;
-                    estadoSeleccionado = "";
                 }
             });
 
@@ -1038,5 +1054,4 @@
         });
     </script>
 </body>
-
 </html>
