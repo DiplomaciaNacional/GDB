@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delegados Destacados - GDB</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        /* Estilos específicos para Delegados Destacados */
+        :root {
+            --gold-star: #FFD700;
+            --silver-star: #C0C0C0;
+            --bronze-star: #CD7F32;
+            --estado-revision: #FFA726;
+            --estado-aprobado: #4CAF50;
+            --estado-denegado: #F44336;
+        }
+
+        .destacados-hero {
+            background: linear-gradient(135deg, rgba(0, 100, 0, 0.9), rgba(212, 175, 55, 0.9));
+            color: white;
+            text-align: center;
+            padding: 150px 5% 80px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .destacados-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2;
+            z-index: 1;
+        }
+
+        .destacados-hero>* {
+            position: relative;
+            z-index: 2;
+        }
+
+        .destacados-hero h1 {
+            color: white;
+            font-size: 3.2rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .destacados-hero p {
+            font-size: 1.3rem;
+            max-width: 900px;
+            margin: 0 auto 30px;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+
+        .trophy-icon-large {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-10px) rotate(5deg);
+            }
+
+            50% {
+                transform: translateY(-5px) rotate(0deg);
+            }
+
+            75% {
+                transform: translateY(-10px) rotate(-5deg);
+            }
+        }
+
+        .periodo-selector {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 25px;
+            border-radius: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .periodo-selector label {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .periodo-selector select {
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: none;
+            background: white;
+            color: var(--dark-gray);
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .periodo-selector select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .categorias-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .categoria-btn {
+            padding: 15px 30px;
+            background: white;
+            border: 2px solid var(--dark-green);
+            border-radius: 50px;
+            color: var(--dark-green);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 100, 0, 0.1);
+        }
+
+        .categoria-btn i {
+            font-size: 1.2rem;
+        }
+
+        .categoria-btn.active {
+            background: linear-gradient(135deg, var(--dark-green), #008000);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 100, 0, 0.2);
+        }
+
+        .categoria-btn:hover:not(.active) {
+            background: rgba(0, 100, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .destacados-container {
+            padding: 60px 5%;
+            background: linear-gradient(to bottom, #f9f9f9, #ffffff);
+        }
+
+        .ganador-mes-section {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.05), rgba(212, 175, 55, 0.05));
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 60px;
+            text-align: center;
+            border: 2px solid var(--gold);
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.15);
+        }
+
+        .ganador-mes-section h2 {
+            color: var(--burgundy);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .ganador-mes-section h2 i {
+            color: var(--gold);
+        }
+
+        .ganador-mes-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .ganador-avatar-large {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 6px solid var(--gold);
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+            position: relative;
+        }
+
+        .ganador-avatar-large::after {
+            content: '🏆';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 2rem;
+            animation: shine 2s infinite;
+        }
+
+        @keyframes shine {
+
+            0%,
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            50% {
+                transform: scale(1.2) rotate(20deg);
+            }
+        }
+
+        .ganador-avatar-large img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .ganador-info-large {
+            text-align: left;
+            max-width: 600px;
+        }
+
+        .ganador-info-large h3 {
+            color: var(--dark-green);
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .ganador-info-large .ganador-cargo {
+            color: var(--burgundy);
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .ganador-logros {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .ganador-logros h4 {
+            color: var(--dark-green);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ganador-logros ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .ganador-logros li {
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .ganador-logros li:last-child {
+            border-bottom: none;
+        }
+
+        .ganador-logros i {
+            color: var(--gold);
+            margin-top: 3px;
+        }
+
+        .ranking-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .ranking-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .ranking-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+            border-color: var(--gold);
+        }
+
+        .ranking-card.destacado {
+            border-color: var(--gold);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .posicion-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            z-index: 2;
+        }
+
+        .posicion-badge.oro {
+            background: linear-gradient(135deg, var(--gold-star), #FFC107);
+        }
+
+        .posicion-badge.plata {
+            background: linear-gradient(135deg, var(--silver-star), #B0B0B0);
+        }
+
+        .posicion-badge.bronce {
+            background: linear-gradient(135deg, var(--bronze-star), #A0522D);
+        }
+
+        .posicion-badge.otro {
+            background: linear-gradient(135deg, var(--burgundy), #6a0000);
+        }
+
+        .delegado-header {
+            padding: 30px 30px 20px;
+            background: linear-gradient(135deg, var(--dark-green), #008000);
+            color: white;
+            position: relative;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .delegado-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid var(--gold);
+            overflow: hidden;
+            margin-bottom: 15px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delegado-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .delegado-avatar i {
+            font-size: 3rem;
+            color: var(--burgundy);
+        }
+
+        .delegado-nombre {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .delegado-cargo {
+            font-size: 1rem;
+            opacity: 0.9;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 25px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .delegado-content {
+            padding: 25px;
+        }
+
+        .delegado-logros {
+            margin-bottom: 20px;
+        }
+
+        .logro-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #eee;
+        }
+
+        .logro-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .logro-item i {
+            color: var(--gold);
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+
+        .delegado-metrics {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-green);
+            display: block;
+        }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+        }
+
+        .delegado-fecha {
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+            text-align: center;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-style: italic;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card-destacado {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            border-top: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-destacado:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card-destacado:nth-child(1) {
+            border-color: var(--burgundy);
+        }
+
+        .stat-card-destacado:nth-child(2) {
+            border-color: var(--gold);
+        }
+
+        .stat-card-destacado:nth-child(3) {
+            border-color: var(--dark-green);
+        }
+
+        .stat-card-destacado:nth-child(4) {
+            border-color: #2196f3;
+        }
+
+        .stat-icon-destacado {
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .stat-card-destacado:nth-child(1) .stat-icon-destacado {
+            color: var(--burgundy);
+        }
+
+        .stat-card-destacado:nth-child(2) .stat-icon-destacado {
+            color: var(--gold);
+        }
+
+        .stat-card-destacado:nth-child(3) .stat-icon-destacado {
+            color: var(--dark-green);
+        }
+
+        .stat-card-destacado:nth-child(4) .stat-icon-destacado {
+            color: #2196f3;
+        }
+
+        .stat-number-destacado {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 15px 0;
+            background: linear-gradient(135deg, var(--dark-green), var(--burgundy));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label-destacado {
+            color: var(--medium-gray);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .criterios-section {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            padding: 50px;
+            margin-bottom: 60px;
+        }
+
+        .criterios-section h2 {
+            text-align: center;
+            color: var(--burgundy);
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .criterios-section h2 i {
+            color: var(--gold);
+        }
+
+        .criterios-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .criterio-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid var(--dark-green);
+            transition: all 0.3s ease;
+        }
+
+        .criterio-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .criterio-card h4 {
+            color: var(--dark-green);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .criterio-card i {
+            color: var(--gold);
+        }
+
+        .nominar-section {
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.05), rgba(0, 100, 0, 0.05));
+            border-radius: 20px;
+            padding: 50px;
+            margin-bottom: 60px;
+            border: 2px dashed var(--burgundy);
+        }
+
+        .nominar-section h2 {
+            color: var(--dark-green);
+            text-align: center;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .nominar-section h2 i {
+            color: var(--burgundy);
+        }
+
+        .nominar-form {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-row-destacado {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .form-group-half {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .form-group-half label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group-half input,
+        .form-group-half select,
+        .form-group-half textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group-half input:focus,
+        .form-group-half select:focus,
+        .form-group-half textarea:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        }
+
+        .btn-nominar-destacado {
+            background: linear-gradient(135deg, var(--burgundy), #6a0000);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-nominar-destacado:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(139, 0, 0, 0.2);
+            background: linear-gradient(135deg, #6a0000, var(--burgundy));
+        }
+
+        .loading-destacados {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            grid-column: 1 / -1;
+        }
+
+        .loading-destacados i {
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .no-data-destacados {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            grid-column: 1 / -1;
+            color: var(--medium-gray);
+        }
+
+        .no-data-destacados i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .notificacion-destacados {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 20px 30px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            animation: slideInRight 0.3s ease;
+            display: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+        }
+
+        .notificacion-destacados.success {
+            background: linear-gradient(135deg, var(--estado-aprobado), #388e3c);
+        }
+
+        .notificacion-destacados.error {
+            background: linear-gradient(135deg, var(--estado-denegado), #d32f2f);
+        }
+
+        .notificacion-destacados.info {
+            background: linear-gradient(135deg, var(--dark-green), #008000);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .destacados-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .destacados-hero p {
+                font-size: 1.1rem;
+            }
+
+            .periodo-selector {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+
+            .periodo-selector select {
+                width: 100%;
+            }
+
+            .ganador-mes-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .ganador-info-large {
+                text-align: center;
+            }
+
+            .ranking-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .destacados-hero {
+                padding: 130px 5% 60px;
+            }
+
+            .destacados-hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .trophy-icon-large {
+                font-size: 4rem;
+            }
+
+            .categorias-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .categoria-btn {
+                justify-content: center;
+            }
+
+            .ranking-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row-destacado {
+                flex-direction: column;
+            }
+
+            .form-group-half {
+                width: 100%;
+            }
+
+            .delegado-header {
+                min-height: 180px;
+            }
+
+            .delegado-avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .posicion-badge {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+                top: 15px;
+                right: 15px;
+            }
+
+            .ganador-avatar-large {
+                width: 120px;
+                height: 120px;
+            }
+
+            .ganador-info-large h3 {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .destacados-hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .trophy-icon-large {
+                font-size: 3rem;
+            }
+
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+
+            .criterios-section {
+                padding: 30px 20px;
+            }
+
+            .criterios-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nominar-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="img/logo GDB.jpeg" alt="Logo GDB">
+                </div>
+                <div class="logo-text">
+                    <span class="gdb">GDB</span>
+                    <span class="full-name">Delegados Destacados</span>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#nosotros">Nosotros</a></li>
+                <li><a href="index.html#actividades">Actividades</a></li>
+                <li><a href="directorio.html">Directorio</a></li>
+                <li><a href="login-membresias.html">Membresías</a></li>
+                <li><a href="sugerencias.html">Sugerencias</a></li>
+                <li><a href="delegados-destacados.html" class="active">Destacados</a></li>
+                <li><a href="index.html#contacto">Contacto</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Notificación -->
+    <div class="notificacion-destacados" id="notificacionDestacados"></div>
+
+    <!-- Hero Section -->
+    <section class="destacados-hero">
+        <div class="trophy-icon-large">
+            🏆
+        </div>
+        <h1>Delegados Destacados GDB</h1>
+        <p>Reconocemos la excelencia, compromiso y liderazgo de nuestros miembros. Este espacio está vacío esperando las
+            primeras nominaciones para destacar a quienes hacen la diferencia.</p>
+
+        <div class="periodo-selector">
+            <label for="periodoSelect"><i class="fas fa-calendar-alt"></i> Período Actual:</label>
+            <select id="periodoSelect" disabled>
+                <option value="2025-01">Enero 2025</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Contenido Principal -->
+    <div class="destacados-container">
+        <!-- Ganador del Mes -->
+        <div class="ganador-mes-section" id="ganadorMesContainer">
+            <h2><i class="fas fa-crown"></i> Ganador del Mes</h2>
+            <p class="section-subtitle">Enero 2025</p>
+            <div class="no-data-destacados">
+                <i class="fas fa-trophy"></i>
+                <h3>¡Aún no hay ganador del mes!</h3>
+                <p>Las nominaciones están abiertas. Sé el primero en proponer a alguien destacado usando el formulario
+                    de abajo.</p>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-section" id="statsSection">
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-award"></i></div>
+                <div class="stat-number-destacado">0</div>
+                <div class="stat-label-destacado">Delegados Reconocidos</div>
+            </div>
+
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-number-destacado">0/100</div>
+                <div class="stat-label-destacado">Puntuación Promedio</div>
+            </div>
+
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-rocket"></i></div>
+                <div class="stat-number-destacado">0%</div>
+                <div class="stat-label-destacado">Crecimiento</div>
+            </div>
+
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-users"></i></div>
+                <div class="stat-number-destacado">0</div>
+                <div class="stat-label-destacado">Nominaciones Recibidas</div>
+            </div>
+        </div>
+
+        <!-- Categorías -->
+        <h2 style="text-align: center; margin-bottom: 20px;">Categorías de Reconocimiento</h2>
+        <p class="section-subtitle" style="text-align: center; margin-bottom: 40px;">Próximamente se mostrarán los
+            delegados por categoría</p>
+
+        <div class="categorias-container" id="categoriasContainer">
+            <button class="categoria-btn active" data-categoria="todos">
+                <i class="fas fa-star"></i> Todos
+            </button>
+            <button class="categoria-btn" data-categoria="directiva">
+                <i class="fas fa-user-tie"></i> Directiva
+            </button>
+            <button class="categoria-btn" data-categoria="delegados">
+                <i class="fas fa-users"></i> Delegados
+            </button>
+            <button class="categoria-btn" data-categoria="oradores">
+                <i class="fas fa-microphone"></i> Mejores Oradores
+            </button>
+            <button class="categoria-btn" data-categoria="voluntarios">
+                <i class="fas fa-hands-helping"></i> Voluntarios
+            </button>
+            <button class="categoria-btn" data-categoria="nuevos">
+                <i class="fas fa-seedling"></i> Nuevos Miembros
+            </button>
+        </div>
+
+        <!-- Grid de Delegados Destacados -->
+        <h2 style="text-align: center; margin-top: 60px; margin-bottom: 20px;">Ranking de Delegados</h2>
+        <p class="section-subtitle" style="text-align: center; margin-bottom: 40px;">Este espacio espera las primeras
+            nominaciones</p>
+
+        <div class="ranking-grid" id="rankingContainer">
+            <div class="no-data-destacados">
+                <i class="fas fa-user-friends"></i>
+                <h3>¡Aún no hay delegados destacados!</h3>
+                <p>Usa el formulario de nominación para proponer a los primeros miembros destacados.</p>
+                <p style="margin-top: 20px; font-style: italic;">Una vez que las nominaciones sean revisadas y
+                    aprobadas, aparecerán aquí.</p>
+            </div>
+        </div>
+
+        <!-- Criterios de Evaluación -->
+        <div class="criterios-section">
+            <h2><i class="fas fa-clipboard-check"></i> Criterios de Evaluación</h2>
+            <p class="section-subtitle" style="text-align: center; margin-bottom: 40px;">Basamos nuestros
+                reconocimientos en estos pilares fundamentales</p>
+
+            <div class="criterios-grid">
+                <div class="criterio-card">
+                    <h4><i class="fas fa-handshake"></i> Participación Activa</h4>
+                    <p>Asistencia regular a actividades, contribución en debates y compromiso con los proyectos de GDB.
+                        Valoramos la constancia y presencia significativa.</p>
+                </div>
+
+                <div class="criterio-card">
+                    <h4><i class="fas fa-lightbulb"></i> Innovación y Creatividad</h4>
+                    <p>Propuesta de ideas novedosas, soluciones creativas a problemas y aportes originales que
+                        enriquecen las actividades de la organización.</p>
+                </div>
+
+                <div class="criterio-card">
+                    <h4><i class="fas fa-users"></i> Trabajo en Equipo</h4>
+                    <p>Habilidad para colaborar efectivamente, apoyo a compañeros y construcción de relaciones positivas
+                        dentro de la comunidad GDB.</p>
+                </div>
+
+                <div class="criterio-card">
+                    <h4><i class="fas fa-chart-line"></i> Desarrollo de Habilidades</h4>
+                    <p>Progreso demostrable en oratoria, diplomacia, liderazgo y otras competencias clave para el
+                        crecimiento personal y profesional.</p>
+                </div>
+
+                <div class="criterio-card">
+                    <h4><i class="fas fa-heart"></i> Compromiso Social</h4>
+                    <p>Participación en actividades de voluntariado, impacto positivo en la comunidad y demostración de
+                        valores éticos y sociales.</p>
+                </div>
+
+                <div class="criterio-card">
+                    <h4><i class="fas fa-graduation-cap"></i> Representación Institucional</h4>
+                    <p>Calidad en la representación de GDB en eventos externos, conducta ejemplar y promoción de la
+                        imagen institucional.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Nominación -->
+        <div class="nominar-section">
+            <h2><i class="fas fa-user-plus"></i> ¡Sé el Primero en Nominar!</h2>
+            <p class="section-subtitle" style="text-align: center; margin-bottom: 40px;">Propón a cualquier miembro de
+                GDB para que sea considerado en nuestros reconocimientos</p>
+
+            <form class="nominar-form" id="formNominarDestacado">
+                <div class="form-row-destacado">
+                    <div class="form-group-half">
+                        <label for="nominadoNombre"><i class="fas fa-user"></i> Nombre del Nominado *</label>
+                        <input type="text" id="nominadoNombre" required placeholder="Nombre completo del miembro">
+                    </div>
+
+                    <div class="form-group-half">
+                        <label for="nominadoCategoria"><i class="fas fa-tag"></i> Categoría *</label>
+                        <select id="nominadoCategoria" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option value="directiva">Directiva Destacada</option>
+                            <option value="delegados">Delegado Ejemplar</option>
+                            <option value="oradores">Mejor Orador</option>
+                            <option value="voluntarios">Voluntario del Mes</option>
+                            <option value="innovador">Innovador del Año</option>
+                            <option value="lider">Líder Emergente</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row-destacado">
+                    <div class="form-group-half">
+                        <label for="nominadoCargo"><i class="fas fa-briefcase"></i> Cargo/Rol</label>
+                        <input type="text" id="nominadoCargo"
+                            placeholder="Ej: Delegado de Debate, Secretario de Marketing">
+                    </div>
+
+                    <div class="form-group-half">
+                        <label for="nominadoTelefono"><i class="fas fa-phone"></i> Teléfono de Contacto</label>
+                        <input type="tel" id="nominadoTelefono" placeholder="Para seguimiento">
+                    </div>
+                </div>
+
+                <div class="form-group-half">
+                    <label for="nominadoRazon"><i class="fas fa-comment-alt"></i> Razones de la Nominación *</label>
+                    <textarea id="nominadoRazon" required rows="5"
+                        placeholder="Describe en detalle por qué merece ser reconocido. Incluye logros específicos, eventos destacados, proyectos, o cualidades especiales."></textarea>
+                </div>
+
+                <div class="form-row-destacado">
+                    <div class="form-group-half">
+                        <label for="nominadorNombre"><i class="fas fa-user-edit"></i> Tu Nombre *</label>
+                        <input type="text" id="nominadorNombre" required placeholder="Tu nombre completo">
+                    </div>
+
+                    <div class="form-group-half">
+                        <label for="nominadorContacto"><i class="fas fa-envelope"></i> Tu Contacto *</label>
+                        <input type="email" id="nominadorContacto" required placeholder="Email para confirmación">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-nominar-destacado" id="btnNominarDestacado">
+                    <i class="fas fa-paper-plane"></i> Enviar Nominación
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="logo">
+                        <img src="img/logo GDB.jpeg" alt="Logo GDB">
+                    </div>
+                    <div class="footer-logo-text">
+                        <h3>Delegados Destacados GDB</h3>
+                        <p>Celebrando la excelencia y el compromiso</p>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="sugerencias.html">Sugerencias</a></li>
+                        <li><a href="directorio.html">Directorio</a></li>
+                        <li><a href="index.html#actividades">Actividades</a></li>
+                        <li><a href="login-admin-nominaciones.html" style="color: var(--burgundy); font-weight: 600;">
+                                <i class="fas fa-user-shield"></i> Panel de Nominaciones
+                            </a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-social">
+                    <h4>Síguenos</h4>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/delegacion_gdb" target="_blank"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="https://www.tiktok.com/@delegacion_gdb" target="_blank"><i
+                                class="fab fa-tiktok"></i></a>
+                    </div>
+                    <div class="hashtags">
+                        <span>#GBDDestacados</span>
+                        <span>#ExcelenciaGDB</span>
+                        <span>#LiderazgoJuvenil</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Delegados Destacados - Generación Diplomática de Bolivia</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // ============================================
+        // CONFIGURACIÓN JSONBIN.IO - DELEGADOS DESTACADOS
+        // ============================================
+        const JSONBIN_CONFIG = {
+            BIN_ID: '697625b4d0ea881f40846022 ', // MISMO que en delegados-destacados.html
+            API_KEY: '$2a$10$lHcTe8y8yofr8Q/pQySnCuZVAn.YZDKZ0bgKv7oGKqPs8FXL/DAC2', // MISMA API KEY
+            BASE_URL: 'https://api.jsonbin.io/v3/b',
+
+            getHeaders: function () {
+                return {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': '$2a$10$4V7916fByND/DyXLtXxg/.64CWCr2XK85bVAOD5qGZusnrj2eauPy',
+                    'X-Bin-Versioning': 'false'
+                };
+            }
+        };
+
+        // Variables globales
+        let periodoActual = '2025-01';
+        let categoriaActual = 'todos';
+        let datosDelegados = null;
+
+        // ============================================
+        // FUNCIONES PARA JSONBIN.IO
+        // ============================================
+
+        // Función para crear estructura inicial
+        function crearEstructuraInicial() {
+            const fecha = new Date();
+            const mes = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+
+            return {
+                periodos: {
+                    [mes]: {
+                        ganador_mes: null,
+                        ranking: {
+                            todos: [],
+                            directiva: [],
+                            delegados: [],
+                            oradores: [],
+                            voluntarios: [],
+                            nuevos: []
+                        },
+                        estadisticas: {
+                            total_reconocidos: 0,
+                            promedio_puntuacion: 0,
+                            crecimiento_mensual: "0%",
+                            nominaciones_recibidas: 0,
+                            miembros_evaluados: 0
+                        }
+                    }
+                },
+                nominaciones: [],
+                configuracion: {
+                    mes_actual: mes,
+                    ultima_actualizacion: fecha.toISOString().split('T')[0],
+                    version: "1.0"
+                }
+            };
+        }
+
+        // Obtener datos - AUTO-CREA si está vacío
+        async function obtenerDatosDelegados() {
+            try {
+                console.log('Cargando datos...');
+
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
+                    {
+                        headers: JSONBIN_CONFIG.getHeaders()
+                    }
+                );
+
+                if (!response.ok) {
+                    console.error('Error HTTP:', response.status);
+                    // Si es 404 (no existe) o 403 (sin permisos), crear estructura local
+                    return crearEstructuraInicial();
+                }
+
+                const data = await response.json();
+                console.log('Datos recibidos:', data);
+
+                // Si el BIN está vacío o no tiene la estructura esperada
+                if (!data.record || Object.keys(data.record).length === 0 || !data.record.periodos) {
+                    console.log('BIN vacío o sin estructura, creando...');
+                    const estructuraInicial = crearEstructuraInicial();
+
+                    // Guardar la estructura en JSONBin
+                    await guardarDatosEnJSONBin(estructuraInicial);
+
+                    return estructuraInicial;
+                }
+
+                return data.record;
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                // Fallback a estructura inicial
+                return crearEstructuraInicial();
+            }
+        }
+
+        // Guardar datos en JSONBin
+        async function guardarDatosEnJSONBin(datos) {
+            try {
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
+                    {
+                        method: 'PUT',
+                        headers: JSONBIN_CONFIG.getHeaders(),
+                        body: JSON.stringify(datos)
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}`);
+                }
+
+                console.log('✅ Datos guardados en JSONBin');
+                return true;
+
+            } catch (error) {
+                console.error('Error guardando en JSONBin:', error);
+                // Guardar en localStorage como backup
+                localStorage.setItem('delegadosDestacadosGDB', JSON.stringify(datos));
+                return false;
+            }
+        }
+
+        // Guardar nominación
+        async function guardarNominacionJSONBin(nominacion) {
+            try {
+                // Obtener datos actuales
+                let datos = await obtenerDatosDelegados();
+
+                // Crear nominación
+                const nuevaNominacion = {
+                    id: Date.now(),
+                    ...nominacion,
+                    fecha: new Date().toISOString().split('T')[0],
+                    estado: 'revision'
+                };
+
+                // Añadir a nominaciones
+                if (!datos.nominaciones) {
+                    datos.nominaciones = [];
+                }
+                datos.nominaciones.push(nuevaNominacion);
+
+                // Actualizar estadísticas
+                const mesActual = datos.configuracion.mes_actual;
+                if (datos.periodos[mesActual]) {
+                    datos.periodos[mesActual].estadisticas.nominaciones_recibidas += 1;
+                }
+
+                // Actualizar fecha
+                datos.configuracion.ultima_actualizacion = nuevaNominacion.fecha;
+
+                // Guardar
+                await guardarDatosEnJSONBin(datos);
+
+                return { success: true, id: nuevaNominacion.id };
+
+            } catch (error) {
+                console.error('Error guardando nominación:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE LA INTERFAZ
+        // ============================================
+
+        // Función para mostrar notificación
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            const notificacion = document.createElement('div');
+            const colores = {
+                success: '#4CAF50',
+                error: '#F44336',
+                info: '#2196F3'
+            };
+
+            notificacion.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: ${colores[tipo] || '#2196F3'};
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 9999;
+            animation: slideIn 0.3s ease;
+        `;
+
+            notificacion.textContent = mensaje;
+            document.body.appendChild(notificacion);
+
+            setTimeout(() => {
+                notificacion.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notificacion);
+                }, 300);
+            }, 4000);
+        }
+
+        // Cargar y mostrar datos
+        async function cargarDatos() {
+            try {
+                datosDelegados = await obtenerDatosDelegados();
+
+                // Actualizar período actual
+                periodoActual = datosDelegados.configuracion.mes_actual;
+
+                // Mostrar estadísticas
+                actualizarEstadisticas();
+
+                mostrarNotificacion('✅ Sistema listo para recibir nominaciones', 'success');
+
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+                mostrarNotificacion('⚠️ Modo local activado', 'info');
+            }
+        }
+
+        // Actualizar estadísticas
+        function actualizarEstadisticas() {
+            const statsSection = document.getElementById('statsSection');
+            const mesActual = datosDelegados.configuracion.mes_actual;
+            const estadisticas = datosDelegados.periodos[mesActual].estadisticas;
+
+            statsSection.innerHTML = `
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-award"></i></div>
+                <div class="stat-number-destacado">${estadisticas.total_reconocidos}</div>
+                <div class="stat-label-destacado">Delegados Reconocidos</div>
+            </div>
+            
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-number-destacado">${estadisticas.promedio_puntuacion}/100</div>
+                <div class="stat-label-destacado">Puntuación Promedio</div>
+            </div>
+            
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-rocket"></i></div>
+                <div class="stat-number-destacado">${estadisticas.crecimiento_mensual}</div>
+                <div class="stat-label-destacado">Crecimiento</div>
+            </div>
+            
+            <div class="stat-card-destacado">
+                <div class="stat-icon-destacado"><i class="fas fa-users"></i></div>
+                <div class="stat-number-destacado">${estadisticas.nominaciones_recibidas}</div>
+                <div class="stat-label-destacado">Nominaciones Recibidas</div>
+            </div>
+        `;
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Inicializando sistema...');
+
+            // Cargar datos
+            cargarDatos();
+
+            // Enviar nominación
+            document.getElementById('formNominarDestacado').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const nominadoNombre = document.getElementById('nominadoNombre').value.trim();
+                const nominadoCategoria = document.getElementById('nominadoCategoria').value;
+                const nominadoCargo = document.getElementById('nominadoCargo').value.trim();
+                const nominadoTelefono = document.getElementById('nominadoTelefono').value.trim();
+                const nominadoRazon = document.getElementById('nominadoRazon').value.trim();
+                const nominadorNombre = document.getElementById('nominadorNombre').value.trim();
+                const nominadorContacto = document.getElementById('nominadorContacto').value.trim();
+
+                if (!nominadoNombre || !nominadoCategoria || !nominadoRazon || !nominadorNombre || !nominadorContacto) {
+                    mostrarNotificacion('❌ Completa todos los campos obligatorios', 'error');
+                    return;
+                }
+
+                const btnNominar = document.getElementById('btnNominarDestacado');
+                const originalText = btnNominar.innerHTML;
+                btnNominar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                btnNominar.disabled = true;
+
+                try {
+                    const nominacion = {
+                        nominado: nominadoNombre,
+                        categoria: nominadoCategoria,
+                        cargo: nominadoCargo,
+                        telefono: nominadoTelefono,
+                        razon: nominadoRazon,
+                        nominador: nominadorNombre,
+                        contacto: nominadorContacto
+                    };
+
+                    const resultado = await guardarNominacionJSONBin(nominacion);
+
+                    if (resultado.success) {
+                        // Limpiar formulario
+                        document.getElementById('formNominarDestacado').reset();
+
+                        mostrarNotificacion('✅ Nominación enviada. La directiva la revisará pronto.', 'success');
+
+                        // Actualizar estadísticas
+                        setTimeout(() => {
+                            cargarDatos();
+                        }, 1000);
+
+                    } else {
+                        throw new Error(resultado.error || 'Error desconocido');
+                    }
+
+                } catch (error) {
+                    console.error('Error:', error);
+                    mostrarNotificacion('❌ Error al enviar. Intenta nuevamente.', 'error');
+                } finally {
+                    btnNominar.innerHTML = originalText;
+                    btnNominar.disabled = false;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

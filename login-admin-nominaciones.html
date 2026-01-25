@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso Administración Nominaciones - GDB</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(0, 100, 0, 0.05), rgba(139, 0, 0, 0.05));
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-logo {
+            margin-bottom: 30px;
+        }
+
+        .login-logo img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 3px solid var(--burgundy);
+            padding: 10px;
+        }
+
+        .login-title {
+            color: var(--dark-green);
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--medium-gray);
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        }
+
+        .login-btn {
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            background-color: #004d00;
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            background-color: #ffeaea;
+            color: #d32f2f;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 25px;
+            color: var(--burgundy);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .security-note {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+            border: 1px solid #e9ecef;
+        }
+
+        .security-note i {
+            color: var(--gold);
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="img/logo GDB.jpeg" alt="Logo GDB">
+            </div>
+            
+            <h2 class="login-title">Panel de Nominaciones GDB</h2>
+            <p class="login-subtitle">Acceso exclusivo para la directiva</p>
+            
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorText">Credenciales incorrectas</span>
+            </div>
+            
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> Usuario</label>
+                    <input type="text" id="username" name="username" required placeholder="Ingresa tu usuario">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> Contraseña</label>
+                    <input type="password" id="password" name="password" required placeholder="Ingresa tu contraseña">
+                </div>
+                
+                <button type="submit" class="login-btn" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+            </form>
+            
+            <div class="security-note">
+                <i class="fas fa-shield-alt"></i>
+                Solo la directiva de GDB tiene acceso a este panel.
+            </div>
+            
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Volver al sitio principal
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Credenciales de administración (puedes cambiarlas)
+        const ADMIN_CREDENTIALS = {
+            // Cambia estos valores por los que quieras usar
+            username: 'UsernameGDB2025',
+            password: '¡MUNERO2025GDB!'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginForm = document.getElementById('loginForm');
+            const errorMessage = document.getElementById('errorMessage');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            // Verificar si ya está logueado
+            if (localStorage.getItem('gdbAdminLoggedIn') === 'true') {
+                window.location.href = 'admin-nominaciones.html';
+            }
+            
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                
+                // Mostrar estado de carga
+                loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+                loginBtn.disabled = true;
+                
+                // Simular verificación (en un sistema real esto sería con backend)
+                setTimeout(() => {
+                    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                        // Credenciales correctas
+                        localStorage.setItem('gdbAdminLoggedIn', 'true');
+                        localStorage.setItem('gdbAdminUser', username);
+                        
+                        // Redirigir al panel
+                        window.location.href = 'admin-nominaciones.html';
+                    } else {
+                        // Credenciales incorrectas
+                        errorMessage.style.display = 'block';
+                        document.getElementById('errorText').textContent = 'Usuario o contraseña incorrectos';
+                        
+                        // Limpiar contraseña
+                        document.getElementById('password').value = '';
+                        
+                        // Enfocar en usuario
+                        document.getElementById('username').focus();
+                        
+                        // Restaurar botón
+                        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Iniciar Sesión';
+                        loginBtn.disabled = false;
+                    }
+                }, 1000);
+            });
+            
+            // Limpiar error al empezar a escribir
+            document.getElementById('username').addEventListener('input', () => {
+                errorMessage.style.display = 'none';
+            });
+            
+            document.getElementById('password').addEventListener('input', () => {
+                errorMessage.style.display = 'none';
+            });
+        });
+    </script>
+</body>
+</html>

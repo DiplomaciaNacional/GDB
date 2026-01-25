@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugerencias de Actividades - GDB</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --estado-revision: #FFA726;
+            --estado-aprobado: #4CAF50;
+            --estado-denegado: #F44336;
+        }
+
+        .hero-sugerencias {
+            background: linear-gradient(135deg, var(--burgundy) 0%, #6a0000 100%);
+            color: white;
+            padding: 120px 5% 80px;
+            text-align: center;
+        }
+
+        .hero-sugerencias h1 {
+            color: white;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+        }
+
+        .hero-sugerencias p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            opacity: 0.9;
+        }
+
+        .sugerencias-container {
+            padding: 60px 5%;
+            background: #f9f9f9;
+            min-height: 600px;
+        }
+
+        .form-section,
+        .list-section {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .sugerencia-form {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 60px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn-enviar {
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-enviar:hover {
+            background-color: #004d00;
+            transform: translateY(-2px);
+        }
+
+        .btn-limpiar {
+            background-color: #f0f0f0;
+            color: var(--dark-gray);
+            border: 1px solid #ddd;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-limpiar:hover {
+            background-color: #e0e0e0;
+        }
+
+        .filtros-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filtro-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--dark-green);
+            border-radius: 30px;
+            background: white;
+            color: var(--dark-green);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filtro-btn.active {
+            background: var(--dark-green);
+            color: white;
+        }
+
+        .filtro-btn:hover:not(.active) {
+            background: rgba(0, 100, 0, 0.1);
+        }
+
+        .estado-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .estado-revision {
+            background-color: rgba(255, 167, 38, 0.1);
+            color: var(--estado-revision);
+        }
+
+        .estado-aprobado {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: var(--estado-aprobado);
+        }
+
+        .estado-denegado {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: var(--estado-denegado);
+        }
+
+        .sugerencias-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .sugerencia-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--gold);
+            transition: all 0.3s ease;
+        }
+
+        .sugerencia-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .sugerencia-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .sugerencia-titulo {
+            font-size: 1.3rem;
+            color: var(--dark-green);
+            margin: 0;
+        }
+
+        .sugerencia-categoria {
+            display: inline-block;
+            padding: 3px 10px;
+            background: rgba(139, 0, 0, 0.1);
+            color: var(--burgundy);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .sugerencia-descripcion {
+            margin: 15px 0;
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+
+        .sugerencia-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+
+        .sugerencia-autor {
+            font-weight: 600;
+            color: var(--burgundy);
+        }
+
+        .sugerencia-fecha {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sugerencia-fecha i {
+            color: var(--gold);
+        }
+
+        .no-sugerencias {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .no-sugerencias i {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .notificacion {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .notificacion.success {
+            background-color: var(--estado-aprobado);
+        }
+
+        .notificacion.error {
+            background-color: var(--estado-denegado);
+        }
+
+        .notificacion.info {
+            background-color: var(--dark-green);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .filtros-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .sugerencia-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .sugerencia-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <nav class="navbar">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="img/logo GDB.jpeg" alt="Logo GDB">
+                </div>
+                <div class="logo-text">
+                    <span class="gdb">GDB</span>
+                    <span class="full-name">Generación Diplomática de Bolivia</span>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#nosotros">Nosotros</a></li>
+                <li><a href="index.html#actividades">Actividades</a></li>
+                <li><a href="directorio.html">Directorio</a></li>
+                <li><a href="login-membresias.html">Membresías</a></li>
+                <li><a href="delegados-destacados.html">Destacados</a></li>
+                <li><a href="sugerencias.html" class="active">Sugerencias</a></li>
+                <li><a href="index.html#contacto">Contacto</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Notificación -->
+    <div class="notificacion" id="notificacion"></div>
+
+    <!-- Modal de confirmación -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Confirmar Envío</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <p id="modalMessage">¿Estás seguro de enviar esta sugerencia? Una vez enviada, será revisada por la
+                directiva.</p>
+            <div class="form-actions">
+                <button class="btn-limpiar" id="cancelBtn">Cancelar</button>
+                <button class="btn-enviar" id="confirmBtn">Enviar Sugerencia</button>
+            </div>
+        </div>
+    </div>
+
+    <section class="hero-sugerencias">
+        <div class="container">
+            <h1><i class="fas fa-lightbulb"></i> Sugerencias de Actividades</h1>
+            <p>¡Tu voz es importante! Propón nuevas actividades, talleres o eventos para GDB. Todas las sugerencias
+                serán revisadas por la directiva.</p>
+        </div>
+    </section>
+
+    <section class="sugerencias-container">
+        <div class="form-section">
+            <div class="sugerencia-form">
+                <h2><i class="fas fa-plus-circle"></i> Nueva Sugerencia</h2>
+                <form id="sugerenciaForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre"><i class="fas fa-user"></i> Tu Nombre *</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cargo"><i class="fas fa-briefcase"></i> Tu Cargo/Rol</label>
+                            <input type="text" id="cargo" name="cargo" placeholder="Ej: Delegado, Miembro Directiva">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="titulo"><i class="fas fa-heading"></i> Título de la Actividad *</label>
+                        <input type="text" id="titulo" name="titulo" required
+                            placeholder="Ej: Taller de Oratoria Avanzada">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoria"><i class="fas fa-tag"></i> Categoría *</label>
+                        <select id="categoria" name="categoria" required>
+                            <option value="">Selecciona una categoría</option>
+                            <option value="taller">Taller/Capacitación</option>
+                            <option value="debate">Debate/Simulación</option>
+                            <option value="social">Actividad Social</option>
+                            <option value="cultural">Evento Cultural</option>
+                            <option value="recreativo">Actividad Recreativa</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descripcion"><i class="fas fa-align-left"></i> Descripción Detallada *</label>
+                        <textarea id="descripcion" name="descripcion" rows="5" required
+                            placeholder="Describe tu propuesta en detalle: objetivos, actividades propuestas, duración, participantes, etc."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fecha"><i class="fas fa-calendar"></i> Fecha Sugerida</label>
+                            <input type="date" id="fecha" name="fecha">
+                        </div>
+                        <div class="form-group">
+                            <label for="lugar"><i class="fas fa-map-marker-alt"></i> Lugar Sugerido</label>
+                            <input type="text" id="lugar" name="lugar" placeholder="Ej: Sede GDB, Parque Central">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn-limpiar" id="limpiarBtn">Limpiar Formulario</button>
+                        <button type="button" class="btn-enviar" id="enviarBtn">Enviar Sugerencia</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="list-section">
+            <h2><i class="fas fa-list"></i> Sugerencias Recientes</h2>
+
+            <div class="filtros-container">
+                <span>Filtrar por estado:</span>
+                <button class="filtro-btn active" data-estado="todos">Todas</button>
+                <button class="filtro-btn" data-estado="revision">En Revisión</button>
+                <button class="filtro-btn" data-estado="aprobado">Aprobadas</button>
+                <button class="filtro-btn" data-estado="denegado">Denegadas</button>
+            </div>
+
+            <div class="sugerencias-list" id="sugerenciasList">
+                <!-- Las sugerencias se cargarán aquí -->
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="logo">
+                        <img src="img/logo GDB.jpeg" alt="Logo GDB">
+                    </div>
+                    <div class="footer-logo-text">
+                        <h3>Generación Diplomática de Bolivia</h3>
+                        <p>Formando a los líderes del mañana</p>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="index.html#actividades">Actividades</a></li>
+                        <li><a href="directorio.html">Directorio</a></li>
+                        <li><a href="sugerencias.html">Sugerencias</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-social">
+                    <h4>Síguenos</h4>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/delegacion_gdb" target="_blank"><i
+                                class="fab fa-instagram"></i></a>
+                           <a href="https://www.tiktok.com/@delegacion_gdb?_r=1&_d=dgiagblm5bm3hd&sec_uid=MS4wLjABAAAAMxlvrNaJlCGHWlHdMhy750KlXhfRDKaD8Mu7-6c-HBnxa4kpp7bdiXvD2icfULOm&share_author_id=7190130381126599685&sharer_language=es&source=h5_m&u_code=db831d8a2jk4a7&timestamp=1768083296&user_id=6801283179456119813&sec_user_id=MS4wLjABAAAAxcaST7xaQBgL-wuI9lI_yhuepvKbOU_K3oEBgkByVudlDsYkgIvMpXXbbTltqxyD&item_author_type=2&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7587075252682786578&share_link_id=d1d1efe4-3b6a-49bb-86c0-31815cecef16&share_app_id=1233&ugbiz_name=ACCOUNT&ug_btm=b6880%2Cb2878&social_share_type=5&enable_checksum=1"><i
+                                    class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Generación Diplomática de Bolivia (GDB).</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN JSONBIN.IO
+        // ============================================
+        // ⚠️ REEMPLAZA ESTOS VALORES CON TUS CREDENCIALES ⚠️
+        const JSONBIN_CONFIG = {
+            // TU Bin ID (ej: 65f1a2b3c4d5e6f7a8b9c0d1)
+            BIN_ID: '69761cbdae596e708ff4bc5c',
+
+            // TU Access Key (ej: $2a$10$abcdefghijklmnopqrstuvwxyz123456)
+            API_KEY: '$2a$10$tEBUkZ/3ImBOEFY.n2IUBOkJaC39V8iOTDF8aGdgVMlVRW9rUSfCy',
+
+            // URLs de la API
+            BASE_URL: 'https://api.jsonbin.io/v3/b',
+
+            // Headers para las peticiones
+            getHeaders: function () {
+                return {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': '$2a$10$4V7916fByND/DyXLtXxg/.64CWCr2XK85bVAOD5qGZusnrj2eauPy',
+                    'X-Bin-Versioning': 'false'
+                };
+            }
+        };
+
+        // Datos iniciales si no hay conexión
+        const sugerenciasIniciales = [
+            {
+                id: 1,
+                nombre: "ADRIAN SUAREZ SUAREZ",
+                cargo: "Presidente Departamental",
+                titulo: "Taller de Diplomacia Digital",
+                categoria: "taller",
+                descripcion: "Capacitación sobre el uso de redes sociales y herramientas digitales para la diplomacia moderna.",
+                fecha: "2025-02-15",
+                lugar: "Sede GDB",
+                estado: "aprobado",
+                fechaCreacion: "2025-01-20"
+            },
+            {
+                id: 2,
+                nombre: "MARÍA TERESA SOTOMAYOR",
+                cargo: "Delegada",
+                titulo: "Jornada de Reforestación",
+                categoria: "social",
+                descripcion: "Actividad de voluntariado para reforestar áreas verdes de la ciudad.",
+                fecha: "2025-02-20",
+                lugar: "Parque Nacional",
+                estado: "revision",
+                fechaCreacion: "2025-01-22"
+            }
+        ];
+
+        // Variables globales
+        let sugerencias = [];
+        let filtroEstado = 'todos';
+
+        // Función para mostrar notificación
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            const notificacion = document.getElementById('notificacion');
+            notificacion.textContent = mensaje;
+            notificacion.className = 'notificacion ' + tipo;
+            notificacion.style.display = 'block';
+
+            setTimeout(() => {
+                notificacion.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    notificacion.style.display = 'none';
+                    notificacion.style.animation = '';
+                }, 300);
+            }, 4000);
+        }
+
+        // ============================================
+        // FUNCIONES PARA JSONBIN.IO
+        // ============================================
+
+        // Obtener todas las sugerencias
+        async function obtenerSugerencias() {
+            try {
+                console.log('Cargando sugerencias de JSONBin...');
+
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
+                    {
+                        headers: JSONBIN_CONFIG.getHeaders()
+                    }
+                );
+
+                if (!response.ok) {
+                    console.error('Error HTTP:', response.status);
+                    throw new Error('Error al obtener datos');
+                }
+
+                const data = await response.json();
+                console.log('Datos recibidos:', data);
+
+                return data.record.sugerencias || [];
+
+            } catch (error) {
+                console.error('Error cargando de JSONBin:', error);
+                // Fallback a localStorage
+                const sugerenciasGuardadas = localStorage.getItem('sugerenciasGDB');
+                return sugerenciasGuardadas ? JSON.parse(sugerenciasGuardadas) : [];
+            }
+        }
+
+        // Guardar una nueva sugerencia
+        async function guardarSugerenciaEnJSONBin(sugerencia) {
+            try {
+                console.log('Guardando sugerencia en JSONBin...');
+
+                // Obtener sugerencias existentes
+                const sugerenciasActuales = await obtenerSugerencias();
+
+                // Añadir nueva sugerencia
+                sugerencia.id = Date.now();
+                sugerencia.fechaCreacion = new Date().toISOString().split('T')[0];
+                sugerencia.estado = 'revision';
+
+                const nuevasSugerencias = [...sugerenciasActuales, sugerencia];
+
+                console.log('Enviando datos:', {
+                    sugerencias: nuevasSugerencias,
+                    delegados_destacados: {},
+                    ultima_actualizacion: new Date().toISOString()
+                });
+
+                // Actualizar en JSONBin
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
+                    {
+                        method: 'PUT',
+                        headers: JSONBIN_CONFIG.getHeaders(),
+                        body: JSON.stringify({
+                            sugerencias: nuevasSugerencias,
+                            delegados_destacados: {},
+                            ultima_actualizacion: new Date().toISOString()
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error respuesta:', errorText);
+                    throw new Error('Error al guardar en JSONBin');
+                }
+
+                // También guardar en localStorage como backup
+                localStorage.setItem('sugerenciasGDB', JSON.stringify(nuevasSugerencias));
+
+                console.log('✅ Sugerencia guardada exitosamente');
+                return true;
+
+            } catch (error) {
+                console.error('Error guardando en JSONBin:', error);
+                // Fallback a solo localStorage
+                return guardarSugerenciaEnLocalStorage(sugerencia);
+            }
+        }
+
+        // Guardar solo en localStorage (fallback)
+        function guardarSugerenciaEnLocalStorage(sugerencia) {
+            try {
+                sugerencia.id = Date.now();
+                sugerencia.fechaCreacion = new Date().toISOString().split('T')[0];
+                sugerencia.estado = 'revision';
+
+                const sugerenciasGuardadas = JSON.parse(localStorage.getItem('sugerenciasGDB') || '[]');
+                sugerenciasGuardadas.push(sugerencia);
+                localStorage.setItem('sugerenciasGDB', JSON.stringify(sugerenciasGuardadas));
+
+                return true;
+            } catch (error) {
+                console.error('Error guardando en localStorage:', error);
+                return false;
+            }
+        }
+
+        // ============================================
+        // FUNCIONES PRINCIPALES
+        // ============================================
+
+        // Cargar sugerencias
+        async function cargarSugerencias() {
+            try {
+                console.log('Iniciando carga de sugerencias...');
+
+                // Intentar cargar desde JSONBin primero
+                sugerencias = await obtenerSugerencias();
+                console.log('Sugerencias cargadas:', sugerencias);
+
+                // Si no hay sugerencias en JSONBin, usar datos iniciales
+                if (sugerencias.length === 0) {
+                    console.log('No hay sugerencias, usando datos iniciales');
+                    sugerencias = [...sugerenciasIniciales];
+
+                    // Guardar datos iniciales en JSONBin
+                    await fetch(
+                        `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
+                        {
+                            method: 'PUT',
+                            headers: JSONBIN_CONFIG.getHeaders(),
+                            body: JSON.stringify({
+                                sugerencias: sugerenciasIniciales,
+                                delegados_destacados: {},
+                                ultima_actualizacion: new Date().toISOString()
+                            })
+                        }
+                    );
+                }
+
+                mostrarSugerencias();
+                mostrarNotificacion('✅ Datos cargados desde la nube', 'success');
+
+            } catch (error) {
+                console.warn('Error cargando de JSONBin:', error);
+                // Fallback a localStorage
+                const sugerenciasGuardadas = localStorage.getItem('sugerenciasGDB');
+                sugerencias = sugerenciasGuardadas ? JSON.parse(sugerenciasGuardadas) : [...sugerenciasIniciales];
+                mostrarSugerencias();
+                mostrarNotificacion('⚠️ Usando datos locales (modo offline)', 'warning');
+            }
+        }
+
+        // Mostrar sugerencias filtradas
+        function mostrarSugerencias() {
+            const lista = document.getElementById('sugerenciasList');
+
+            let sugerenciasFiltradas = [...sugerencias];
+            if (filtroEstado !== 'todos') {
+                sugerenciasFiltradas = sugerenciasFiltradas.filter(s => s.estado === filtroEstado);
+            }
+
+            // Ordenar por fecha (más recientes primero)
+            sugerenciasFiltradas.sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
+
+            if (sugerenciasFiltradas.length === 0) {
+                lista.innerHTML = `
+                <div class="no-sugerencias">
+                    <i class="fas fa-lightbulb"></i>
+                    <h3>No hay sugerencias</h3>
+                    <p>¡Sé el primero en proponer una actividad!</p>
+                </div>
+            `;
+                return;
+            }
+
+            lista.innerHTML = sugerenciasFiltradas.map(sugerencia => {
+                let estadoText = '';
+                let estadoClass = '';
+
+                switch (sugerencia.estado) {
+                    case 'revision':
+                        estadoText = 'En Revisión';
+                        estadoClass = 'estado-revision';
+                        break;
+                    case 'aprobado':
+                        estadoText = 'Aprobado';
+                        estadoClass = 'estado-aprobado';
+                        break;
+                    case 'denegado':
+                        estadoText = 'Denegado';
+                        estadoClass = 'estado-denegado';
+                        break;
+                }
+
+                let categoriaText = '';
+                switch (sugerencia.categoria) {
+                    case 'taller': categoriaText = 'Taller'; break;
+                    case 'debate': categoriaText = 'Debate'; break;
+                    case 'social': categoriaText = 'Social'; break;
+                    case 'cultural': categoriaText = 'Cultural'; break;
+                    case 'recreativo': categoriaText = 'Recreativo'; break;
+                    default: categoriaText = 'Otro';
+                }
+
+                return `
+                <div class="sugerencia-card">
+                    <div class="sugerencia-header">
+                        <h3 class="sugerencia-titulo">
+                            ${sugerencia.titulo}
+                            <span class="sugerencia-categoria">${categoriaText}</span>
+                            <span class="estado-badge ${estadoClass}">${estadoText}</span>
+                        </h3>
+                    </div>
+                    
+                    <p class="sugerencia-descripcion">${sugerencia.descripcion}</p>
+                    
+                    <div class="sugerencia-meta">
+                        <div>
+                            <span class="sugerencia-autor">${sugerencia.nombre}</span>
+                            ${sugerencia.cargo ? ` · ${sugerencia.cargo}` : ''}
+                        </div>
+                        <div class="sugerencia-fecha">
+                            <i class="far fa-calendar"></i>
+                            ${sugerencia.fechaCreacion}
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Función para limpiar formulario
+        function limpiarFormulario() {
+            document.getElementById('sugerenciaForm').reset();
+        }
+
+        // Función para validar formulario
+        function validarFormulario() {
+            const nombre = document.getElementById('nombre').value.trim();
+            const titulo = document.getElementById('titulo').value.trim();
+            const categoria = document.getElementById('categoria').value;
+            const descripcion = document.getElementById('descripcion').value.trim();
+
+            if (!nombre) {
+                mostrarNotificacion('Por favor ingresa tu nombre', 'error');
+                return false;
+            }
+
+            if (!titulo) {
+                mostrarNotificacion('Por favor ingresa un título para la actividad', 'error');
+                return false;
+            }
+
+            if (!categoria) {
+                mostrarNotificacion('Por favor selecciona una categoría', 'error');
+                return false;
+            }
+
+            if (!descripcion || descripcion.length < 20) {
+                mostrarNotificacion('Por favor ingresa una descripción más detallada (mínimo 20 caracteres)', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM cargado, iniciando...');
+
+            // Cargar sugerencias existentes
+            cargarSugerencias();
+
+            // Botón limpiar formulario
+            document.getElementById('limpiarBtn').addEventListener('click', limpiarFormulario);
+
+            // Botón enviar sugerencia
+            document.getElementById('enviarBtn').addEventListener('click', () => {
+                if (validarFormulario()) {
+                    document.getElementById('modalTitle').textContent = 'Confirmar Envío';
+                    document.getElementById('modalMessage').textContent = '¿Estás seguro de enviar esta sugerencia? Una vez enviada, será revisada por la directiva.';
+                    document.getElementById('confirmModal').style.display = 'flex';
+                }
+            });
+
+            // Confirmar envío
+            document.getElementById('confirmBtn').addEventListener('click', async () => {
+                const form = document.getElementById('sugerenciaForm');
+                const sugerencia = {
+                    nombre: form.nombre.value.trim(),
+                    cargo: form.cargo.value.trim(),
+                    titulo: form.titulo.value.trim(),
+                    categoria: form.categoria.value,
+                    descripcion: form.descripcion.value.trim(),
+                    fecha: form.fecha.value,
+                    lugar: form.lugar.value.trim()
+                };
+
+                const guardandoBtn = document.getElementById('confirmBtn');
+                const originalText = guardandoBtn.innerHTML;
+                guardandoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+                guardandoBtn.disabled = true;
+
+                try {
+                    const exito = await guardarSugerenciaEnJSONBin(sugerencia);
+
+                    if (exito) {
+                        mostrarNotificacion('✅ Sugerencia enviada exitosamente. Será revisada por la directiva.', 'success');
+                        limpiarFormulario();
+                        await cargarSugerencias(); // Recargar lista
+                    } else {
+                        mostrarNotificacion('❌ Error al enviar la sugerencia. Intenta nuevamente.', 'error');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    mostrarNotificacion('❌ Error al procesar la solicitud', 'error');
+                } finally {
+                    guardandoBtn.innerHTML = originalText;
+                    guardandoBtn.disabled = false;
+                    document.getElementById('confirmModal').style.display = 'none';
+                }
+            });
+
+            // Filtros
+            document.querySelectorAll('.filtro-btn').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filtroEstado = this.dataset.estado;
+                    mostrarSugerencias();
+                });
+            });
+
+            // Modal
+            document.getElementById('modalClose').addEventListener('click', () => {
+                document.getElementById('confirmModal').style.display = 'none';
+            });
+
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                document.getElementById('confirmModal').style.display = 'none';
+            });
+
+            // Menú móvil
+            const menuToggle = document.querySelector('.menu-toggle');
+            const navLinks = document.querySelector('.nav-links');
+
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                });
+            }
+
+            // Verificar la consola para ver si hay errores
+            console.log('Configuración JSONBin:', {
+                BIN_ID: JSONBIN_CONFIG.BIN_ID.substring(0, 4) + '...',
+                API_KEY: JSONBIN_CONFIG.API_KEY.substring(0, 10) + '...'
+            });
+        });
+    </script>
+</body>
+
+</html>
