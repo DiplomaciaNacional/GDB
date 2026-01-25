@@ -646,16 +646,34 @@
         const menuToggle = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
 
-        menuToggle.addEventListener('click', function () {
-            navLinks.classList.toggle('active');
-        });
+        if (menuToggle && navLinks) {
+            // Crear overlay para móviles
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            document.body.appendChild(overlay);
 
-
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('active');
+            menuToggle.addEventListener('click', function () {
+                navLinks.classList.toggle('active');
+                overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
+                // Cambiar ícono
+                menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
             });
-        });
+
+            // Cerrar menú al hacer clic en overlay
+            overlay.addEventListener('click', function () {
+                navLinks.classList.remove('active');
+                overlay.style.display = 'none';
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            });
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    overlay.style.display = 'none';
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                });
+            });
+        }
         const contactForm = document.getElementById('contactForm');
         if (contactForm) {
             contactForm.addEventListener('submit', function (e) {
