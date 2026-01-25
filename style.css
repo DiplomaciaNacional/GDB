@@ -264,6 +264,7 @@ section {
 .nav-links {
     display: flex;
     gap: 30px;
+    pointer-events: none;
 }
 
 .nav-links a {
@@ -1291,6 +1292,7 @@ footer {
     .nav-links.active {
         transform: translateY(0);
         opacity: 1;
+        pointer-events: auto;
     }
 
     .menu-toggle {
@@ -1314,6 +1316,10 @@ footer {
 @media (max-width: 600px) {
     .navbar {
         padding: 15px 5%;
+    }
+
+    .logo-container {
+        pointer-events: none;
     }
 
     .logo {
