@@ -558,7 +558,7 @@
         // CONFIGURACIÓN JSONBIN.IO
         // ============================================
         const JSONBIN_CONFIG = {
-            BIN_ID: '697625b4d0ea881f40846022 ', // MISMO que en delegados-destacados.html
+            BIN_ID: '697625b4d0ea881f40846022', // MISMO que en delegados-destacados.html
             API_KEY: '$2a$10$lHcTe8y8yofr8Q/pQySnCuZVAn.YZDKZ0bgKv7oGKqPs8FXL/DAC2', // MISMA API KEY
             BASE_URL: 'https://api.jsonbin.io/v3/b',
 
@@ -752,12 +752,12 @@
         async function aceptarNominacion(nominacionId) {
             try {
                 // Obtener datos actuales
-                const datos = await obtenerDatosCompletos();
-                if (!datos) {
-                    mostrarNotificacion('Error al obtener datos', 'error');
-                    return false;
-                }
+                let datos = await obtenerDatosCompletos();
 
+                // Si no hay datos, crear estructura inicial
+                if (!datos) {
+                    datos = crearEstructuraInicialAdmin();
+                }
                 // Encontrar la nominación
                 const nominacionIndex = datos.nominaciones.findIndex(n => n.id === nominacionId);
                 if (nominacionIndex === -1) {
@@ -856,14 +856,14 @@
             }
         }
 
-        // Rechazar una nominación
         async function rechazarNominacion(nominacionId) {
             try {
                 // Obtener datos actuales
-                const datos = await obtenerDatosCompletos();
+                let datos = await obtenerDatosCompletos();
+
+                // Si no hay datos, crear estructura inicial
                 if (!datos) {
-                    mostrarNotificacion('Error al obtener datos', 'error');
-                    return false;
+                    datos = crearEstructuraInicialAdmin();
                 }
 
                 // Encontrar la nominación
