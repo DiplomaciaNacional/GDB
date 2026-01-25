@@ -502,7 +502,7 @@
         };
 
         // ============================================
-        // DATOS INICIALES (se usarán si no hay conexión o datos guardados)
+        // DATOS INICIALES - TODOS LOS MIEMBROS (Directiva + Delegados completos)
         // ============================================
         const directivaGDB = [
             { id: 1, nombre: "ADRIAN SUAREZ SUAREZ", cargo: "Presidente Departamental", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-20", tipo: "directiva", imagen: "img/adrian.jpeg" },
@@ -521,44 +521,45 @@
             { id: 14, nombre: "BIANKA ISABELLA SUAREZ SUAREZ", cargo: "Delegada de Marketing", departamento: "Beni", estado: "al-dia", ultimaActualizacion: "2025-01-19", tipo: "directiva", imagen: "img/bianka.jpeg" }
         ];
 
+        // DELEGADOS COMPLETOS DE LA PLANILLA (37 delegados)
         const delegadosGDB = [
             { id: 15, nombre: "ANGEL PADILLA TEREBA", cargo: "Debate y Representación", telefono: "67351540", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
-            { id: 16, nombre: "AVRIL FABIANA LUIZAGA MARTINEZ", cargo: "Debate y Representación", telefono: "63276492", estado: "al-dia", ultimaActualizacion: "2025-01-15", tipo: "delegado" },
-            { id: 17, nombre: "BIANCA PAOLA BARRIOS PERALTA", cargo: "Marketing", telefono: "73948684", estado: "al-dia", ultimaActualizacion: "2025-01-10", tipo: "delegado" },
-            { id: 18, nombre: "BIANKA ISABELA SUÁREZ SUÁREZ", cargo: "Marketing", telefono: "69363992", estado: "al-dia", ultimaActualizacion: "2025-01-19", tipo: "delegado" },
-            { id: 19, nombre: "CARLA VILLARROEL BERNABE", cargo: "Acción Social y Voluntariado", telefono: "71899871", estado: "al-dia", ultimaActualizacion: "2025-01-12", tipo: "delegado" },
-            { id: 20, nombre: "CLAUDIA COIMBRA ALGARAÑAZ", cargo: "Debate y Representación", telefono: "75564076", estado: "deudor", ultimaActualizacion: "2024-11-20", tipo: "delegado" },
-            { id: 21, nombre: "EXHAL CRISTAL GÓMEZ CAERO", cargo: "Acción Social y Voluntariado", telefono: "72815812", estado: "deudor", ultimaActualizacion: "2024-11-25", tipo: "delegado" },
-            { id: 22, nombre: "FREDDY HURTADO QUEVEDO", cargo: "Acción Social y Voluntariado", telefono: "67876310", estado: "al-dia", ultimaActualizacion: "2025-01-18", tipo: "delegado" },
-            { id: 23, nombre: "GUSTAVOHOF HURTADO HURTADO", cargo: "Debate y Representación", telefono: "76861487", estado: "deudor", ultimaActualizacion: "2024-10-15", tipo: "delegado" },
-            { id: 24, nombre: "HERNAN GUITERAS ALCAZAR", cargo: "Acción Social y Voluntariado", telefono: "71125125", estado: "deudor", ultimaActualizacion: "2024-10-10", tipo: "delegado" },
-            { id: 25, nombre: "JHOAN SEBASTIAN SUÁREZ LEIGUE", cargo: "Marketing", telefono: "74605590", estado: "deudor", ultimaActualizacion: "2024-11-30", tipo: "delegado" },
-            { id: 26, nombre: "JHONNY SUÁREZ JUSTINIANO", cargo: "Acción Social y Voluntariado", telefono: "63281245", estado: "al-dia", ultimaActualizacion: "2025-01-14", tipo: "delegado" },
-            { id: 27, nombre: "JOSE ELIAS MUÑOZ NAJAR SAUCEDO", cargo: "Debate y Representación", telefono: "69685426", estado: "al-dia", ultimaActualizacion: "2025-01-16", tipo: "delegado" },
-            { id: 28, nombre: "LUCKAS SUÁREZ HEREDIA", cargo: "Debate y Representación", telefono: "67075492", estado: "al-dia", ultimaActualizacion: "2025-01-17", tipo: "delegado" },
-            { id: 29, nombre: "JOSUÉ DAVID GUTIÉRREZ ORTIZ", cargo: "Debate y Representación", telefono: "63503244", estado: "deudor", ultimaActualizacion: "2024-12-05", tipo: "delegado" },
-            { id: 30, nombre: "JUAN PABLO CHÁVEZ ZAMBRANO", cargo: "Debate y Representación", telefono: "71131445", estado: "al-dia", ultimaActualizacion: "2025-01-13", tipo: "delegado" },
-            { id: 31, nombre: "JUAN PABLO GÓMEZ MEJÍA", cargo: "Debate y Representación", telefono: "71123433", estado: "deudor", ultimaActualizacion: "2024-11-28", tipo: "delegado" },
-            { id: 32, nombre: "JULIANA RIBEIRO BARBA", cargo: "Marketing", telefono: "69389288", estado: "al-dia", ultimaActualizacion: "2025-01-11", tipo: "delegado" },
-            { id: 33, nombre: "KAMILA RUBI CALLE ZAMBRANA", cargo: "Acción Social y Voluntariado", telefono: "72827570", estado: "al-dia", ultimaActualizacion: "2025-01-20", tipo: "delegado" },
-            { id: 34, nombre: "KLAUS WENDES MONASTERIO", cargo: "Acción Social y Voluntariado", telefono: "75620015", estado: "al-dia", ultimaActualizacion: "2025-01-09", tipo: "delegado" },
-            { id: 35, nombre: "LINA SOFÍA MASCAYA MOCHO", cargo: "Debate y Representación", telefono: "73908607", estado: "al-dia", ultimaActualizacion: "2025-01-21", tipo: "delegado" },
-            { id: 36, nombre: "LUCIANA EMILY HERRERA CAERO", cargo: "Acción Social y Voluntariado", telefono: "74704715", estado: "al-dia", ultimaActualizacion: "2025-01-07", tipo: "delegado" },
-            { id: 37, nombre: "MARÍA TERESA SOTOMAYOR RODRIGUEZ", cargo: "Acción Social y Voluntariado", telefono: "68950816", estado: "al-dia", ultimaActualizacion: "2025-01-08", tipo: "delegado" },
-            { id: 38, nombre: "MARIANA NIKOL ARAUZ ARDAYA", cargo: "Debate y Representación", telefono: "68129069", estado: "al-dia", ultimaActualizacion: "2025-01-06", tipo: "delegado" },
-            { id: 39, nombre: "MARIEL TRUJILLO MONTENEGRO", cargo: "Marketing", telefono: "69042176", estado: "al-dia", ultimaActualizacion: "2025-01-22", tipo: "delegado" },
-            { id: 40, nombre: "MARY CARMEN SAAVEDRA SARAVIA", cargo: "Debate y Representación", telefono: "76881151", estado: "al-dia", ultimaActualizacion: "2025-01-23", tipo: "delegado" },
-            { id: 41, nombre: "MELANY ACEVEDO CÓRDOVA", cargo: "Debate y Representación", telefono: "72129193", estado: "al-dia", ultimaActualizacion: "2025-01-24", tipo: "delegado" },
-            { id: 42, nombre: "NURIA ANGELICA ENRIQUEZ LLAPIZ", cargo: "Debate y Representación", telefono: "67289121", estado: "al-dia", ultimaActualizacion: "2025-01-25", tipo: "delegado" },
-            { id: 43, nombre: "PEDRO JOEL ROJAS PEÑA", cargo: "Acción Social y Voluntariado", telefono: "77676001", estado: "al-dia", ultimaActualizacion: "2025-01-26", tipo: "delegado" },
-            { id: 44, nombre: "SARAH STHEFANNY FLORES LIMACHI", cargo: "Debate y Representación", telefono: "68958125", estado: "al-dia", ultimaActualizacion: "2025-01-27", tipo: "delegado" },
-            { id: 45, nombre: "SHARLOTTE SUÁREZ ARTEAGA", cargo: "Marketing", telefono: "78379147", estado: "al-dia", ultimaActualizacion: "2025-01-28", tipo: "delegado" },
-            { id: 46, nombre: "THIAGO PUERTA CHÁVEZ", cargo: "Acción Social y Voluntariado", telefono: "76872767", estado: "al-dia", ultimaActualizacion: "2025-01-29", tipo: "delegado" },
-            { id: 47, nombre: "XIOMARA AÑEZ ROCHA", cargo: "Debate y Representación", telefono: "72811925", estado: "al-dia", ultimaActualizacion: "2025-01-30", tipo: "delegado" },
-            { id: 48, nombre: "ZAMARA MOTORRA LÓPEZ", cargo: "Acción Social y Voluntariado", telefono: "73916775", estado: "al-dia", ultimaActualizacion: "2025-01-31", tipo: "delegado" },
-            { id: 49, nombre: "ZAMIRA JAZMÍN DÍEZ SORIA", cargo: "Debate y Representación", telefono: "76861777", estado: "al-dia", ultimaActualizacion: "2025-02-01", tipo: "delegado" },
-            { id: 50, nombre: "KIARA ZAMIRA COCA JARE", cargo: "Debate y Representación", telefono: "77466005", estado: "al-dia", ultimaActualizacion: "2025-02-02", tipo: "delegado" },
-            { id: 51, nombre: "SAMANTHA NATALIA CORTEZ VEGA", cargo: "Debate y Representación", telefono: "73779747", estado: "deudor", ultimaActualizacion: "2024-12-25", tipo: "delegado" }
+            { id: 16, nombre: "AVRIL FABIANA LUIZAGA MARTINEZ", cargo: "Debate y Representación", telefono: "63276492", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 17, nombre: "BIANCA PAOLA BARRIOS PERALTA", cargo: "Marketing", telefono: "73948684", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 18, nombre: "BIANKA ISABELA SUÁREZ SUÁREZ", cargo: "Marketing", telefono: "69363992", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 19, nombre: "CARLA VILLARROEL BERNABE", cargo: "Acción Social y Voluntariado", telefono: "71899871", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 20, nombre: "CLAUDIA COIMBRA ALGARAÑAZ", cargo: "Debate y Representación", telefono: "75564076", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 21, nombre: "EXHAL CRISTAL GÓMEZ CAERO", cargo: "Acción Social y Voluntariado", telefono: "72815812", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 22, nombre: "FREDDY HURTADO QUEVEDO", cargo: "Acción Social y Voluntariado", telefono: "67876310", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 23, nombre: "GUSTAVOHOF HURTADO HURTADO", cargo: "Debate y Representación", telefono: "76861487", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 24, nombre: "HERNAN GUITERAS ALCAZAR", cargo: "Acción Social y Voluntariado", telefono: "71125125", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 25, nombre: "JHOAN SEBASTIAN SUÁREZ LEIGUE", cargo: "Marketing", telefono: "74605590", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 26, nombre: "JHONNY SUÁREZ JUSTINIANO", cargo: "Acción Social y Voluntariado", telefono: "63281245", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 27, nombre: "JOSE ELIAS MUÑOZ NAJAR SAUCEDO", cargo: "Debate y Representación", telefono: "69685426", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 28, nombre: "LUCKAS SUÁREZ HEREDIA", cargo: "Debate y Representación", telefono: "67075492", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 29, nombre: "JOSUÉ DAVID GUTIÉRREZ ORTIZ", cargo: "Debate y Representación", telefono: "63503244", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 30, nombre: "JUAN PABLO CHÁVEZ ZAMBRANO", cargo: "Debate y Representación", telefono: "71131445", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 31, nombre: "JUAN PABLO GÓMEZ MEJÍA", cargo: "Debate y Representación", telefono: "71123433", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 32, nombre: "JULIANA RIBEIRO BARBA", cargo: "Marketing", telefono: "69389288", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 33, nombre: "KAMILA RUBI CALLE ZAMBRANA", cargo: "Acción Social y Voluntariado", telefono: "72827570", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 34, nombre: "KLAUS WENDES MONASTERIO", cargo: "Acción Social y Voluntariado", telefono: "75620015", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 35, nombre: "LINA SOFÍA MASCAYA MOCHO", cargo: "Debate y Representación", telefono: "73908607", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 36, nombre: "LUCIANA EMILY HERRERA CAERO", cargo: "Acción Social y Voluntariado", telefono: "74704715", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 37, nombre: "MARÍA TERESA SOTOMAYOR RODRIGUEZ", cargo: "Acción Social y Voluntariado", telefono: "68950816", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 38, nombre: "MARIANA NIKOL ARAUZ ARDAYA", cargo: "Debate y Representación", telefono: "68129069", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 39, nombre: "MARIEL TRUJILLO MONTENEGRO", cargo: "Marketing", telefono: "69042176", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 40, nombre: "MARY CARMEN SAAVEDRA SARAVIA", cargo: "Debate y Representación", telefono: "76881151", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 41, nombre: "MELANY ACEVEDO CÓRDOVA", cargo: "Debate y Representación", telefono: "72129193", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 42, nombre: "NURIA ANGELICA ENRIQUEZ LLAPIZ", cargo: "Debate y Representación", telefono: "67289121", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 43, nombre: "PEDRO JOEL ROJAS PEÑA", cargo: "Acción Social y Voluntariado", telefono: "77676001", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 44, nombre: "SARAH STHEFANNY FLORES LIMACHI", cargo: "Debate y Representación", telefono: "68958125", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 45, nombre: "SHARLOTTE SUÁREZ ARTEAGA", cargo: "Marketing", telefono: "78379147", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 46, nombre: "THIAGO PUERTA CHÁVEZ", cargo: "Acción Social y Voluntariado", telefono: "76872767", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 47, nombre: "XIOMARA AÑEZ ROCHA", cargo: "Debate y Representación", telefono: "72811925", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 48, nombre: "ZAMARA MOTORRA LÓPEZ", cargo: "Acción Social y Voluntariado", telefono: "73916775", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 49, nombre: "ZAMIRA JAZMÍN DÍEZ SORIA", cargo: "Debate y Representación", telefono: "76861777", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 50, nombre: "KIARA ZAMIRA COCA JARE", cargo: "Debate y Representación", telefono: "77466005", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" },
+            { id: 51, nombre: "SAMANTHA NATALIA CORTEZ VEGA", cargo: "Debate y Representación", telefono: "73779747", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" }
         ];
 
         // Combinar todos los miembros (datos de respaldo)
