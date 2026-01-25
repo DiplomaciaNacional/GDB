@@ -966,7 +966,7 @@
         <div class="periodo-selector">
             <label for="periodoSelect"><i class="fas fa-calendar-alt"></i> Período Actual:</label>
             <select id="periodoSelect" disabled>
-                <option value="2025-01">Enero 2025</option>
+                <!-- Se llenará automáticamente con JavaScript -->
             </select>
         </div>
     </section>
@@ -976,7 +976,7 @@
         <!-- Ganador del Mes -->
         <div class="ganador-mes-section" id="ganadorMesContainer">
             <h2><i class="fas fa-crown"></i> Ganador del Mes</h2>
-            <p class="section-subtitle">Enero 2025</p>
+            <p class="section-subtitle" id="mesActualSubtitle">Cargando...</p>
             <div class="no-data-destacados">
                 <i class="fas fa-trophy"></i>
                 <h3>¡Aún no hay ganador del mes!</h3>
@@ -1195,7 +1195,8 @@
                     <div class="social-icons">
                         <a href="https://instagram.com/delegacion_gdb" target="_blank"><i
                                 class="fab fa-instagram"></i></a>
-                        <a href="https://www.tiktok.com/@delegacion_gdb" target="_blank"><i
+                        <a
+                            href="https://www.tiktok.com/@delegacion_gdb?_r=1&_d=dgiagblm5bm3hd&sec_uid=MS4wLjABAAAAMxlvrNaJlCGHWlHdMhy750KlXhfRDKaD8Mu7-6c-HBnxa4kpp7bdiXvD2icfULOm&share_author_id=7190130381126599685&sharer_language=es&source=h5_m&u_code=db831d8a2jk4a7&timestamp=1768083296&user_id=6801283179456119813&sec_user_id=MS4wLjABAAAAxcaST7xaQBgL-wuI9lI_yhuepvKbOU_K3oEBgkByVudlDsYkgIvMpXXbbTltqxyD&item_author_type=2&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7587075252682786578&share_link_id=d1d1efe4-3b6a-49bb-86c0-31815cecef16&share_app_id=1233&ugbiz_name=ACCOUNT&ug_btm=b6880%2Cb2878&social_share_type=5&enable_checksum=1"><i
                                 class="fab fa-tiktok"></i></a>
                     </div>
                     <div class="hashtags">
@@ -1207,7 +1208,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p>&copy; 2025 Delegados Destacados - Generación Diplomática de Bolivia</p>
+                <p>&copy; 2026 Delegados Destacados - Generación Diplomática de Bolivia</p>
             </div>
         </div>
     </footer>
@@ -1218,8 +1219,8 @@
         // CONFIGURACIÓN JSONBIN.IO - DELEGADOS DESTACADOS
         // ============================================
         const JSONBIN_CONFIG = {
-            BIN_ID: '697625b4d0ea881f40846022', // MISMO que en delegados-destacados.html
-            API_KEY: '$2a$10$lHcTe8y8yofr8Q/pQySnCuZVAn.YZDKZ0bgKv7oGKqPs8FXL/DAC2', // MISMA API KEY
+            BIN_ID: '697699f4ae596e708ff59f00', // SIN ESPACIO
+            API_KEY: '$2a$10$lHcTe8y8yofr8Q/pQySnCuZVAn.YZDKZ0bgKv7oGKqPs8FXL/DAC2',
             BASE_URL: 'https://api.jsonbin.io/v3/b',
 
             getHeaders: function () {
@@ -1232,9 +1233,32 @@
         };
 
         // Variables globales
-        let periodoActual = '2025-01';
+        let periodoActual = '';
         let categoriaActual = 'todos';
         let datosDelegados = null;
+
+        // ============================================
+        // FUNCIONES UTILITARIAS
+        // ============================================
+
+        // Función para obtener el mes actual en formato YYYY-MM
+        function obtenerMesActual() {
+            const fecha = new Date();
+            const año = fecha.getFullYear();
+            const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+            return `${año}-${mes}`;
+        }
+
+        // Función para formatear el mes (ej: "Enero 2026")
+        function formatearMes(mesString) {
+            const [año, mes] = mesString.split('-');
+            const meses = [
+                'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+            ];
+            const nombreMes = meses[parseInt(mes) - 1];
+            return `${nombreMes} ${año}`;
+        }
 
         // ============================================
         // FUNCIONES PARA JSONBIN.IO
@@ -1243,7 +1267,7 @@
         // Función para crear estructura inicial
         function crearEstructuraInicial() {
             const fecha = new Date();
-            const mes = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+            const mes = obtenerMesActual();
 
             return {
                 periodos: {
@@ -1275,7 +1299,7 @@
             };
         }
 
-        // Obtener datos - AUTO-CREA si está vacío
+        // Obtener datos - AUTO-CREA si está vacío y maneja cambio de mes
         async function obtenerDatosDelegados() {
             try {
                 console.log('Cargando datos...');
@@ -1289,29 +1313,62 @@
 
                 if (!response.ok) {
                     console.error('Error HTTP:', response.status);
-                    // Si es 404 (no existe) o 403 (sin permisos), crear estructura local
                     return crearEstructuraInicial();
                 }
 
                 const data = await response.json();
-                console.log('Datos recibidos:', data);
 
                 // Si el BIN está vacío o no tiene la estructura esperada
                 if (!data.record || Object.keys(data.record).length === 0 || !data.record.periodos) {
                     console.log('BIN vacío o sin estructura, creando...');
                     const estructuraInicial = crearEstructuraInicial();
-
-                    // Guardar la estructura en JSONBin
                     await guardarDatosEnJSONBin(estructuraInicial);
-
                     return estructuraInicial;
                 }
 
-                return data.record;
+                // VERIFICAR SI NECESITAMOS CAMBIAR DE MES
+                const mesActual = obtenerMesActual();
+                const datos = data.record;
+
+                // Si el mes en la configuración es diferente al mes actual
+                if (datos.configuracion && datos.configuracion.mes_actual !== mesActual) {
+                    console.log('Cambiando al nuevo mes:', mesActual);
+
+                    // Crear estructura para el nuevo mes si no existe
+                    if (!datos.periodos[mesActual]) {
+                        datos.periodos[mesActual] = {
+                            ganador_mes: null,
+                            ranking: {
+                                todos: [],
+                                directiva: [],
+                                delegados: [],
+                                oradores: [],
+                                voluntarios: [],
+                                nuevos: []
+                            },
+                            estadisticas: {
+                                total_reconocidos: 0,
+                                promedio_puntuacion: 0,
+                                crecimiento_mensual: "0%",
+                                nominaciones_recibidas: 0,
+                                miembros_evaluados: 0
+                            }
+                        };
+                    }
+
+                    // Actualizar el mes actual en la configuración
+                    datos.configuracion.mes_actual = mesActual;
+                    datos.configuracion.ultima_actualizacion = new Date().toISOString().split('T')[0];
+
+                    // Guardar los cambios
+                    await guardarDatosEnJSONBin(datos);
+                    console.log('✅ Mes actualizado a:', mesActual);
+                }
+
+                return datos;
 
             } catch (error) {
                 console.error('Error cargando datos:', error);
-                // Fallback a estructura inicial
                 return crearEstructuraInicial();
             }
         }
@@ -1337,7 +1394,6 @@
 
             } catch (error) {
                 console.error('Error guardando en JSONBin:', error);
-                // Guardar en localStorage como backup
                 localStorage.setItem('delegadosDestacadosGDB', JSON.stringify(datos));
                 return false;
             }
@@ -1346,10 +1402,13 @@
         // Guardar nominación
         async function guardarNominacionJSONBin(nominacion) {
             try {
-                // Obtener datos actuales
                 let datos = await obtenerDatosDelegados();
 
-                // Crear nominación
+                const mesActual = obtenerMesActual();
+                if (datos.configuracion.mes_actual !== mesActual) {
+                    datos.configuracion.mes_actual = mesActual;
+                }
+
                 const nuevaNominacion = {
                     id: Date.now(),
                     ...nominacion,
@@ -1357,22 +1416,36 @@
                     estado: 'revision'
                 };
 
-                // Añadir a nominaciones
                 if (!datos.nominaciones) {
                     datos.nominaciones = [];
                 }
                 datos.nominaciones.push(nuevaNominacion);
 
-                // Actualizar estadísticas
-                const mesActual = datos.configuracion.mes_actual;
-                if (datos.periodos[mesActual]) {
-                    datos.periodos[mesActual].estadisticas.nominaciones_recibidas += 1;
+                // Asegurarse de que existe el período actual
+                if (!datos.periodos[mesActual]) {
+                    datos.periodos[mesActual] = {
+                        ganador_mes: null,
+                        ranking: {
+                            todos: [],
+                            directiva: [],
+                            delegados: [],
+                            oradores: [],
+                            voluntarios: [],
+                            nuevos: []
+                        },
+                        estadisticas: {
+                            total_reconocidos: 0,
+                            promedio_puntuacion: 0,
+                            crecimiento_mensual: "0%",
+                            nominaciones_recibidas: 0,
+                            miembros_evaluados: 0
+                        }
+                    };
                 }
 
-                // Actualizar fecha
+                datos.periodos[mesActual].estadisticas.nominaciones_recibidas += 1;
                 datos.configuracion.ultima_actualizacion = nuevaNominacion.fecha;
 
-                // Guardar
                 await guardarDatosEnJSONBin(datos);
 
                 return { success: true, id: nuevaNominacion.id };
@@ -1425,12 +1498,20 @@
             try {
                 datosDelegados = await obtenerDatosDelegados();
 
-                // Actualizar período actual
                 periodoActual = datosDelegados.configuracion.mes_actual;
 
-                // Mostrar estadísticas
-                actualizarEstadisticas();
+                const periodoSelect = document.getElementById('periodoSelect');
+                const mesActualSubtitle = document.getElementById('mesActualSubtitle');
 
+                if (periodoSelect) {
+                    periodoSelect.innerHTML = `<option value="${periodoActual}">${formatearMes(periodoActual)}</option>`;
+                }
+
+                if (mesActualSubtitle) {
+                    mesActualSubtitle.textContent = formatearMes(periodoActual);
+                }
+
+                actualizarEstadisticas();
                 mostrarNotificacion('✅ Sistema listo para recibir nominaciones', 'success');
 
             } catch (error) {
@@ -1442,8 +1523,14 @@
         // Actualizar estadísticas
         function actualizarEstadisticas() {
             const statsSection = document.getElementById('statsSection');
+            if (!datosDelegados || !datosDelegados.configuracion) return;
+
             const mesActual = datosDelegados.configuracion.mes_actual;
-            const estadisticas = datosDelegados.periodos[mesActual].estadisticas;
+            const periodo = datosDelegados.periodos[mesActual];
+
+            if (!periodo) return;
+
+            const estadisticas = periodo.estadisticas;
 
             statsSection.innerHTML = `
             <div class="stat-card-destacado">
@@ -1517,16 +1604,11 @@
                     const resultado = await guardarNominacionJSONBin(nominacion);
 
                     if (resultado.success) {
-                        // Limpiar formulario
                         document.getElementById('formNominarDestacado').reset();
-
                         mostrarNotificacion('✅ Nominación enviada. La directiva la revisará pronto.', 'success');
-
-                        // Actualizar estadísticas
                         setTimeout(() => {
                             cargarDatos();
                         }, 1000);
-
                     } else {
                         throw new Error(resultado.error || 'Error desconocido');
                     }
