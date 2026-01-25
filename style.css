@@ -264,7 +264,6 @@ section {
 .nav-links {
     display: flex;
     gap: 30px;
-    pointer-events: none;
 }
 
 .nav-links a {
@@ -1287,6 +1286,7 @@ footer {
         opacity: 0;
         transition: var(--transition);
         z-index: 999;
+        pointer-events: none;
     }
 
     .nav-links.active {
