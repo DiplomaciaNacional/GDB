@@ -562,8 +562,8 @@
             { id: 51, nombre: "SAMANTHA NATALIA CORTEZ VEGA", cargo: "Debate y Representación", telefono: "73779747", estado: "deudor", ultimaActualizacion: "2024-12-01", tipo: "delegado" }
         ];
 
-        // Combinar todos los miembros (datos de respaldo)
-        let miembrosGDB = [...directivaGDB, ...delegadosGDB];
+        // Variable global que contendrá todos los miembros
+        let miembrosGDB = [];
 
         // ============================================
         // VARIABLES GLOBALES DEL SISTEMA
@@ -665,7 +665,7 @@
                             <strong>${miembro.nombre}</strong>
                         </td>
                         <td>${miembro.cargo}</td>
-                        <td>${miembro.telefono || 'N/A'}</td>
+                        <td>${miembro.telefono || miembro.departamento || 'N/A'}</td>
                         <td>
                             <span class="status-badge status-${miembro.estado}">
                                 ${miembro.estado === 'al-dia' ? 'Al Día' : 'Deudor'}
@@ -900,34 +900,36 @@
         async function cargarDesdeGoogleSheets() {
             try {
                 console.log('Cargando datos desde Google Sheets...');
-                // Intento con GET (ajusta según tu script)
-                // const response = await fetch(`${CONFIG.API_URL}?action=obtenerTodos`);
-                // const data = await response.json();
-                // if (data.success && data.miembros) { ... }
-
+                
                 // Por ahora, cargar desde localStorage si existe
                 const datosLocales = localStorage.getItem('miembrosGDB');
+                
                 if (datosLocales) {
+                    // Si hay datos en localStorage, usarlos
                     miembrosGDB = JSON.parse(datosLocales);
-                    cargarMiembros();
-                    mostrarNotificacion('✅ Cargados datos locales', 'success');
+                    console.log('Cargados datos desde localStorage:', miembrosGDB.length, 'miembros');
                 } else {
-                    // Usar datos iniciales
+                    // Si no hay datos en localStorage, usar los datos iniciales completos
+                    console.log('No hay datos en localStorage, usando datos iniciales');
+                    miembrosGDB = [...directivaGDB, ...delegadosGDB];
                     inicializarEstados();
-                    cargarMiembros();
-                    mostrarNotificacion('ℹ️ Usando datos iniciales. Guarda cambios para sincronizar con Google Sheets.', 'info');
+                    
+                    // Guardar los datos iniciales en localStorage
+                    localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
+                    mostrarNotificacion('✅ Base de datos inicial cargada', 'success');
                 }
+                
+                cargarMiembros();
+                
             } catch (error) {
                 console.warn('Error cargando datos:', error);
-                const datosLocales = localStorage.getItem('miembrosGDB');
-                if (datosLocales) {
-                    miembrosGDB = JSON.parse(datosLocales);
-                    cargarMiembros();
-                    mostrarNotificacion('⚠️ Usando datos locales (sin conexión)', 'warning');
-                } else {
-                    inicializarEstados();
-                    cargarMiembros();
-                }
+                
+                // En caso de error, usar los datos iniciales
+                miembrosGDB = [...directivaGDB, ...delegadosGDB];
+                inicializarEstados();
+                cargarMiembros();
+                
+                mostrarNotificacion('⚠️ Usando datos iniciales (error al cargar)', 'warning');
             }
         }
 
