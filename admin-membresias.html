@@ -899,37 +899,69 @@
         // Cargar datos iniciales desde Google Sheets (o localStorage como fallback)
         async function cargarDesdeGoogleSheets() {
             try {
-                console.log('Cargando datos desde Google Sheets...');
+                console.log('Cargando datos iniciales...');
                 
-                // Por ahora, cargar desde localStorage si existe
+                // Primero, usar los datos iniciales COMPLETOS (directiva + delegados)
+                const datosCompletosIniciales = [...directivaGDB, ...delegadosGDB];
+                
+                // Verificar si hay datos guardados en localStorage
                 const datosLocales = localStorage.getItem('miembrosGDB');
                 
                 if (datosLocales) {
-                    // Si hay datos en localStorage, usarlos
-                    miembrosGDB = JSON.parse(datosLocales);
-                    console.log('Cargados datos desde localStorage:', miembrosGDB.length, 'miembros');
+                    console.log('Se encontraron datos en localStorage');
+                    const datosLocalesParseados = JSON.parse(datosLocales);
+                    
+                    // Combinar: usar datos locales si existen, de lo contrario usar datos iniciales
+                    const miembrosMap = new Map();
+                    
+                    // Primero agregar todos los datos iniciales
+                    datosCompletosIniciales.forEach(miembro => {
+                        miembrosMap.set(miembro.id, { ...miembro });
+                    });
+                    
+                    // Luego sobreescribir con datos locales (para mantener actualizaciones)
+                    datosLocalesParseados.forEach(miembro => {
+                        if (miembrosMap.has(miembro.id)) {
+                            // Mantener los datos actualizados del localStorage
+                            miembrosMap.set(miembro.id, { ...miembrosMap.get(miembro.id), ...miembro });
+                        } else {
+                            // Si hay un miembro nuevo en localStorage, agregarlo
+                            miembrosMap.set(miembro.id, miembro);
+                        }
+                    });
+                    
+                    // Convertir el Map de vuelta a array
+                    miembrosGDB = Array.from(miembrosMap.values());
+                    console.log('Combinados datos iniciales con localStorage:', miembrosGDB.length, 'miembros');
+                    
                 } else {
                     // Si no hay datos en localStorage, usar los datos iniciales completos
-                    console.log('No hay datos en localStorage, usando datos iniciales');
-                    miembrosGDB = [...directivaGDB, ...delegadosGDB];
-                    inicializarEstados();
+                    console.log('No hay datos en localStorage, usando datos iniciales completos');
+                    miembrosGDB = datosCompletosIniciales;
                     
-                    // Guardar los datos iniciales en localStorage
+                    // Guardar los datos iniciales en localStorage para futuras sesiones
                     localStorage.setItem('miembrosGDB', JSON.stringify(miembrosGDB));
-                    mostrarNotificacion('✅ Base de datos inicial cargada', 'success');
+                    console.log('Datos iniciales guardados en localStorage');
                 }
                 
+                // Inicializar estados si es necesario
+                inicializarEstados();
+                
+                // Cargar la tabla
                 cargarMiembros();
                 
-            } catch (error) {
-                console.warn('Error cargando datos:', error);
+                console.log('✅ Carga completada. Total de miembros:', miembrosGDB.length);
+                mostrarNotificacion(`✅ Sistema cargado con ${miembrosGDB.length} miembros`, 'success');
                 
-                // En caso de error, usar los datos iniciales
+            } catch (error) {
+                console.error('Error crítico cargando datos:', error);
+                
+                // En caso de error crítico, usar los datos iniciales completos
                 miembrosGDB = [...directivaGDB, ...delegadosGDB];
                 inicializarEstados();
                 cargarMiembros();
                 
-                mostrarNotificacion('⚠️ Usando datos iniciales (error al cargar)', 'warning');
+                mostrarNotificacion('⚠️ Error cargando datos, usando datos iniciales', 'error');
             }
         }
 
@@ -967,6 +999,8 @@
         // EVENT LISTENERS AL CARGAR LA PÁGINA
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
+            console.log('DOM cargado, iniciando carga de datos...');
+            
             // Cargar datos
             await cargarDesdeGoogleSheets();
 
@@ -1054,6 +1088,22 @@
                 localStorage.removeItem('gdbAdminLoggedIn');
                 window.location.href = 'login-membresias.html';
             });
+            
+            // Agregar botón de limpiar caché para pruebas
+            const header = document.querySelector('.admin-header');
+            const clearCacheBtn = document.createElement('button');
+            clearCacheBtn.className = 'logout-btn';
+            clearCacheBtn.style.marginLeft = '10px';
+            clearCacheBtn.style.backgroundColor = '#d32f2f';
+            clearCacheBtn.innerHTML = '<i class="fas fa-trash"></i> Limpiar Cache';
+            clearCacheBtn.addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que quieres limpiar el caché? Se perderán los cambios no sincronizados.')) {
+                    localStorage.removeItem('miembrosGDB');
+                    localStorage.removeItem('cambiosPendientes');
+                    location.reload();
+                }
+            });
+            header.appendChild(clearCacheBtn);
         });
     </script>
 </body>
