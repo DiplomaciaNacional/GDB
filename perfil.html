@@ -368,6 +368,14 @@
             background-color: #ccc;
         }
 
+        .interes-tag {
+            background-color: rgba(139, 0, 0, 0.1);
+            color: var(--burgundy);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 992px) {
             .perfil-grid {
                 grid-template-columns: 1fr;
@@ -526,109 +534,126 @@
         </div>
     </footer>
 
-<script>
-    // Configuración
-    const SPREADSHEET_ID = '1-Goxv2zAeOX3Bipw1FfITMXGCiLwDNblZPd7B7Pz-5U';
-    const SHEET_NAME = 'Miembros';
+    <script>
+        // Configuración - REEMPLAZA ESTA URL CON LA DE TU APPS SCRIPT
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNkxubB0KYj1HNhxTE7S7VvEkH3P4U45H_zGjwLqW0PjXXQXKb3xihVKugLF3NCFgE/exec';
 
-    // Variables globales
-    let miembroActual = null;
-    let modoEdicion = false;
-    let datosOriginales = {};
-    let todosLosMiembros = [];
+        // Variables globales
+        let miembroActual = null;
+        let modoEdicion = false;
+        let datosOriginales = {};
+        let todosLosMiembros = [];
 
-    document.addEventListener('DOMContentLoaded', async function () {
-        // Cargar todos los miembros primero
-        await cargarTodosLosMiembros();
-        
-        // Obtener ID del miembro desde la URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const idParam = urlParams.get('id');
-        const nombreParam = urlParams.get('nombre');
-        
-        console.log('Parámetros URL - ID:', idParam, 'Nombre:', nombreParam);
-        
-        // Buscar miembro por ID o nombre
-        if (idParam && !isNaN(parseInt(idParam))) {
-            const idMiembro = parseInt(idParam);
-            await cargarMiembroPorID(idMiembro);
-        } else if (nombreParam) {
-            await buscarMiembroPorNombre(nombreParam);
-        } else {
-            // Si no hay parámetros, mostrar buscador
-            mostrarBuscador();
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Cargar todos los miembros primero
+            await cargarTodosLosMiembros();
+
+            // Obtener ID del miembro desde la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const idParam = urlParams.get('id');
+            const nombreParam = urlParams.get('nombre');
+
+            console.log('Parámetros URL - ID:', idParam, 'Nombre:', nombreParam);
+
+            // Buscar miembro por ID o nombre
+            if (idParam && !isNaN(parseInt(idParam))) {
+                const idMiembro = parseInt(idParam);
+                await cargarMiembroPorID(idMiembro);
+            } else if (nombreParam) {
+                await buscarMiembroPorNombre(nombreParam);
+            } else {
+                // Si no hay parámetros, mostrar buscador
+                mostrarBuscador();
+            }
+
+            // Configurar botones
+            document.getElementById('btn-guardar').addEventListener('click', guardarCambios);
+            document.getElementById('btn-cancelar').addEventListener('click', cancelarEdicion);
+        });
+
+        // Cargar miembros desde Google Apps Script
+        async function cargarTodosLosMiembros() {
+            try {
+                console.log('Cargando miembros desde Google Apps Script...');
+
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getAllMembers`);
+                const data = await response.json();
+
+                if (data.success) {
+                    todosLosMiembros = data.data;
+
+                    // Asegurar IDs numéricos
+                    todosLosMiembros.forEach(miembro => {
+                        miembro.id = parseInt(miembro.id) || 0;
+                        // Convertir estadísticas a números
+                        ['eventos', 'intervenciones', 'talleres', 'proyectos'].forEach(field => {
+                            miembro[field] = parseInt(miembro[field]) || 0;
+                        });
+                    });
+
+                    // Ordenar por ID
+                    todosLosMiembros.sort((a, b) => a.id - b.id);
+
+                    console.log(`Cargados ${todosLosMiembros.length} miembros`);
+                } else {
+                    console.error('Error al cargar miembros:', data.error);
+                    mostrarError('Error al cargar miembros: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                mostrarError('Error de conexión. Verifica la URL de Apps Script.');
+            }
         }
 
-        // Configurar botones
-        document.getElementById('btn-guardar').addEventListener('click', guardarCambios);
-        document.getElementById('btn-cancelar').addEventListener('click', cancelarEdicion);
-    });
+        async function cargarMiembroPorID(id) {
+            try {
+                console.log('Cargando miembro con ID:', id);
 
-    async function cargarTodosLosMiembros() {
-        try {
-            console.log('Cargando todos los miembros desde Google Sheets...');
-            
-            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
-            
-            const response = await fetch(url);
-            const text = await response.text();
-            
-            const jsonText = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
-            const data = JSON.parse(jsonText);
-            
-            // Procesar los datos
-            todosLosMiembros = procesarDatosSheets(data);
-            console.log(`Cargados ${todosLosMiembros.length} miembros`);
-            
-        } catch (error) {
-            console.error('Error al cargar miembros:', error);
-            mostrarError('Error de conexión. Verifica que la hoja sea pública.');
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getMemberById&id=${id}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    miembroActual = data.data;
+                    datosOriginales = JSON.parse(JSON.stringify(miembroActual));
+                    cargarPerfil(miembroActual);
+                    console.log('Miembro cargado exitosamente:', miembroActual.nombre);
+                } else {
+                    console.error('Miembro no encontrado:', data.error);
+                    mostrarSelectorMiembros(`No se encontró un miembro con ID ${id}. Selecciona uno:`);
+                }
+            } catch (error) {
+                console.error('Error al cargar miembro:', error);
+                mostrarError('Error al cargar el perfil');
+            }
         }
-    }
 
-    async function cargarMiembroPorID(id) {
-        console.log('Buscando miembro con ID:', id);
-        
-        const miembro = todosLosMiembros.find(m => m.id === id);
-        
-        if (miembro) {
-            miembroActual = miembro;
-            datosOriginales = { ...miembroActual };
-            cargarPerfil(miembroActual);
-            console.log('Miembro cargado exitosamente:', miembro.nombre);
-        } else {
-            console.error('Miembro no encontrado con ID:', id);
-            mostrarSelectorMiembros(`No se encontró un miembro con ID ${id}. Selecciona uno:`);
+        async function buscarMiembroPorNombre(nombreBusqueda) {
+            console.log('Buscando miembro por nombre:', nombreBusqueda);
+
+            const busqueda = nombreBusqueda.toLowerCase().trim();
+            const resultados = todosLosMiembros.filter(miembro =>
+                miembro.nombre && miembro.nombre.toLowerCase().includes(busqueda)
+            );
+
+            if (resultados.length === 1) {
+                // Si hay un solo resultado, cargarlo directamente
+                miembroActual = resultados[0];
+                datosOriginales = JSON.parse(JSON.stringify(miembroActual));
+                cargarPerfil(miembroActual);
+                console.log('Miembro encontrado:', miembroActual.nombre);
+            } else if (resultados.length > 1) {
+                // Si hay múltiples resultados, mostrar selector
+                mostrarSelectorMiembros(`Se encontraron ${resultados.length} miembros con "${nombreBusqueda}":`, resultados);
+            } else {
+                // Si no hay resultados
+                mostrarSelectorMiembros(`No se encontraron miembros con "${nombreBusqueda}". Busca de nuevo:`, todosLosMiembros);
+            }
         }
-    }
 
-    async function buscarMiembroPorNombre(nombreBusqueda) {
-        console.log('Buscando miembro por nombre:', nombreBusqueda);
-        
-        const busqueda = nombreBusqueda.toLowerCase().trim();
-        const resultados = todosLosMiembros.filter(miembro => 
-            miembro.nombre && miembro.nombre.toLowerCase().includes(busqueda)
-        );
-        
-        if (resultados.length === 1) {
-            // Si hay un solo resultado, cargarlo directamente
-            miembroActual = resultados[0];
-            datosOriginales = { ...miembroActual };
-            cargarPerfil(miembroActual);
-            console.log('Miembro encontrado:', miembroActual.nombre);
-        } else if (resultados.length > 1) {
-            // Si hay múltiples resultados, mostrar selector
-            mostrarSelectorMiembros(`Se encontraron ${resultados.length} miembros con "${nombreBusqueda}":`, resultados);
-        } else {
-            // Si no hay resultados
-            mostrarSelectorMiembros(`No se encontraron miembros con "${nombreBusqueda}". Busca de nuevo:`, todosLosMiembros);
-        }
-    }
+        function mostrarBuscador() {
+            const perfilCard = document.getElementById('perfil-card');
 
-    function mostrarBuscador() {
-        const perfilCard = document.getElementById('perfil-card');
-        
-        perfilCard.innerHTML = `
+            perfilCard.innerHTML = `
             <div class="perfil-header" style="text-align: center; padding: 40px;">
                 <div class="perfil-info">
                     <h2>Buscar Miembro</h2>
@@ -679,63 +704,63 @@
                 </div>
             </div>
         `;
-        
-        // Configurar eventos del buscador
-        document.getElementById('btn-buscar').addEventListener('click', function() {
-            const busqueda = document.getElementById('input-busqueda').value.trim();
-            if (busqueda) {
-                // Actualizar URL y buscar
-                window.history.pushState({}, '', `perfil.html?nombre=${encodeURIComponent(busqueda)}`);
-                buscarMiembroPorNombre(busqueda);
-            }
-        });
-        
-        document.getElementById('input-busqueda').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('btn-buscar').click();
-            }
-        });
-        
-        document.getElementById('btn-buscar-id').addEventListener('click', function() {
-            const id = parseInt(document.getElementById('input-id').value);
-            if (id && id >= 1) {
-                // Actualizar URL y cargar
-                window.history.pushState({}, '', `perfil.html?id=${id}`);
-                cargarMiembroPorID(id);
-            }
-        });
-        
-        document.getElementById('input-id').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('btn-buscar-id').click();
-            }
-        });
-        
-        // Configurar filtros rápidos
-        document.querySelectorAll('.filtro-rapido').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tipo = this.dataset.tipo;
-                let miembrosFiltrados = todosLosMiembros;
-                
-                if (tipo === 'directivo') {
-                    miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'directivo');
-                } else if (tipo === 'delegado') {
-                    miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'delegado');
-                }
-                
-                document.getElementById('lista-miembros').innerHTML = generarListaMiembros(miembrosFiltrados);
-                
-                // Actualizar botones activos
-                document.querySelectorAll('.filtro-rapido').forEach(b => {
-                    b.style.opacity = '0.7';
-                });
-                this.style.opacity = '1';
-            });
-        });
-    }
 
-    function generarListaMiembros(miembros) {
-        return miembros.map(miembro => `
+            // Configurar eventos del buscador
+            document.getElementById('btn-buscar').addEventListener('click', function () {
+                const busqueda = document.getElementById('input-busqueda').value.trim();
+                if (busqueda) {
+                    // Actualizar URL y buscar
+                    window.history.pushState({}, '', `perfil.html?nombre=${encodeURIComponent(busqueda)}`);
+                    buscarMiembroPorNombre(busqueda);
+                }
+            });
+
+            document.getElementById('input-busqueda').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('btn-buscar').click();
+                }
+            });
+
+            document.getElementById('btn-buscar-id').addEventListener('click', function () {
+                const id = parseInt(document.getElementById('input-id').value);
+                if (id && id >= 1) {
+                    // Actualizar URL y cargar
+                    window.history.pushState({}, '', `perfil.html?id=${id}`);
+                    cargarMiembroPorID(id);
+                }
+            });
+
+            document.getElementById('input-id').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('btn-buscar-id').click();
+                }
+            });
+
+            // Configurar filtros rápidos
+            document.querySelectorAll('.filtro-rapido').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const tipo = this.dataset.tipo;
+                    let miembrosFiltrados = todosLosMiembros;
+
+                    if (tipo === 'directivo') {
+                        miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'directivo');
+                    } else if (tipo === 'delegado') {
+                        miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'delegado');
+                    }
+
+                    document.getElementById('lista-miembros').innerHTML = generarListaMiembros(miembrosFiltrados);
+
+                    // Actualizar botones activos
+                    document.querySelectorAll('.filtro-rapido').forEach(b => {
+                        b.style.opacity = '0.7';
+                    });
+                    this.style.opacity = '1';
+                });
+            });
+        }
+
+        function generarListaMiembros(miembros) {
+            return miembros.map(miembro => `
             <div class="info-item" style="cursor: pointer; transition: transform 0.3s;" 
                  onclick="cargarMiembroPorID(${miembro.id})">
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -762,13 +787,13 @@
                 </div>
             </div>
         `).join('');
-    }
+        }
 
-    function mostrarSelectorMiembros(mensaje, miembrosFiltrados = null) {
-        const miembros = miembrosFiltrados || todosLosMiembros;
-        const perfilCard = document.getElementById('perfil-card');
-        
-        perfilCard.innerHTML = `
+        function mostrarSelectorMiembros(mensaje, miembrosFiltrados = null) {
+            const miembros = miembrosFiltrados || todosLosMiembros;
+            const perfilCard = document.getElementById('perfil-card');
+
+            perfilCard.innerHTML = `
             <div class="perfil-header" style="text-align: center; padding: 40px;">
                 <div class="perfil-info">
                     <h2>${mensaje}</h2>
@@ -799,177 +824,73 @@
                 </div>
             </div>
         `;
-        
-        // Configurar filtro en tiempo real
-        const inputBuscar = document.getElementById('input-buscar-lista');
-        inputBuscar.addEventListener('input', function() {
-            const filtro = this.value.toLowerCase().trim();
-            const miembrosFiltrados = todosLosMiembros.filter(m => 
-                m.nombre && m.nombre.toLowerCase().includes(filtro)
-            );
-            document.getElementById('lista-selector').innerHTML = generarListaMiembros(miembrosFiltrados);
-        });
-        
-        document.getElementById('btn-volver-buscador').addEventListener('click', function() {
-            mostrarBuscador();
-        });
-    }
 
-    function procesarDatosSheets(data) {
-        try {
-            const rows = data.table.rows;
-            const cols = data.table.cols;
-            
-            // Extraer nombres de columnas
-            const headers = cols.map(col => {
-                let name = col.label || '';
-                name = name.toLowerCase().trim();
-                name = name.replace(/\s+/g, '_');
-                return name;
+            // Configurar filtro en tiempo real
+            const inputBuscar = document.getElementById('input-buscar-lista');
+            inputBuscar.addEventListener('input', function () {
+                const filtro = this.value.toLowerCase().trim();
+                const miembrosFiltrados = todosLosMiembros.filter(m =>
+                    m.nombre && m.nombre.toLowerCase().includes(filtro)
+                );
+                document.getElementById('lista-selector').innerHTML = generarListaMiembros(miembrosFiltrados);
             });
-            
-            console.log('Encabezados detectados:', headers);
-            
-            const miembros = [];
-            
-            // Procesar cada fila (la fila 0 son encabezados, fila 1 es el primer miembro con ID 1)
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                
-                // Verificar si la fila tiene datos
-                if (!row.c || row.c.length === 0) continue;
-                
-                const miembro = {};
-                
-                // Procesar cada celda
-                for (let j = 0; j < headers.length && j < row.c.length; j++) {
-                    const header = headers[j];
-                    const cell = row.c[j];
-                    
-                    if (cell && cell.v !== null && cell.v !== undefined) {
-                        // Manejar fechas de Google Sheets
-                        if (cell.v instanceof Date) {
-                            // Formatear fecha como YYYY-MM-DD
-                            const fecha = new Date(cell.v);
-                            miembro[header] = fecha.toISOString().split('T')[0];
-                        } else if (typeof cell.v === 'object' && cell.v.f && cell.v.v) {
-                            // Si es una fecha de Google Sheets con formato especial
-                            try {
-                                // Google Sheets usa días desde 1899-12-30
-                                const fecha = new Date(Date.UTC(1899, 11, 30 + cell.v.v));
-                                miembro[header] = fecha.toISOString().split('T')[0];
-                            } catch (e) {
-                                miembro[header] = cell.v.toString();
-                            }
-                        } else {
-                            miembro[header] = cell.v;
-                        }
-                    } else {
-                        miembro[header] = '';
-                    }
-                }
-                
-                // Solo agregar si tiene ID o nombre
-                if (miembro.id || miembro.nombre) {
-                    // Convertir ID a número
-                    if (miembro.id) {
-                        miembro.id = parseInt(miembro.id);
-                    }
-                    
-                    // Convertir estadísticas a números
-                    ['eventos', 'intervenciones', 'talleres', 'proyectos'].forEach(field => {
-                        if (miembro[field]) {
-                            miembro[field] = parseInt(miembro[field]) || 0;
-                        } else {
-                            miembro[field] = 0;
-                        }
-                    });
-                    
-                    // Limpiar nombre si tiene
-                    if (miembro.nombre) {
-                        miembro.nombre = miembro.nombre.toString().trim();
-                    }
-                    
-                    miembros.push(miembro);
-                }
-            }
-            
-            console.log(`Procesados ${miembros.length} miembros`);
-            return miembros;
-            
-        } catch (error) {
-            console.error('Error procesando datos:', error);
-            return [];
+
+            document.getElementById('btn-volver-buscador').addEventListener('click', function () {
+                mostrarBuscador();
+            });
         }
-    }
 
-    function cargarPerfil(miembro) {
-        // Guardar datos originales
-        datosOriginales = { ...miembro };
+        function cargarPerfil(miembro) {
+            // Guardar datos originales
+            datosOriginales = JSON.parse(JSON.stringify(miembro));
 
-        console.log('Cargando perfil para:', miembro.nombre);
+            console.log('Cargando perfil para:', miembro.nombre);
 
-        // Calcular edad
-        let edad = "No disponible";
-        let fechaFormateada = "No disponible";
-        
-        if (miembro.nacimiento && miembro.nacimiento !== '' && miembro.nacimiento !== '####-##-##') {
-            try {
-                // Convertir fecha de Google Sheets si es necesario
-                let fechaNac;
-                if (miembro.nacimiento.includes('Date(')) {
-                    // Formato: Date(2000,0,1) -> Enero 1, 2000
-                    const match = miembro.nacimiento.match(/Date\((\d+),(\d+),(\d+)\)/);
-                    if (match) {
-                        fechaNac = new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+            // Calcular edad
+            let edad = "No disponible";
+            let fechaFormateada = "No disponible";
+
+            if (miembro.nacimiento && miembro.nacimiento !== '' && miembro.nacimiento !== '####-##-##') {
+                try {
+                    const fechaNac = new Date(miembro.nacimiento);
+                    if (!isNaN(fechaNac.getTime())) {
+                        const hoy = new Date();
+                        let calculoEdad = hoy.getFullYear() - fechaNac.getFullYear();
+                        const mes = hoy.getMonth() - fechaNac.getMonth();
+                        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+                            calculoEdad--;
+                        }
+                        edad = `${calculoEdad} años`;
+
+                        const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+                        fechaFormateada = fechaNac.toLocaleDateString('es-ES', opciones);
+
+                        // Guardar fecha formateada para el input
+                        miembro._fechaInput = fechaNac.toISOString().split('T')[0];
                     }
-                } else if (miembro.nacimiento.includes('/')) {
-                    // Formato: 01/01/2000
-                    const parts = miembro.nacimiento.split('/');
-                    fechaNac = new Date(parts[2], parts[1] - 1, parts[0]);
-                } else {
-                    // Formato: YYYY-MM-DD
-                    fechaNac = new Date(miembro.nacimiento);
+                } catch (error) {
+                    console.error('Error al procesar fecha:', error);
+                    miembro._fechaInput = '';
                 }
-                
-                if (fechaNac && !isNaN(fechaNac.getTime())) {
-                    const hoy = new Date();
-                    let calculoEdad = hoy.getFullYear() - fechaNac.getFullYear();
-                    const mes = hoy.getMonth() - fechaNac.getMonth();
-                    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-                        calculoEdad--;
-                    }
-                    edad = `${calculoEdad} años`;
-                    
-                    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
-                    fechaFormateada = fechaNac.toLocaleDateString('es-ES', opciones);
-                    
-                    // Guardar fecha formateada para el input
-                    miembro._fechaInput = fechaNac.toISOString().split('T')[0];
-                }
-            } catch (error) {
-                console.error('Error al procesar fecha:', error);
+            } else {
                 miembro._fechaInput = '';
             }
-        } else {
-            miembro._fechaInput = '';
-        }
 
-        // Actualizar título
-        document.getElementById('nombre-perfil').textContent = miembro.nombre || 'Miembro';
+            // Actualizar título
+            document.getElementById('nombre-perfil').textContent = miembro.nombre || 'Miembro';
 
-        // Crear contenido del perfil
-        const perfilCard = document.getElementById('perfil-card');
+            // Crear contenido del perfil
+            const perfilCard = document.getElementById('perfil-card');
 
-        // Estadísticas
-        const stats = {
-            eventos: Number(miembro.eventos) || 0,
-            intervenciones: Number(miembro.intervenciones) || 0,
-            talleres: Number(miembro.talleres) || 0,
-            proyectos: Number(miembro.proyectos) || 0
-        };
+            // Estadísticas
+            const stats = {
+                eventos: Number(miembro.eventos) || 0,
+                intervenciones: Number(miembro.intervenciones) || 0,
+                talleres: Number(miembro.talleres) || 0,
+                proyectos: Number(miembro.proyectos) || 0
+            };
 
-        perfilCard.innerHTML = `
+            perfilCard.innerHTML = `
             <!-- BOTÓN PARA VOLVER AL BUSCADOR -->
             <div style="padding: 20px; background-color: var(--light-gray); border-bottom: 1px solid #ddd;">
                 <button onclick="mostrarBuscador()" style="background-color: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">
@@ -993,70 +914,100 @@
             <div class="perfil-content">
                 <div class="perfil-grid">
                     <div>
+                        <!-- Información Personal con Campos Editables -->
                         <div class="perfil-seccion">
                             <h3><i class="fas fa-info-circle"></i> Información Personal</h3>
+                            <button class="btn-editar" onclick="activarEdicionPersonal()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
                             <div class="info-grid" id="info-personal">
                                 <div class="info-item">
                                     <div class="info-label">ID</div>
-                                    <div class="info-value">${miembro.id || 'N/A'}</div>
+                                    <div class="info-value" id="id-value">${miembro.id || 'N/A'}</div>
                                 </div>
                                 <div class="info-item">
-                                    <div class="info-label">Edad</div>
-                                    <div class="info-value" id="edad-value">${edad}</div>
+                                    <div class="info-label">Nombre Completo</div>
+                                    <div class="info-value" id="nombre-value">${miembro.nombre || ''}</div>
+                                    <input type="text" class="info-input" id="nombre-input" value="${miembro.nombre || ''}" style="display: none;">
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Fecha de Nacimiento</div>
                                     <div class="info-value" id="fecha-value">${fechaFormateada}</div>
+                                    <input type="date" class="info-input" id="fecha-input" value="${miembro._fechaInput || ''}" style="display: none;">
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Municipio</div>
                                     <div class="info-value" id="municipio-value">${miembro.municipio || 'Trinidad'}</div>
+                                    <input type="text" class="info-input" id="municipio-input" value="${miembro.municipio || ''}" style="display: none;">
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Información Institucional -->
                         <div class="perfil-seccion">
                             <h3><i class="fas fa-briefcase"></i> Información Institucional</h3>
+                            <button class="btn-editar" onclick="activarEdicionInstitucional()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
                             <div class="info-grid" id="info-institucional">
                                 <div class="info-item">
                                     <div class="info-label">Comisión</div>
                                     <div class="info-value" id="comision-value">${miembro.comision || 'Sin comisión'}</div>
+                                    <input type="text" class="info-input" id="comision-input" value="${miembro.comision || ''}" style="display: none;">
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Cargo</div>
                                     <div class="info-value" id="cargo-value">${miembro.cargo || 'Sin cargo'}</div>
+                                    <input type="text" class="info-input" id="cargo-input" value="${miembro.cargo || ''}" style="display: none;">
                                 </div>
                                 <div class="info-item">
                                     <div class="info-label">Tipo de Miembro</div>
                                     <div class="info-value" id="tipo-value">${miembro.tipo === 'directivo' ? 'Equipo Directivo' : 'Delegado'}</div>
+                                    <select class="info-input" id="tipo-input" style="display: none;">
+                                        <option value="directivo" ${miembro.tipo === 'directivo' ? 'selected' : ''}>Directivo</option>
+                                        <option value="delegado" ${miembro.tipo === 'delegado' ? 'selected' : ''}>Delegado</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Biografía -->
                         <div class="perfil-seccion">
                             <h3><i class="fas fa-user-circle"></i> Biografía</h3>
+                            <button class="btn-editar" onclick="activarEdicionBiografia()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
                             <div class="biografia" id="biografia">
                                 <div id="biografia-texto">${miembro.biografia || 'Esta biografía está en blanco.'}</div>
+                                <textarea class="biografia-textarea" id="biografia-input" style="display: none;">${miembro.biografia || ''}</textarea>
                             </div>
                         </div>
 
+                        <!-- Estadísticas -->
                         <div class="perfil-seccion">
                             <h3><i class="fas fa-chart-bar"></i> Estadísticas</h3>
+                            <button class="btn-editar" onclick="activarEdicionEstadisticas()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
                             <div class="estadisticas-perfil" id="estadisticas">
                                 <div class="estadistica-perfil">
                                     <div class="estadistica-numero" id="eventos-value">${stats.eventos}</div>
+                                    <input type="number" class="estadistica-input" id="eventos-input" value="${stats.eventos}" min="0" style="display: none;">
                                     <div class="estadistica-label">Eventos Asistidos</div>
                                 </div>
                                 <div class="estadistica-perfil">
                                     <div class="estadistica-numero" id="intervenciones-value">${stats.intervenciones}</div>
+                                    <input type="number" class="estadistica-input" id="intervenciones-input" value="${stats.intervenciones}" min="0" style="display: none;">
                                     <div class="estadistica-label">Intervenciones</div>
                                 </div>
                                 <div class="estadistica-perfil">
                                     <div class="estadistica-numero" id="talleres-value">${stats.talleres}</div>
+                                    <input type="number" class="estadistica-input" id="talleres-input" value="${stats.talleres}" min="0" style="display: none;">
                                     <div class="estadistica-label">Talleres</div>
                                 </div>
                                 <div class="estadistica-perfil">
                                     <div class="estadistica-numero" id="proyectos-value">${stats.proyectos}</div>
+                                    <input type="number" class="estadistica-input" id="proyectos-input" value="${stats.proyectos}" min="0" style="display: none;">
                                     <div class="estadistica-label">Proyectos</div>
                                 </div>
                             </div>
@@ -1064,14 +1015,19 @@
                     </div>
 
                     <div>
+                        <!-- Contacto -->
                         <div class="perfil-seccion">
                             <h3><i class="fas fa-address-card"></i> Contacto</h3>
+                            <button class="btn-editar" onclick="activarEdicionContacto()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
                             <div class="contacto-info" id="contacto">
                                 <div class="contacto-item">
                                     <i class="fas fa-phone"></i>
                                     <div>
                                         <strong>Teléfono</strong>
                                         <p id="telefono-value">${miembro.telefono || 'No disponible'}</p>
+                                        <input type="text" class="info-input" id="telefono-input" value="${miembro.telefono || ''}" style="display: none; width: calc(100% - 40px); margin-top: 5px;">
                                     </div>
                                 </div>
                                 <div class="contacto-item">
@@ -1088,18 +1044,26 @@
                             </button>` : ''}
                         </div>
 
+                        <!-- Intereses -->
                         <div class="perfil-seccion">
                             <h3><i class="fas fa-star"></i> Intereses</h3>
-                            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;" id="intereses">
-                                ${miembro.intereses ? 
-                                    miembro.intereses.split(',').map(interes => 
-                                        `<span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">${interes.trim()}</span>`
-                                    ).join('') 
-                                    : 
-                                    `<span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">Diplomacia</span>
-                                     <span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">Relaciones Internacionales</span>
-                                     <span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">Liderazgo</span>`
-                                }
+                            <button class="btn-editar" onclick="activarEdicionIntereses()">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <div id="intereses-container">
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;" id="intereses">
+                                    ${miembro.intereses ?
+                    miembro.intereses.split(',').map(interes =>
+                        `<span class="interes-tag">${interes.trim()}</span>`
+                    ).join('')
+                    :
+                    `<span class="interes-tag">Diplomacia</span>
+                                         <span class="interes-tag">Relaciones Internacionales</span>
+                                         <span class="interes-tag">Liderazgo</span>`
+                }
+                                </div>
+                                <textarea id="intereses-input" style="display: none; width: 100%; margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" 
+                                          placeholder="Separar intereses con comas (ej: Diplomacia, Relaciones Internacionales, Liderazgo)">${miembro.intereses || ''}</textarea>
                             </div>
                         </div>
                         
@@ -1119,43 +1083,234 @@
                 </div>
             </div>
         `;
-        
-        // Ocultar botones de guardar/cancelar (modo solo lectura)
-        ocultarBotonesGuardar();
-    }
 
-    function compartirPerfil() {
-        if (miembroActual) {
-            const url = window.location.href;
-            const texto = `Mira el perfil de ${miembroActual.nombre} en GDB Beni: ${url}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: `Perfil de ${miembroActual.nombre} - GDB Beni`,
-                    text: texto,
-                    url: url
+            // Ocultar botones de guardar/cancelar
+            ocultarBotonesGuardar();
+        }
+
+        // Funciones para activar edición de cada sección
+        function activarEdicionPersonal() {
+            modoEdicion = true;
+            mostrarBotonesGuardar();
+
+            document.getElementById('nombre-value').style.display = 'none';
+            document.getElementById('nombre-input').style.display = 'block';
+
+            document.getElementById('fecha-value').style.display = 'none';
+            document.getElementById('fecha-input').style.display = 'block';
+
+            document.getElementById('municipio-value').style.display = 'none';
+            document.getElementById('municipio-input').style.display = 'block';
+        }
+
+        function activarEdicionInstitucional() {
+            modoEdicion = true;
+            mostrarBotonesGuardar();
+
+            document.getElementById('comision-value').style.display = 'none';
+            document.getElementById('comision-input').style.display = 'block';
+
+            document.getElementById('cargo-value').style.display = 'none';
+            document.getElementById('cargo-input').style.display = 'block';
+
+            document.getElementById('tipo-value').style.display = 'none';
+            document.getElementById('tipo-input').style.display = 'block';
+        }
+
+        function activarEdicionBiografia() {
+            modoEdicion = true;
+            mostrarBotonesGuardar();
+
+            document.getElementById('biografia-texto').style.display = 'none';
+            document.getElementById('biografia-input').style.display = 'block';
+        }
+
+        function activarEdicionEstadisticas() {
+            modoEdicion = true;
+            mostrarBotonesGuardar();
+
+            document.getElementById('eventos-value').style.display = 'none';
+            document.getElementById('eventos-input').style.display = 'block';
+
+            document.getElementById('intervenciones-value').style.display = 'none';
+            document.getElementById('intervenciones-input').style.display = 'block';
+
+            document.getElementById('talleres-value').style.display = 'none';
+            document.getElementById('talleres-input').style.display = 'block';
+
+            document.getElementById('proyectos-value').style.display = 'none';
+            document.getElementById('proyectos-input').style.display = 'block';
+        }
+
+        function activarEdicionContacto() {
+            modoEdicion = true;
+            mostrarBotonesGuardar();
+
+            document.getElementById('telefono-input').style.display = 'block';
+        }
+
+        function activarEdicionIntereses() {
+            modoEdicion = true;
+            mostrarBotonesGuardar();
+
+            document.getElementById('intereses').style.display = 'none';
+            document.getElementById('intereses-input').style.display = 'block';
+        }
+
+        async function guardarCambios() {
+            if (!modoEdicion || !miembroActual) return;
+
+            const confirmar = confirm('¿Guardar cambios en el perfil?\n\nLos cambios se actualizarán en Google Sheets.');
+
+            if (!confirmar) return;
+
+            try {
+                // Mostrar carga
+                document.getElementById('btn-guardar').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+                document.getElementById('btn-guardar').disabled = true;
+
+                // Recopilar datos actualizados
+                const datosActualizados = {
+                    id: miembroActual.id,
+                    action: 'updateMember'
+                };
+
+                // Información personal
+                if (document.getElementById('nombre-input').style.display === 'block') {
+                    datosActualizados.nombre = document.getElementById('nombre-input').value;
+                    datosActualizados.nacimiento = document.getElementById('fecha-input').value;
+                    datosActualizados.municipio = document.getElementById('municipio-input').value;
+                }
+
+                // Información institucional
+                if (document.getElementById('comision-input').style.display === 'block') {
+                    datosActualizados.comision = document.getElementById('comision-input').value;
+                    datosActualizados.cargo = document.getElementById('cargo-input').value;
+                    datosActualizados.tipo = document.getElementById('tipo-input').value;
+                }
+
+                // Biografía
+                if (document.getElementById('biografia-input').style.display === 'block') {
+                    datosActualizados.biografia = document.getElementById('biografia-input').value;
+                }
+
+                // Estadísticas
+                if (document.getElementById('eventos-input').style.display === 'block') {
+                    datosActualizados.eventos = parseInt(document.getElementById('eventos-input').value) || 0;
+                    datosActualizados.intervenciones = parseInt(document.getElementById('intervenciones-input').value) || 0;
+                    datosActualizados.talleres = parseInt(document.getElementById('talleres-input').value) || 0;
+                    datosActualizados.proyectos = parseInt(document.getElementById('proyectos-input').value) || 0;
+                }
+
+                // Contacto
+                if (document.getElementById('telefono-input').style.display === 'block') {
+                    datosActualizados.telefono = document.getElementById('telefono-input').value;
+                }
+
+                // Intereses
+                if (document.getElementById('intereses-input').style.display === 'block') {
+                    datosActualizados.intereses = document.getElementById('intereses-input').value;
+                }
+
+                // Enviar actualización a Google Sheets
+                const formData = new URLSearchParams();
+                for (const key in datosActualizados) {
+                    formData.append(key, datosActualizados[key]);
+                }
+
+                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
                 });
-            } else {
-                // Fallback para navegadores sin Web Share API
-                navigator.clipboard.writeText(texto).then(() => {
-                    alert('Enlace copiado al portapapeles. ¡Compártelo!');
-                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ Cambios guardados exitosamente en Google Sheets');
+
+                    // Actualizar miembroActual con los nuevos datos
+                    Object.assign(miembroActual, datosActualizados);
+                    datosOriginales = JSON.parse(JSON.stringify(miembroActual));
+
+                    // Salir del modo edición
+                    modoEdicion = false;
+                    ocultarBotonesGuardar();
+
+                    // Recargar el perfil
+                    cargarPerfil(miembroActual);
+
+                } else {
+                    alert('❌ Error al guardar cambios: ' + result.error);
+                }
+
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('❌ Error de conexión al guardar cambios');
+            } finally {
+                // Restaurar botón
+                document.getElementById('btn-guardar').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+                document.getElementById('btn-guardar').disabled = false;
             }
         }
-    }
 
-    function copiarEnlace() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => {
-            alert('Enlace copiado al portapapeles');
-        }).catch(err => {
-            alert('Error al copiar el enlace');
-        });
-    }
+        function cancelarEdicion() {
+            const confirmar = confirm('¿Cancelar todos los cambios?');
 
-    function mostrarError(mensaje) {
-        const perfilCard = document.getElementById('perfil-card');
-        perfilCard.innerHTML = `
+            if (confirmar) {
+                // Volver a los datos originales
+                miembroActual = JSON.parse(JSON.stringify(datosOriginales));
+
+                // Salir del modo edición
+                modoEdicion = false;
+                ocultarBotonesGuardar();
+
+                // Recargar el perfil con los datos originales
+                cargarPerfil(miembroActual);
+            }
+        }
+
+        function mostrarBotonesGuardar() {
+            document.getElementById('btn-guardar').style.display = 'inline-block';
+            document.getElementById('btn-cancelar').style.display = 'inline-block';
+        }
+
+        function ocultarBotonesGuardar() {
+            document.getElementById('btn-guardar').style.display = 'none';
+            document.getElementById('btn-cancelar').style.display = 'none';
+        }
+
+        function compartirPerfil() {
+            if (miembroActual) {
+                const url = window.location.href;
+                const texto = `Mira el perfil de ${miembroActual.nombre} en GDB Beni: ${url}`;
+
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Perfil de ${miembroActual.nombre} - GDB Beni`,
+                        text: texto,
+                        url: url
+                    });
+                } else {
+                    // Fallback para navegadores sin Web Share API
+                    navigator.clipboard.writeText(texto).then(() => {
+                        alert('Enlace copiado al portapapeles. ¡Compártelo!');
+                    });
+                }
+            }
+        }
+
+        function copiarEnlace() {
+            const url = window.location.href;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Enlace copiado al portapapeles');
+            }).catch(err => {
+                alert('Error al copiar el enlace');
+            });
+        }
+
+        function mostrarError(mensaje) {
+            const perfilCard = document.getElementById('perfil-card');
+            perfilCard.innerHTML = `
             <div class="perfil-header" style="text-align: center; padding: 60px;">
                 <div class="perfil-info">
                     <h2>Error al cargar perfil</h2>
@@ -1171,81 +1326,54 @@
                 </div>
             </div>
         `;
-    }
-
-    function mostrarBotonesGuardar() {
-        document.getElementById('btn-guardar').style.display = 'inline-block';
-        document.getElementById('btn-cancelar').style.display = 'inline-block';
-    }
-
-    function ocultarBotonesGuardar() {
-        document.getElementById('btn-guardar').style.display = 'none';
-        document.getElementById('btn-cancelar').style.display = 'none';
-    }
-
-    async function guardarCambios() {
-        // Esta versión es solo de lectura
-        alert('La versión actual es solo de lectura. Los cambios se habilitarán en una versión futura.');
-    }
-
-    function cancelarEdicion() {
-        // Volver a los datos originales
-        miembroActual = { ...datosOriginales };
-        
-        // Salir del modo edición
-        modoEdicion = false;
-        ocultarBotonesGuardar();
-        
-        // Recargar el perfil con los datos originales
-        cargarPerfil(miembroActual);
-    }
-
-    function contactarMiembro(telefono) {
-        if (!telefono || telefono === '#######' || telefono === 'No disponible') {
-            alert('Número de teléfono no disponible para este miembro.');
-            return;
         }
 
-        const confirmar = confirm(`¿Deseas contactar a ${miembroActual.nombre}?\nNúmero: ${telefono}\n\n¿Deseas copiar el número?`);
-        if (confirmar) {
-            navigator.clipboard.writeText(telefono).then(() => {
-                alert(`Número ${telefono} copiado al portapapeles.`);
-            }).catch(err => {
-                alert(`Número: ${telefono}\nPuedes copiarlo manualmente.`);
+        function contactarMiembro(telefono) {
+            if (!telefono || telefono === '#######' || telefono === 'No disponible') {
+                alert('Número de teléfono no disponible para este miembro.');
+                return;
+            }
+
+            const confirmar = confirm(`¿Deseas contactar a ${miembroActual.nombre}?\nNúmero: ${telefono}\n\n¿Deseas copiar el número?`);
+            if (confirmar) {
+                navigator.clipboard.writeText(telefono).then(() => {
+                    alert(`Número ${telefono} copiado al portapapeles.`);
+                }).catch(err => {
+                    alert(`Número: ${telefono}\nPuedes copiarlo manualmente.`);
+                });
+            }
+        }
+
+        // Menu toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (menuToggle && navLinks) {
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            document.body.appendChild(overlay);
+
+            menuToggle.addEventListener('click', function () {
+                navLinks.classList.toggle('active');
+                overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
+                menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
             });
-        }
-    }
 
-    // Menu toggle
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navLinks = document.querySelector('.nav-links');
-
-    if (menuToggle && navLinks) {
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay';
-        document.body.appendChild(overlay);
-
-        menuToggle.addEventListener('click', function () {
-            navLinks.classList.toggle('active');
-            overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
-            menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-        });
-
-        overlay.addEventListener('click', function () {
-            navLinks.classList.remove('active');
-            overlay.style.display = 'none';
-            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        });
-
-        document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', () => {
+            overlay.addEventListener('click', function () {
                 navLinks.classList.remove('active');
                 overlay.style.display = 'none';
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
             });
-        });
-    }
-</script>
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    overlay.style.display = 'none';
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+                });
+            });
+        }
+    </script>
 </body>
 
 </html>
