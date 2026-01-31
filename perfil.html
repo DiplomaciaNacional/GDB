@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil de Miembro - GDB Beni</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <style>
+        .perfil-hero {
+            background: linear-gradient(rgba(0, 50, 0, 0.8), rgba(0, 50, 0, 0.9)), url('https://images.unsplash.com/photo-1551135049-8a33b2fb2f61?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 150px 5% 80px;
+        }
+
+        .perfil-hero h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .perfil-container {
+            padding: 40px 5% 80px;
+            background-color: var(--light-gray);
+        }
+
+        .perfil-card {
+            background-color: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .perfil-header {
+            display: flex;
+            padding: 40px;
+            background-color: var(--dark-green);
+            color: white;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .perfil-avatar {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 5px solid var(--gold);
+            background-color: white;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .perfil-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cambiar-foto {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: var(--gold);
+            color: var(--dark-gray);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            display: none;
+        }
+
+        .perfil-avatar:hover .cambiar-foto {
+            display: block;
+        }
+
+        .perfil-info h2 {
+            color: white;
+            text-align: left;
+            margin-bottom: 10px;
+        }
+
+        .perfil-info h2::after {
+            display: none;
+        }
+
+        .perfil-tags {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .perfil-tag {
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .tag-cargo {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .tag-depto {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid var(--gold);
+        }
+
+        .perfil-content {
+            padding: 40px;
+        }
+
+        .perfil-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .perfil-seccion {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .perfil-seccion h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--dark-green);
+        }
+
+        .perfil-seccion h3 i {
+            color: var(--burgundy);
+        }
+
+        .btn-editar {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--gold);
+            color: var(--dark-gray);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn-editar:hover {
+            background-color: var(--soft-g);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--burgundy);
+            position: relative;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: var(--dark-green);
+            font-weight: 600;
+        }
+
+        .info-input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            display: none;
+        }
+
+        .biografia {
+            line-height: 1.8;
+            color: var(--dark-gray);
+            padding: 20px;
+            background-color: rgba(245, 245, 245, 0.5);
+            border-radius: 8px;
+            border-left: 4px solid var(--gold);
+            min-height: 150px;
+            position: relative;
+        }
+
+        .biografia-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .contacto-info {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+
+        .contacto-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .contacto-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .contacto-item i {
+            color: var(--burgundy);
+            font-size: 1.2rem;
+            width: 25px;
+        }
+
+        .btn-volver {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--dark-green);
+            color: white;
+            border-radius: 4px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            margin-top: 30px;
+        }
+
+        .btn-volver:hover {
+            background-color: #004d00;
+        }
+
+        .btn-contactar {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--burgundy);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-contactar:hover {
+            background-color: #6a0000;
+        }
+
+        .estadisticas-perfil {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .estadistica-perfil {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+        }
+
+        .estadistica-numero {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--burgundy);
+            margin-bottom: 5px;
+        }
+
+        .estadistica-input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--burgundy);
+            display: none;
+        }
+
+        .estadistica-label {
+            font-size: 0.9rem;
+            color: var(--medium-gray);
+        }
+
+        .acciones-perfil {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-guardar,
+        .btn-cancelar {
+            padding: 12px 25px;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+        }
+
+        .btn-guardar {
+            background-color: var(--dark-green);
+            color: white;
+            display: none;
+        }
+
+        .btn-guardar:hover {
+            background-color: #004d00;
+        }
+
+        .btn-cancelar {
+            background-color: #ddd;
+            color: var(--dark-gray);
+            display: none;
+        }
+
+        .btn-cancelar:hover {
+            background-color: #ccc;
+        }
+
+        @media (max-width: 992px) {
+            .perfil-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .perfil-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 30px;
+            }
+
+            .perfil-info h2 {
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .perfil-hero {
+                padding: 130px 5% 60px;
+            }
+
+            .perfil-header {
+                padding: 30px 20px;
+            }
+
+            .perfil-avatar {
+                width: 150px;
+                height: 150px;
+            }
+
+            .perfil-content {
+                padding: 30px 20px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .perfil-tags {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .perfil-hero h1 {
+                font-size: 2rem;
+            }
+
+            .acciones-perfil {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav class="navbar">
+            <div class="logo-container">
+                <div class="logo">
+                    <img src="img/LOGO GDB.png" alt="Logo GDB" class="logo-large">
+                </div>
+                <div class="logo-text">
+                    <span class="gdb">GDB</span>
+                    <span class="full-name">Generación Diplomática del Beni</span>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="index.html#nosotros">Nosotros</a></li>
+                <li><a href="index.html#colores">Identidad</a></li>
+                <li><a href="index.html#actividades">Actividades</a></li>
+                <li><a href="index.html#inscripcion">Inscripción</a></li>
+                <li><a href="directorio.html">Directorio</a></li>
+                <li><a href="login-membresias.html">Membresias</a></li>
+                <li><a href="index.html#contacto">Contacto</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <section class="perfil-hero">
+        <h1 id="nombre-perfil">Perfil del Miembro</h1>
+        <p style="max-width: 600px; margin: 0 auto;">Conoce más sobre este miembro de la Generación Diplomática del Beni
+        </p>
+    </section>
+
+    <div class="perfil-container">
+        <div class="container">
+            <!-- Perfil Card -->
+            <div class="perfil-card" id="perfil-card">
+                <!-- Se cargará dinámicamente -->
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="acciones-perfil" id="acciones-perfil">
+                <button class="btn-guardar" id="btn-guardar">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+                <button class="btn-cancelar" id="btn-cancelar">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+
+            <a href="directorio.html" class="btn-volver">
+                <i class="fas fa-arrow-left"></i> Volver al Directorio
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="logo">
+                        <img src="img/LOGO GDB.png" alt="Logo GDB" class="logo-large">
+                    </div>
+                    <div class="footer-logo-text">
+                        <h3>Generación Diplomática del Beni</h3>
+                        <p>Formando a los líderes benianos del mañana</p>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <h4>Enlaces Rápidos</h4>
+                    <ul>
+                        <li><a href="index.html">Inicio</a></li>
+                        <li><a href="index.html#nosotros">Nosotros</a></li>
+                        <li><a href="index.html#colores">Identidad</a></li>
+                        <li><a href="directorio.html">Directorio</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-social">
+                    <h4>Síguenos</h4>
+                    <div class="social-icons">
+                        <a href="https://instagram.com/delegacion_gdb" target="_blank"><i
+                                class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                    <div class="hashtags">
+                        <span>#GDBBeni</span>
+                        <span>#Beni</span>
+                        <span>#GeneraciónDiplomática</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Generación Diplomática del Beni (GDB Beni).</p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+    // Configuración
+    const SPREADSHEET_ID = '1-Goxv2zAeOX3Bipw1FfITMXGCiLwDNblZPd7B7Pz-5U';
+    const SHEET_NAME = 'Miembros';
+
+    // Variables globales
+    let miembroActual = null;
+    let modoEdicion = false;
+    let datosOriginales = {};
+    let todosLosMiembros = [];
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Cargar todos los miembros primero
+        await cargarTodosLosMiembros();
+        
+        // Obtener ID del miembro desde la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const idParam = urlParams.get('id');
+        const nombreParam = urlParams.get('nombre');
+        
+        console.log('Parámetros URL - ID:', idParam, 'Nombre:', nombreParam);
+        
+        // Buscar miembro por ID o nombre
+        if (idParam && !isNaN(parseInt(idParam))) {
+            const idMiembro = parseInt(idParam);
+            await cargarMiembroPorID(idMiembro);
+        } else if (nombreParam) {
+            await buscarMiembroPorNombre(nombreParam);
+        } else {
+            // Si no hay parámetros, mostrar buscador
+            mostrarBuscador();
+        }
+
+        // Configurar botones
+        document.getElementById('btn-guardar').addEventListener('click', guardarCambios);
+        document.getElementById('btn-cancelar').addEventListener('click', cancelarEdicion);
+    });
+
+    async function cargarTodosLosMiembros() {
+        try {
+            console.log('Cargando todos los miembros desde Google Sheets...');
+            
+            const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+            
+            const response = await fetch(url);
+            const text = await response.text();
+            
+            const jsonText = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+            const data = JSON.parse(jsonText);
+            
+            // Procesar los datos
+            todosLosMiembros = procesarDatosSheets(data);
+            console.log(`Cargados ${todosLosMiembros.length} miembros`);
+            
+        } catch (error) {
+            console.error('Error al cargar miembros:', error);
+            mostrarError('Error de conexión. Verifica que la hoja sea pública.');
+        }
+    }
+
+    async function cargarMiembroPorID(id) {
+        console.log('Buscando miembro con ID:', id);
+        
+        const miembro = todosLosMiembros.find(m => m.id === id);
+        
+        if (miembro) {
+            miembroActual = miembro;
+            datosOriginales = { ...miembroActual };
+            cargarPerfil(miembroActual);
+            console.log('Miembro cargado exitosamente:', miembro.nombre);
+        } else {
+            console.error('Miembro no encontrado con ID:', id);
+            mostrarSelectorMiembros(`No se encontró un miembro con ID ${id}. Selecciona uno:`);
+        }
+    }
+
+    async function buscarMiembroPorNombre(nombreBusqueda) {
+        console.log('Buscando miembro por nombre:', nombreBusqueda);
+        
+        const busqueda = nombreBusqueda.toLowerCase().trim();
+        const resultados = todosLosMiembros.filter(miembro => 
+            miembro.nombre && miembro.nombre.toLowerCase().includes(busqueda)
+        );
+        
+        if (resultados.length === 1) {
+            // Si hay un solo resultado, cargarlo directamente
+            miembroActual = resultados[0];
+            datosOriginales = { ...miembroActual };
+            cargarPerfil(miembroActual);
+            console.log('Miembro encontrado:', miembroActual.nombre);
+        } else if (resultados.length > 1) {
+            // Si hay múltiples resultados, mostrar selector
+            mostrarSelectorMiembros(`Se encontraron ${resultados.length} miembros con "${nombreBusqueda}":`, resultados);
+        } else {
+            // Si no hay resultados
+            mostrarSelectorMiembros(`No se encontraron miembros con "${nombreBusqueda}". Busca de nuevo:`, todosLosMiembros);
+        }
+    }
+
+    function mostrarBuscador() {
+        const perfilCard = document.getElementById('perfil-card');
+        
+        perfilCard.innerHTML = `
+            <div class="perfil-header" style="text-align: center; padding: 40px;">
+                <div class="perfil-info">
+                    <h2>Buscar Miembro</h2>
+                    <p>Encuentra el perfil de cualquier miembro de GDB Beni</p>
+                </div>
+            </div>
+            <div class="perfil-content">
+                <!-- BUSCADOR PRINCIPAL -->
+                <div style="max-width: 600px; margin: 0 auto 40px;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <input type="text" id="input-busqueda" placeholder="Buscar por nombre (ej: Ariana)" 
+                               style="flex: 1; padding: 12px 15px; border: 2px solid var(--dark-green); border-radius: 4px; font-size: 1rem;">
+                        <button id="btn-buscar" style="background-color: var(--dark-green); color: white; border: none; padding: 0 30px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <p>O busca por ID:</p>
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <input type="number" id="input-id" placeholder="ID (ej: 1)" 
+                                   min="1" max="100"
+                                   style="width: 100px; padding: 10px; border: 2px solid var(--burgundy); border-radius: 4px; text-align: center;">
+                            <button id="btn-buscar-id" style="background-color: var(--burgundy); color: white; border: none; padding: 0 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                                <i class="fas fa-user"></i> Ir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LISTA DE MIEMBROS -->
+                <div style="margin-top: 40px;">
+                    <h3 style="text-align: center; color: var(--dark-green); margin-bottom: 20px;">
+                        <i class="fas fa-users"></i> Todos los Miembros (${todosLosMiembros.length})
+                    </h3>
+                    
+                    <!-- Filtros rápidos -->
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px;">
+                        <button class="filtro-rapido" data-tipo="todos" style="background-color: var(--dark-green);">Todos</button>
+                        <button class="filtro-rapido" data-tipo="directivo" style="background-color: var(--burgundy);">Directivos</button>
+                        <button class="filtro-rapido" data-tipo="delegado" style="background-color: var(--gold); color: var(--dark-gray);">Delegados</button>
+                    </div>
+                    
+                    <!-- Lista de miembros -->
+                    <div id="lista-miembros" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                        ${generarListaMiembros(todosLosMiembros)}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Configurar eventos del buscador
+        document.getElementById('btn-buscar').addEventListener('click', function() {
+            const busqueda = document.getElementById('input-busqueda').value.trim();
+            if (busqueda) {
+                // Actualizar URL y buscar
+                window.history.pushState({}, '', `perfil.html?nombre=${encodeURIComponent(busqueda)}`);
+                buscarMiembroPorNombre(busqueda);
+            }
+        });
+        
+        document.getElementById('input-busqueda').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('btn-buscar').click();
+            }
+        });
+        
+        document.getElementById('btn-buscar-id').addEventListener('click', function() {
+            const id = parseInt(document.getElementById('input-id').value);
+            if (id && id >= 1) {
+                // Actualizar URL y cargar
+                window.history.pushState({}, '', `perfil.html?id=${id}`);
+                cargarMiembroPorID(id);
+            }
+        });
+        
+        document.getElementById('input-id').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('btn-buscar-id').click();
+            }
+        });
+        
+        // Configurar filtros rápidos
+        document.querySelectorAll('.filtro-rapido').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tipo = this.dataset.tipo;
+                let miembrosFiltrados = todosLosMiembros;
+                
+                if (tipo === 'directivo') {
+                    miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'directivo');
+                } else if (tipo === 'delegado') {
+                    miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'delegado');
+                }
+                
+                document.getElementById('lista-miembros').innerHTML = generarListaMiembros(miembrosFiltrados);
+                
+                // Actualizar botones activos
+                document.querySelectorAll('.filtro-rapido').forEach(b => {
+                    b.style.opacity = '0.7';
+                });
+                this.style.opacity = '1';
+            });
+        });
+    }
+
+    function generarListaMiembros(miembros) {
+        return miembros.map(miembro => `
+            <div class="info-item" style="cursor: pointer; transition: transform 0.3s;" 
+                 onclick="cargarMiembroPorID(${miembro.id})">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="width: 50px; height: 50px; border-radius: 50%; overflow: hidden; background-color: var(--light-gray);">
+                        <img src="${miembro.avatar || 'img/avatar-default.jpg'}" alt="${miembro.nombre}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.src='img/avatar-default.jpg'">
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="info-label">ID: ${miembro.id}</div>
+                        <div class="info-value" style="font-size: 1rem;">${miembro.nombre || 'Sin nombre'}</div>
+                        <div style="margin-top: 5px;">
+                            <span style="background-color: ${miembro.tipo === 'directivo' ? 'var(--burgundy)' : 'var(--gold)'}; 
+                                  color: ${miembro.tipo === 'directivo' ? 'white' : 'var(--dark-gray)'};
+                                  padding: 3px 8px; border-radius: 10px; font-size: 0.8rem;">
+                                ${miembro.tipo === 'directivo' ? 'Directivo' : 'Delegado'}
+                            </span>
+                            <span style="margin-left: 5px; color: var(--medium-gray); font-size: 0.9rem;">
+                                ${miembro.comision || ''}
+                            </span>
+                        </div>
+                    </div>
+                    <i class="fas fa-chevron-right" style="color: var(--medium-gray);"></i>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function mostrarSelectorMiembros(mensaje, miembrosFiltrados = null) {
+        const miembros = miembrosFiltrados || todosLosMiembros;
+        const perfilCard = document.getElementById('perfil-card');
+        
+        perfilCard.innerHTML = `
+            <div class="perfil-header" style="text-align: center; padding: 40px;">
+                <div class="perfil-info">
+                    <h2>${mensaje}</h2>
+                    <p>Selecciona un miembro de la lista:</p>
+                </div>
+            </div>
+            <div class="perfil-content">
+                <!-- BUSCADOR -->
+                <div style="max-width: 500px; margin: 0 auto 30px;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="input-buscar-lista" placeholder="Filtrar por nombre..." 
+                               style="flex: 1; padding: 10px 15px; border: 2px solid var(--dark-green); border-radius: 4px;">
+                        <button id="btn-volver-buscador" style="background-color: var(--dark-green); color: white; border: none; padding: 0 20px; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- LISTA -->
+                <div id="lista-selector" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                    ${generarListaMiembros(miembros)}
+                </div>
+                
+                <div style="text-align: center; margin-top: 40px;">
+                    <button onclick="mostrarBuscador()" style="background-color: var(--dark-green); color: white; border: none; padding: 10px 25px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                        <i class="fas fa-search"></i> Volver al Buscador Principal
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Configurar filtro en tiempo real
+        const inputBuscar = document.getElementById('input-buscar-lista');
+        inputBuscar.addEventListener('input', function() {
+            const filtro = this.value.toLowerCase().trim();
+            const miembrosFiltrados = todosLosMiembros.filter(m => 
+                m.nombre && m.nombre.toLowerCase().includes(filtro)
+            );
+            document.getElementById('lista-selector').innerHTML = generarListaMiembros(miembrosFiltrados);
+        });
+        
+        document.getElementById('btn-volver-buscador').addEventListener('click', function() {
+            mostrarBuscador();
+        });
+    }
+
+    function procesarDatosSheets(data) {
+        try {
+            const rows = data.table.rows;
+            const cols = data.table.cols;
+            
+            // Extraer nombres de columnas
+            const headers = cols.map(col => {
+                let name = col.label || '';
+                name = name.toLowerCase().trim();
+                name = name.replace(/\s+/g, '_');
+                return name;
+            });
+            
+            console.log('Encabezados detectados:', headers);
+            
+            const miembros = [];
+            
+            // Procesar cada fila (la fila 0 son encabezados, fila 1 es el primer miembro con ID 1)
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                
+                // Verificar si la fila tiene datos
+                if (!row.c || row.c.length === 0) continue;
+                
+                const miembro = {};
+                
+                // Procesar cada celda
+                for (let j = 0; j < headers.length && j < row.c.length; j++) {
+                    const header = headers[j];
+                    const cell = row.c[j];
+                    
+                    if (cell && cell.v !== null && cell.v !== undefined) {
+                        // Manejar fechas de Google Sheets
+                        if (cell.v instanceof Date) {
+                            // Formatear fecha como YYYY-MM-DD
+                            const fecha = new Date(cell.v);
+                            miembro[header] = fecha.toISOString().split('T')[0];
+                        } else if (typeof cell.v === 'object' && cell.v.f && cell.v.v) {
+                            // Si es una fecha de Google Sheets con formato especial
+                            try {
+                                // Google Sheets usa días desde 1899-12-30
+                                const fecha = new Date(Date.UTC(1899, 11, 30 + cell.v.v));
+                                miembro[header] = fecha.toISOString().split('T')[0];
+                            } catch (e) {
+                                miembro[header] = cell.v.toString();
+                            }
+                        } else {
+                            miembro[header] = cell.v;
+                        }
+                    } else {
+                        miembro[header] = '';
+                    }
+                }
+                
+                // Solo agregar si tiene ID o nombre
+                if (miembro.id || miembro.nombre) {
+                    // Convertir ID a número
+                    if (miembro.id) {
+                        miembro.id = parseInt(miembro.id);
+                    }
+                    
+                    // Convertir estadísticas a números
+                    ['eventos', 'intervenciones', 'talleres', 'proyectos'].forEach(field => {
+                        if (miembro[field]) {
+                            miembro[field] = parseInt(miembro[field]) || 0;
+                        } else {
+                            miembro[field] = 0;
+                        }
+                    });
+                    
+                    // Limpiar nombre si tiene
+                    if (miembro.nombre) {
+                        miembro.nombre = miembro.nombre.toString().trim();
+                    }
+                    
+                    miembros.push(miembro);
+                }
+            }
+            
+            console.log(`Procesados ${miembros.length} miembros`);
+            return miembros;
+            
+        } catch (error) {
+            console.error('Error procesando datos:', error);
+            return [];
+        }
+    }
+
+    function cargarPerfil(miembro) {
+        // Guardar datos originales
+        datosOriginales = { ...miembro };
+
+        console.log('Cargando perfil para:', miembro.nombre);
+
+        // Calcular edad
+        let edad = "No disponible";
+        let fechaFormateada = "No disponible";
+        
+        if (miembro.nacimiento && miembro.nacimiento !== '' && miembro.nacimiento !== '####-##-##') {
+            try {
+                // Convertir fecha de Google Sheets si es necesario
+                let fechaNac;
+                if (miembro.nacimiento.includes('Date(')) {
+                    // Formato: Date(2000,0,1) -> Enero 1, 2000
+                    const match = miembro.nacimiento.match(/Date\((\d+),(\d+),(\d+)\)/);
+                    if (match) {
+                        fechaNac = new Date(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+                    }
+                } else if (miembro.nacimiento.includes('/')) {
+                    // Formato: 01/01/2000
+                    const parts = miembro.nacimiento.split('/');
+                    fechaNac = new Date(parts[2], parts[1] - 1, parts[0]);
+                } else {
+                    // Formato: YYYY-MM-DD
+                    fechaNac = new Date(miembro.nacimiento);
+                }
+                
+                if (fechaNac && !isNaN(fechaNac.getTime())) {
+                    const hoy = new Date();
+                    let calculoEdad = hoy.getFullYear() - fechaNac.getFullYear();
+                    const mes = hoy.getMonth() - fechaNac.getMonth();
+                    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+                        calculoEdad--;
+                    }
+                    edad = `${calculoEdad} años`;
+                    
+                    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+                    fechaFormateada = fechaNac.toLocaleDateString('es-ES', opciones);
+                    
+                    // Guardar fecha formateada para el input
+                    miembro._fechaInput = fechaNac.toISOString().split('T')[0];
+                }
+            } catch (error) {
+                console.error('Error al procesar fecha:', error);
+                miembro._fechaInput = '';
+            }
+        } else {
+            miembro._fechaInput = '';
+        }
+
+        // Actualizar título
+        document.getElementById('nombre-perfil').textContent = miembro.nombre || 'Miembro';
+
+        // Crear contenido del perfil
+        const perfilCard = document.getElementById('perfil-card');
+
+        // Estadísticas
+        const stats = {
+            eventos: Number(miembro.eventos) || 0,
+            intervenciones: Number(miembro.intervenciones) || 0,
+            talleres: Number(miembro.talleres) || 0,
+            proyectos: Number(miembro.proyectos) || 0
+        };
+
+        perfilCard.innerHTML = `
+            <!-- BOTÓN PARA VOLVER AL BUSCADOR -->
+            <div style="padding: 20px; background-color: var(--light-gray); border-bottom: 1px solid #ddd;">
+                <button onclick="mostrarBuscador()" style="background-color: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                    <i class="fas fa-arrow-left"></i> Volver al Buscador
+                </button>
+            </div>
+            
+            <div class="perfil-header">
+                <div class="perfil-avatar">
+                    <img src="${miembro.avatar || 'img/avatar-default.jpg'}" alt="${miembro.nombre}" onerror="this.onerror=null; this.src='img/avatar-default.jpg';">
+                </div>
+                <div class="perfil-info">
+                    <h2>${miembro.nombre || 'Miembro'}</h2>
+                    <div class="perfil-tags">
+                        <span class="perfil-tag tag-cargo">${miembro.cargo || 'Miembro'}</span>
+                        <span class="perfil-tag tag-depto">Beni</span>
+                    </div>
+                    <p>${miembro.comision || 'Sin comisión asignada'}</p>
+                </div>
+            </div>
+            <div class="perfil-content">
+                <div class="perfil-grid">
+                    <div>
+                        <div class="perfil-seccion">
+                            <h3><i class="fas fa-info-circle"></i> Información Personal</h3>
+                            <div class="info-grid" id="info-personal">
+                                <div class="info-item">
+                                    <div class="info-label">ID</div>
+                                    <div class="info-value">${miembro.id || 'N/A'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Edad</div>
+                                    <div class="info-value" id="edad-value">${edad}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Fecha de Nacimiento</div>
+                                    <div class="info-value" id="fecha-value">${fechaFormateada}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Municipio</div>
+                                    <div class="info-value" id="municipio-value">${miembro.municipio || 'Trinidad'}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="perfil-seccion">
+                            <h3><i class="fas fa-briefcase"></i> Información Institucional</h3>
+                            <div class="info-grid" id="info-institucional">
+                                <div class="info-item">
+                                    <div class="info-label">Comisión</div>
+                                    <div class="info-value" id="comision-value">${miembro.comision || 'Sin comisión'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Cargo</div>
+                                    <div class="info-value" id="cargo-value">${miembro.cargo || 'Sin cargo'}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Tipo de Miembro</div>
+                                    <div class="info-value" id="tipo-value">${miembro.tipo === 'directivo' ? 'Equipo Directivo' : 'Delegado'}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="perfil-seccion">
+                            <h3><i class="fas fa-user-circle"></i> Biografía</h3>
+                            <div class="biografia" id="biografia">
+                                <div id="biografia-texto">${miembro.biografia || 'Esta biografía está en blanco.'}</div>
+                            </div>
+                        </div>
+
+                        <div class="perfil-seccion">
+                            <h3><i class="fas fa-chart-bar"></i> Estadísticas</h3>
+                            <div class="estadisticas-perfil" id="estadisticas">
+                                <div class="estadistica-perfil">
+                                    <div class="estadistica-numero" id="eventos-value">${stats.eventos}</div>
+                                    <div class="estadistica-label">Eventos Asistidos</div>
+                                </div>
+                                <div class="estadistica-perfil">
+                                    <div class="estadistica-numero" id="intervenciones-value">${stats.intervenciones}</div>
+                                    <div class="estadistica-label">Intervenciones</div>
+                                </div>
+                                <div class="estadistica-perfil">
+                                    <div class="estadistica-numero" id="talleres-value">${stats.talleres}</div>
+                                    <div class="estadistica-label">Talleres</div>
+                                </div>
+                                <div class="estadistica-perfil">
+                                    <div class="estadistica-numero" id="proyectos-value">${stats.proyectos}</div>
+                                    <div class="estadistica-label">Proyectos</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="perfil-seccion">
+                            <h3><i class="fas fa-address-card"></i> Contacto</h3>
+                            <div class="contacto-info" id="contacto">
+                                <div class="contacto-item">
+                                    <i class="fas fa-phone"></i>
+                                    <div>
+                                        <strong>Teléfono</strong>
+                                        <p id="telefono-value">${miembro.telefono || 'No disponible'}</p>
+                                    </div>
+                                </div>
+                                <div class="contacto-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div>
+                                        <strong>Ubicación</strong>
+                                        <p id="ubicacion-value">${miembro.municipio || 'Trinidad'}, Beni</p>
+                                    </div>
+                                </div>
+                            </div>
+                            ${miembro.telefono && miembro.telefono !== '#######' && miembro.telefono !== 'No disponible' ? `
+                            <button class="btn-contactar" onclick="contactarMiembro('${miembro.telefono}')">
+                                <i class="fas fa-phone"></i> Contactar por Teléfono
+                            </button>` : ''}
+                        </div>
+
+                        <div class="perfil-seccion">
+                            <h3><i class="fas fa-star"></i> Intereses</h3>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;" id="intereses">
+                                ${miembro.intereses ? 
+                                    miembro.intereses.split(',').map(interes => 
+                                        `<span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">${interes.trim()}</span>`
+                                    ).join('') 
+                                    : 
+                                    `<span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">Diplomacia</span>
+                                     <span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">Relaciones Internacionales</span>
+                                     <span style="background-color: rgba(139, 0, 0, 0.1); color: var(--burgundy); padding: 8px 15px; border-radius: 20px; font-size: 0.9rem;">Liderazgo</span>`
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- COMPARTIR PERFIL -->
+                        <div class="perfil-seccion">
+                            <h3><i class="fas fa-share-alt"></i> Compartir Perfil</h3>
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button onclick="compartirPerfil()" style="flex: 1; background-color: var(--dark-green); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-share"></i> Compartir
+                                </button>
+                                <button onclick="copiarEnlace()" style="flex: 1; background-color: var(--gold); color: var(--dark-gray); border: none; padding: 10px; border-radius: 4px; cursor: pointer;">
+                                    <i class="fas fa-copy"></i> Copiar Enlace
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Ocultar botones de guardar/cancelar (modo solo lectura)
+        ocultarBotonesGuardar();
+    }
+
+    function compartirPerfil() {
+        if (miembroActual) {
+            const url = window.location.href;
+            const texto = `Mira el perfil de ${miembroActual.nombre} en GDB Beni: ${url}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `Perfil de ${miembroActual.nombre} - GDB Beni`,
+                    text: texto,
+                    url: url
+                });
+            } else {
+                // Fallback para navegadores sin Web Share API
+                navigator.clipboard.writeText(texto).then(() => {
+                    alert('Enlace copiado al portapapeles. ¡Compártelo!');
+                });
+            }
+        }
+    }
+
+    function copiarEnlace() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Enlace copiado al portapapeles');
+        }).catch(err => {
+            alert('Error al copiar el enlace');
+        });
+    }
+
+    function mostrarError(mensaje) {
+        const perfilCard = document.getElementById('perfil-card');
+        perfilCard.innerHTML = `
+            <div class="perfil-header" style="text-align: center; padding: 60px;">
+                <div class="perfil-info">
+                    <h2>Error al cargar perfil</h2>
+                    <p>${mensaje}</p>
+                    <div style="margin-top: 30px;">
+                        <button onclick="mostrarBuscador()" class="btn-volver" style="margin-right: 10px;">
+                            <i class="fas fa-search"></i> Buscar Miembros
+                        </button>
+                        <a href="directorio.html" class="btn-volver">
+                            <i class="fas fa-arrow-left"></i> Volver al Directorio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function mostrarBotonesGuardar() {
+        document.getElementById('btn-guardar').style.display = 'inline-block';
+        document.getElementById('btn-cancelar').style.display = 'inline-block';
+    }
+
+    function ocultarBotonesGuardar() {
+        document.getElementById('btn-guardar').style.display = 'none';
+        document.getElementById('btn-cancelar').style.display = 'none';
+    }
+
+    async function guardarCambios() {
+        // Esta versión es solo de lectura
+        alert('La versión actual es solo de lectura. Los cambios se habilitarán en una versión futura.');
+    }
+
+    function cancelarEdicion() {
+        // Volver a los datos originales
+        miembroActual = { ...datosOriginales };
+        
+        // Salir del modo edición
+        modoEdicion = false;
+        ocultarBotonesGuardar();
+        
+        // Recargar el perfil con los datos originales
+        cargarPerfil(miembroActual);
+    }
+
+    function contactarMiembro(telefono) {
+        if (!telefono || telefono === '#######' || telefono === 'No disponible') {
+            alert('Número de teléfono no disponible para este miembro.');
+            return;
+        }
+
+        const confirmar = confirm(`¿Deseas contactar a ${miembroActual.nombre}?\nNúmero: ${telefono}\n\n¿Deseas copiar el número?`);
+        if (confirmar) {
+            navigator.clipboard.writeText(telefono).then(() => {
+                alert(`Número ${telefono} copiado al portapapeles.`);
+            }).catch(err => {
+                alert(`Número: ${telefono}\nPuedes copiarlo manualmente.`);
+            });
+        }
+    }
+
+    // Menu toggle
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (menuToggle && navLinks) {
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        document.body.appendChild(overlay);
+
+        menuToggle.addEventListener('click', function () {
+            navLinks.classList.toggle('active');
+            overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
+            menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+        });
+
+        overlay.addEventListener('click', function () {
+            navLinks.classList.remove('active');
+            overlay.style.display = 'none';
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                overlay.style.display = 'none';
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+            });
+        });
+    }
+</script>
+</body>
+
+</html>
