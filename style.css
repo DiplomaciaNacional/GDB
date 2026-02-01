@@ -1704,3 +1704,640 @@ footer {
     color: white;
     margin-bottom: 10px;
 }
+
+/* Agregar al final del archivo style.css */
+
+/* ============================================
+   RESPONSIVE PARA DISPOSITIVOS MÓVILES (600px o menos)
+   ============================================ */
+
+@media (max-width: 600px) {
+
+    /* Ajustes generales */
+    body {
+        font-size: 14px;
+    }
+
+    .container {
+        width: 95%;
+        padding: 0 10px;
+    }
+
+    section {
+        padding: 40px 0;
+    }
+
+    /* Header y navegación mejorados */
+    .navbar {
+        padding: 12px 4%;
+        height: 70px;
+    }
+
+    .logo-container {
+        gap: 10px;
+    }
+
+    .logo {
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+    }
+
+    .gdb {
+        font-size: 1.3rem;
+    }
+
+    .full-name {
+        font-size: 0.65rem;
+        max-width: 120px;
+        line-height: 1.2;
+    }
+
+    .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(139, 0, 0, 0.1);
+        border-radius: 50%;
+        font-size: 1.3rem;
+    }
+
+    .nav-links {
+        top: 70px;
+        padding: 20px 0;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+    }
+
+    .nav-links li {
+        width: 100%;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-links li:last-child {
+        border-bottom: none;
+    }
+
+    .nav-links a {
+        padding: 18px 20px;
+        font-size: 1.1rem;
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding-left: 30px;
+    }
+
+    .nav-links a::after {
+        display: none;
+    }
+
+    .nav-links a:hover {
+        background-color: rgba(212, 175, 55, 0.1);
+    }
+
+    /* Hero section ajustada */
+    .hero {
+        padding: 100px 4% 50px;
+        min-height: auto;
+    }
+
+    .hero-content {
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+
+    .tagline {
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+    }
+
+    .description {
+        font-size: 1rem;
+        margin-bottom: 25px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .btn-primary,
+    .btn-secondary,
+    .btn-join {
+        width: 100%;
+        padding: 16px 20px;
+        font-size: 1rem;
+    }
+
+    .hero-image {
+        display: none;
+        /* Ocultar en móviles para priorizar contenido */
+    }
+
+    /* Secciones con contenido en grid/columnas */
+    .about-content,
+    .logo-details,
+    .membership-content,
+    .contact-content {
+        gap: 30px;
+    }
+
+    .logo-large {
+        width: 200px;
+        height: 200px;
+    }
+
+    /* Tarjetas de actividades */
+    .activities-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .activity-card {
+        padding: 25px 20px;
+    }
+
+    /* Sección membresía */
+    .membership-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .membership-card {
+        padding: 25px 20px;
+    }
+
+    .amount {
+        font-size: 2.5rem;
+    }
+
+    /* Formularios */
+    .contact-form {
+        padding: 25px 20px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 14px 12px;
+        font-size: 16px;
+        /* Evita zoom en iOS */
+    }
+
+    /* Footer ajustado */
+    .footer-content {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .footer-logo,
+    .footer-links,
+    .footer-social {
+        min-width: 100%;
+    }
+
+    .social-icons {
+        justify-content: center;
+    }
+
+    /* FAQ mejorado para móviles */
+    .faq-question {
+        padding: 18px 15px;
+    }
+
+    .faq-question h3 {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    .faq-answer {
+        padding: 0 15px;
+    }
+
+    .faq-item.active .faq-answer {
+        padding: 0 15px 20px;
+    }
+
+    /* Login page */
+    .login-container {
+        padding: 30px 20px;
+        margin: 20px;
+    }
+
+    .login-logo img {
+        width: 100px;
+        height: 100px;
+    }
+
+    .login-title {
+        font-size: 1.5rem;
+    }
+
+    /* Página de directorio específica */
+    .directorio-container {
+        padding: 20px 0;
+    }
+
+    .filtros-container {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .filtros-busqueda {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #input-busqueda {
+        width: 100%;
+    }
+
+    .miembros-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 15px 0;
+    }
+
+    .miembro-card {
+        padding: 20px 15px;
+    }
+
+    .miembro-avatar {
+        width: 70px;
+        height: 70px;
+    }
+
+    .miembro-info h3 {
+        font-size: 1.1rem;
+    }
+
+    /* Página de perfil específica (perfil.html) */
+    .perfil-hero {
+        padding: 100px 4% 40px;
+    }
+
+    .perfil-hero h1 {
+        font-size: 1.8rem;
+    }
+
+    .perfil-container {
+        padding: 20px 4% 40px;
+    }
+
+    .perfil-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px 15px;
+        gap: 20px;
+    }
+
+    .perfil-avatar {
+        width: 120px;
+        height: 120px;
+    }
+
+    .perfil-info h2 {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+    .perfil-content {
+        padding: 20px 15px;
+    }
+
+    .perfil-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .perfil-seccion {
+        margin-bottom: 25px;
+    }
+
+    .btn-editar {
+        position: static;
+        margin-top: 10px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .info-item {
+        padding: 18px;
+    }
+
+    .biografia {
+        padding: 18px;
+        min-height: 120px;
+    }
+
+    .biografia-textarea {
+        min-height: 150px;
+        font-size: 16px;
+        /* Evita zoom en iOS */
+    }
+
+    .contacto-info {
+        padding: 20px;
+    }
+
+    .estadisticas-perfil {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .estadistica-perfil {
+        padding: 18px 12px;
+    }
+
+    .estadistica-numero {
+        font-size: 1.7rem;
+    }
+
+    .estadistica-input {
+        width: 100%;
+        font-size: 1.3rem;
+    }
+
+    .acciones-perfil {
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 25px;
+    }
+
+    .btn-guardar,
+    .btn-cancelar {
+        width: 100%;
+        padding: 16px;
+        font-size: 1rem;
+    }
+
+    .btn-volver {
+        width: 100%;
+        text-align: center;
+        margin-top: 25px;
+    }
+
+    /* Botones de búsqueda en perfil */
+    #input-busqueda,
+    #input-id {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    #btn-buscar,
+    #btn-buscar-id {
+        padding: 14px 25px;
+        font-size: 1rem;
+    }
+
+    /* Lista de miembros en buscador */
+    #lista-miembros,
+    #lista-selector {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    /* Intereses */
+    .interes-tag {
+        font-size: 0.85rem;
+        padding: 6px 12px;
+    }
+
+    /* Avisos y mensajes */
+    .aviso-desarrollo {
+        margin: 15px;
+        padding: 15px;
+        font-size: 0.9rem;
+    }
+
+    /* Compartir perfil */
+    .perfil-seccion .btn-contactar {
+        padding: 16px;
+        font-size: 1rem;
+    }
+}
+
+/* ============================================
+   AJUSTES ESPECÍFICOS PARA IPHONE (375px o menos)
+   ============================================ */
+@media (max-width: 375px) {
+    .hero h1 {
+        font-size: 1.6rem;
+    }
+
+    .perfil-hero h1 {
+        font-size: 1.5rem;
+    }
+
+    .perfil-info h2 {
+        font-size: 1.3rem;
+    }
+
+    .logo-large {
+        width: 150px;
+        height: 150px;
+    }
+
+    .activities-container,
+    .colors-container {
+        grid-template-columns: 1fr;
+    }
+
+    .estadisticas-perfil {
+        grid-template-columns: 1fr;
+    }
+
+    /* Mejorar la experiencia táctil */
+    button,
+    .btn-primary,
+    .btn-secondary,
+    .btn-join,
+    .btn-submit,
+    .btn-editar,
+    .btn-guardar,
+    .btn-cancelar,
+    .btn-volver,
+    .login-btn,
+    .logout-btn,
+    .miembro-card,
+    .activity-card,
+    .color-card,
+    .faq-item,
+    .perfil-card,
+    .contacto-info {
+        min-height: 44px;
+        /* Altura mínima para objetivos táctiles */
+    }
+
+    .nav-links a,
+    .login-link,
+    .social-icons a,
+    .department,
+    .perfil-tag,
+    .interes-tag {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Ajustar inputs para evitar zoom */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="number"],
+    input[type="password"],
+    textarea,
+    select {
+        font-size: 16px !important;
+        line-height: 1.5;
+    }
+}
+
+/* ============================================
+   AJUSTES PARA MODO HORIZONTAL EN MÓVILES
+   ============================================ */
+@media (max-height: 600px) and (orientation: landscape) {
+    .hero {
+        min-height: auto;
+        padding: 90px 4% 40px;
+    }
+
+    .nav-links {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    .perfil-hero {
+        padding: 90px 4% 30px;
+    }
+
+    .perfil-header {
+        flex-direction: row;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .perfil-avatar {
+        width: 80px;
+        height: 80px;
+    }
+}
+
+/* ============================================
+   MEJORAS DE ACCESIBILIDAD Y USABILIDAD MÓVIL
+   ============================================ */
+
+/* Evitar que el texto sea demasiado pequeño */
+@media (max-width: 600px) {
+
+    p,
+    li,
+    span,
+    .info-value,
+    .info-label,
+    .estadistica-label {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        line-height: 1.3;
+    }
+}
+
+/* Mejorar contraste en modo claro/oscuro del sistema */
+@media (prefers-color-scheme: dark) {
+    @media (max-width: 600px) {
+
+        .activity-card,
+        .membership-card,
+        .contact-form,
+        .perfil-card,
+        .contacto-info,
+        .info-item,
+        .biografia,
+        .testimonial,
+        .faq-item,
+        .login-container {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            border-color: #333;
+        }
+
+        .info-label,
+        .estadistica-label {
+            color: #ccc;
+        }
+
+        .info-value {
+            color: #fff;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea,
+        .info-input,
+        .biografia-textarea,
+        .estadistica-input,
+        #input-busqueda,
+        #input-id {
+            background-color: #2a2a2a;
+            color: #fff;
+            border-color: #444;
+        }
+    }
+}
+
+/* Asegurar que los enlaces sean fácilmente tocables */
+@media (max-width: 600px) {
+    a:not(.btn-primary):not(.btn-secondary):not(.btn-join):not(.btn-submit) {
+        padding: 5px 0;
+        display: inline-block;
+    }
+}
+
+/* Mejorar la legibilidad del texto largo */
+@media (max-width: 600px) {
+
+    .biografia,
+    .testimonial-content,
+    .faq-answer p,
+    .description {
+        text-align: justify;
+        hyphens: auto;
+        -webkit-hyphens: auto;
+    }
+}
+
+/* Ajustes específicos para Safari iOS */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 600px) {
+
+        .hero,
+        .perfil-hero {
+            min-height: -webkit-fill-available;
+        }
+
+        .nav-links {
+            max-height: -webkit-fill-available;
+        }
+    }
+}
