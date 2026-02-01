@@ -526,6 +526,16 @@
     let todosLosMiembros = [];
 
     document.addEventListener('DOMContentLoaded', async function () {
+        // Mostrar mensaje de carga
+        const perfilCard = document.getElementById('perfil-card');
+        perfilCard.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 3rem; color: var(--dark-green); margin-bottom: 20px;"></i>
+                <h3 style="color: var(--dark-green); margin-bottom: 10px;">Cargando...</h3>
+                <p style="color: var(--dark-gray);">Obteniendo información del miembro</p>
+            </div>
+        `;
+        
         // Cargar todos los miembros primero
         await cargarTodosLosMiembros();
         
