@@ -57,31 +57,12 @@
             border: 5px solid var(--gold);
             background-color: white;
             flex-shrink: 0;
-            position: relative;
         }
 
         .perfil-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
-        }
-
-        .cambiar-foto {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background-color: var(--gold);
-            color: var(--dark-gray);
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            display: none;
-        }
-
-        .perfil-avatar:hover .cambiar-foto {
-            display: block;
         }
 
         .perfil-info h2 {
@@ -369,10 +350,10 @@
         }
 
         .interes-tag {
-            background-color: rgba(139, 0, 0, 0.1);
-            color: var(--burgundy);
-            padding: 8px 15px;
-            border-radius: 20px;
+            background-color: rgba(139, 0, 0, 0.1); 
+            color: var(--burgundy); 
+            padding: 8px 15px; 
+            border-radius: 20px; 
             font-size: 0.9rem;
         }
 
@@ -534,126 +515,126 @@
         </div>
     </footer>
 
-    <script>
-        // Configuración - REEMPLAZA ESTA URL CON LA DE TU APPS SCRIPT
-        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNkxubB0KYj1HNhxTE7S7VvEkH3P4U45H_zGjwLqW0PjXXQXKb3xihVKugLF3NCFgE/exec';
+<script>
+    // Configuración - REEMPLAZA ESTA URL CON LA DE TU APPS SCRIPT
+    const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNkxubB0KYj1HNhxTE7S7VvEkH3P4U45H_zGjwLqW0PjXXQXKb3xihVKugLF3NCFgE/exec';
 
-        // Variables globales
-        let miembroActual = null;
-        let modoEdicion = false;
-        let datosOriginales = {};
-        let todosLosMiembros = [];
+    // Variables globales
+    let miembroActual = null;
+    let modoEdicion = false;
+    let datosOriginales = {};
+    let todosLosMiembros = [];
 
-        document.addEventListener('DOMContentLoaded', async function () {
-            // Cargar todos los miembros primero
-            await cargarTodosLosMiembros();
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Cargar todos los miembros primero
+        await cargarTodosLosMiembros();
+        
+        // Obtener ID del miembro desde la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const idParam = urlParams.get('id');
+        const nombreParam = urlParams.get('nombre');
+        
+        console.log('Parámetros URL - ID:', idParam, 'Nombre:', nombreParam);
+        
+        // Buscar miembro por ID o nombre
+        if (idParam && !isNaN(parseInt(idParam))) {
+            const idMiembro = parseInt(idParam);
+            await cargarMiembroPorID(idMiembro);
+        } else if (nombreParam) {
+            await buscarMiembroPorNombre(nombreParam);
+        } else {
+            // Si no hay parámetros, mostrar buscador
+            mostrarBuscador();
+        }
 
-            // Obtener ID del miembro desde la URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const idParam = urlParams.get('id');
-            const nombreParam = urlParams.get('nombre');
+        // Configurar botones
+        document.getElementById('btn-guardar').addEventListener('click', guardarCambios);
+        document.getElementById('btn-cancelar').addEventListener('click', cancelarEdicion);
+    });
 
-            console.log('Parámetros URL - ID:', idParam, 'Nombre:', nombreParam);
-
-            // Buscar miembro por ID o nombre
-            if (idParam && !isNaN(parseInt(idParam))) {
-                const idMiembro = parseInt(idParam);
-                await cargarMiembroPorID(idMiembro);
-            } else if (nombreParam) {
-                await buscarMiembroPorNombre(nombreParam);
-            } else {
-                // Si no hay parámetros, mostrar buscador
-                mostrarBuscador();
-            }
-
-            // Configurar botones
-            document.getElementById('btn-guardar').addEventListener('click', guardarCambios);
-            document.getElementById('btn-cancelar').addEventListener('click', cancelarEdicion);
-        });
-
-        // Cargar miembros desde Google Apps Script
-        async function cargarTodosLosMiembros() {
-            try {
-                console.log('Cargando miembros desde Google Apps Script...');
-
-                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getAllMembers`);
-                const data = await response.json();
-
-                if (data.success) {
-                    todosLosMiembros = data.data;
-
-                    // Asegurar IDs numéricos
-                    todosLosMiembros.forEach(miembro => {
-                        miembro.id = parseInt(miembro.id) || 0;
-                        // Convertir estadísticas a números
-                        ['eventos', 'intervenciones', 'talleres', 'proyectos'].forEach(field => {
-                            miembro[field] = parseInt(miembro[field]) || 0;
-                        });
+    // Cargar miembros desde Google Apps Script
+    async function cargarTodosLosMiembros() {
+        try {
+            console.log('Cargando miembros desde Google Apps Script...');
+            
+            const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getAllMembers`);
+            const data = await response.json();
+            
+            if (data.success) {
+                todosLosMiembros = data.data;
+                
+                // Asegurar IDs numéricos
+                todosLosMiembros.forEach(miembro => {
+                    miembro.id = parseInt(miembro.id) || 0;
+                    // Convertir estadísticas a números
+                    ['eventos', 'intervenciones', 'talleres', 'proyectos'].forEach(field => {
+                        miembro[field] = parseInt(miembro[field]) || 0;
                     });
-
-                    // Ordenar por ID
-                    todosLosMiembros.sort((a, b) => a.id - b.id);
-
-                    console.log(`Cargados ${todosLosMiembros.length} miembros`);
-                } else {
-                    console.error('Error al cargar miembros:', data.error);
-                    mostrarError('Error al cargar miembros: ' + data.error);
-                }
-            } catch (error) {
-                console.error('Error de conexión:', error);
-                mostrarError('Error de conexión. Verifica la URL de Apps Script.');
+                });
+                
+                // Ordenar por ID
+                todosLosMiembros.sort((a, b) => a.id - b.id);
+                
+                console.log(`Cargados ${todosLosMiembros.length} miembros`);
+            } else {
+                console.error('Error al cargar miembros:', data.error);
+                mostrarError('Error al cargar miembros: ' + data.error);
             }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            mostrarError('Error de conexión. Verifica la URL de Apps Script.');
         }
+    }
 
-        async function cargarMiembroPorID(id) {
-            try {
-                console.log('Cargando miembro con ID:', id);
-
-                const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getMemberById&id=${id}`);
-                const data = await response.json();
-
-                if (data.success) {
-                    miembroActual = data.data;
-                    datosOriginales = JSON.parse(JSON.stringify(miembroActual));
-                    cargarPerfil(miembroActual);
-                    console.log('Miembro cargado exitosamente:', miembroActual.nombre);
-                } else {
-                    console.error('Miembro no encontrado:', data.error);
-                    mostrarSelectorMiembros(`No se encontró un miembro con ID ${id}. Selecciona uno:`);
-                }
-            } catch (error) {
-                console.error('Error al cargar miembro:', error);
-                mostrarError('Error al cargar el perfil');
-            }
-        }
-
-        async function buscarMiembroPorNombre(nombreBusqueda) {
-            console.log('Buscando miembro por nombre:', nombreBusqueda);
-
-            const busqueda = nombreBusqueda.toLowerCase().trim();
-            const resultados = todosLosMiembros.filter(miembro =>
-                miembro.nombre && miembro.nombre.toLowerCase().includes(busqueda)
-            );
-
-            if (resultados.length === 1) {
-                // Si hay un solo resultado, cargarlo directamente
-                miembroActual = resultados[0];
+    async function cargarMiembroPorID(id) {
+        try {
+            console.log('Cargando miembro con ID:', id);
+            
+            const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=getMemberById&id=${id}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                miembroActual = data.data;
                 datosOriginales = JSON.parse(JSON.stringify(miembroActual));
                 cargarPerfil(miembroActual);
-                console.log('Miembro encontrado:', miembroActual.nombre);
-            } else if (resultados.length > 1) {
-                // Si hay múltiples resultados, mostrar selector
-                mostrarSelectorMiembros(`Se encontraron ${resultados.length} miembros con "${nombreBusqueda}":`, resultados);
+                console.log('Miembro cargado exitosamente:', miembroActual.nombre);
             } else {
-                // Si no hay resultados
-                mostrarSelectorMiembros(`No se encontraron miembros con "${nombreBusqueda}". Busca de nuevo:`, todosLosMiembros);
+                console.error('Miembro no encontrado:', data.error);
+                mostrarSelectorMiembros(`No se encontró un miembro con ID ${id}. Selecciona uno:`);
             }
+        } catch (error) {
+            console.error('Error al cargar miembro:', error);
+            mostrarError('Error al cargar el perfil');
         }
+    }
 
-        function mostrarBuscador() {
-            const perfilCard = document.getElementById('perfil-card');
+    async function buscarMiembroPorNombre(nombreBusqueda) {
+        console.log('Buscando miembro por nombre:', nombreBusqueda);
+        
+        const busqueda = nombreBusqueda.toLowerCase().trim();
+        const resultados = todosLosMiembros.filter(miembro => 
+            miembro.nombre && miembro.nombre.toLowerCase().includes(busqueda)
+        );
+        
+        if (resultados.length === 1) {
+            // Si hay un solo resultado, cargarlo directamente
+            miembroActual = resultados[0];
+            datosOriginales = JSON.parse(JSON.stringify(miembroActual));
+            cargarPerfil(miembroActual);
+            console.log('Miembro encontrado:', miembroActual.nombre);
+        } else if (resultados.length > 1) {
+            // Si hay múltiples resultados, mostrar selector
+            mostrarSelectorMiembros(`Se encontraron ${resultados.length} miembros con "${nombreBusqueda}":`, resultados);
+        } else {
+            // Si no hay resultados
+            mostrarSelectorMiembros(`No se encontraron miembros con "${nombreBusqueda}". Busca de nuevo:`, todosLosMiembros);
+        }
+    }
 
-            perfilCard.innerHTML = `
+    function mostrarBuscador() {
+        const perfilCard = document.getElementById('perfil-card');
+        
+        perfilCard.innerHTML = `
             <div class="perfil-header" style="text-align: center; padding: 40px;">
                 <div class="perfil-info">
                     <h2>Buscar Miembro</h2>
@@ -704,63 +685,63 @@
                 </div>
             </div>
         `;
-
-            // Configurar eventos del buscador
-            document.getElementById('btn-buscar').addEventListener('click', function () {
-                const busqueda = document.getElementById('input-busqueda').value.trim();
-                if (busqueda) {
-                    // Actualizar URL y buscar
-                    window.history.pushState({}, '', `perfil.html?nombre=${encodeURIComponent(busqueda)}`);
-                    buscarMiembroPorNombre(busqueda);
+        
+        // Configurar eventos del buscador
+        document.getElementById('btn-buscar').addEventListener('click', function() {
+            const busqueda = document.getElementById('input-busqueda').value.trim();
+            if (busqueda) {
+                // Actualizar URL y buscar
+                window.history.pushState({}, '', `perfil.html?nombre=${encodeURIComponent(busqueda)}`);
+                buscarMiembroPorNombre(busqueda);
+            }
+        });
+        
+        document.getElementById('input-busqueda').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('btn-buscar').click();
+            }
+        });
+        
+        document.getElementById('btn-buscar-id').addEventListener('click', function() {
+            const id = parseInt(document.getElementById('input-id').value);
+            if (id && id >= 1) {
+                // Actualizar URL y cargar
+                window.history.pushState({}, '', `perfil.html?id=${id}`);
+                cargarMiembroPorID(id);
+            }
+        });
+        
+        document.getElementById('input-id').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('btn-buscar-id').click();
+            }
+        });
+        
+        // Configurar filtros rápidos
+        document.querySelectorAll('.filtro-rapido').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tipo = this.dataset.tipo;
+                let miembrosFiltrados = todosLosMiembros;
+                
+                if (tipo === 'directivo') {
+                    miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'directivo');
+                } else if (tipo === 'delegado') {
+                    miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'delegado');
                 }
-            });
-
-            document.getElementById('input-busqueda').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('btn-buscar').click();
-                }
-            });
-
-            document.getElementById('btn-buscar-id').addEventListener('click', function () {
-                const id = parseInt(document.getElementById('input-id').value);
-                if (id && id >= 1) {
-                    // Actualizar URL y cargar
-                    window.history.pushState({}, '', `perfil.html?id=${id}`);
-                    cargarMiembroPorID(id);
-                }
-            });
-
-            document.getElementById('input-id').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('btn-buscar-id').click();
-                }
-            });
-
-            // Configurar filtros rápidos
-            document.querySelectorAll('.filtro-rapido').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const tipo = this.dataset.tipo;
-                    let miembrosFiltrados = todosLosMiembros;
-
-                    if (tipo === 'directivo') {
-                        miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'directivo');
-                    } else if (tipo === 'delegado') {
-                        miembrosFiltrados = todosLosMiembros.filter(m => m.tipo === 'delegado');
-                    }
-
-                    document.getElementById('lista-miembros').innerHTML = generarListaMiembros(miembrosFiltrados);
-
-                    // Actualizar botones activos
-                    document.querySelectorAll('.filtro-rapido').forEach(b => {
-                        b.style.opacity = '0.7';
-                    });
-                    this.style.opacity = '1';
+                
+                document.getElementById('lista-miembros').innerHTML = generarListaMiembros(miembrosFiltrados);
+                
+                // Actualizar botones activos
+                document.querySelectorAll('.filtro-rapido').forEach(b => {
+                    b.style.opacity = '0.7';
                 });
+                this.style.opacity = '1';
             });
-        }
+        });
+    }
 
-        function generarListaMiembros(miembros) {
-            return miembros.map(miembro => `
+    function generarListaMiembros(miembros) {
+        return miembros.map(miembro => `
             <div class="info-item" style="cursor: pointer; transition: transform 0.3s;" 
                  onclick="cargarMiembroPorID(${miembro.id})">
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -787,13 +768,13 @@
                 </div>
             </div>
         `).join('');
-        }
+    }
 
-        function mostrarSelectorMiembros(mensaje, miembrosFiltrados = null) {
-            const miembros = miembrosFiltrados || todosLosMiembros;
-            const perfilCard = document.getElementById('perfil-card');
-
-            perfilCard.innerHTML = `
+    function mostrarSelectorMiembros(mensaje, miembrosFiltrados = null) {
+        const miembros = miembrosFiltrados || todosLosMiembros;
+        const perfilCard = document.getElementById('perfil-card');
+        
+        perfilCard.innerHTML = `
             <div class="perfil-header" style="text-align: center; padding: 40px;">
                 <div class="perfil-info">
                     <h2>${mensaje}</h2>
@@ -824,73 +805,73 @@
                 </div>
             </div>
         `;
+        
+        // Configurar filtro en tiempo real
+        const inputBuscar = document.getElementById('input-buscar-lista');
+        inputBuscar.addEventListener('input', function() {
+            const filtro = this.value.toLowerCase().trim();
+            const miembrosFiltrados = todosLosMiembros.filter(m => 
+                m.nombre && m.nombre.toLowerCase().includes(filtro)
+            );
+            document.getElementById('lista-selector').innerHTML = generarListaMiembros(miembrosFiltrados);
+        });
+        
+        document.getElementById('btn-volver-buscador').addEventListener('click', function() {
+            mostrarBuscador();
+        });
+    }
 
-            // Configurar filtro en tiempo real
-            const inputBuscar = document.getElementById('input-buscar-lista');
-            inputBuscar.addEventListener('input', function () {
-                const filtro = this.value.toLowerCase().trim();
-                const miembrosFiltrados = todosLosMiembros.filter(m =>
-                    m.nombre && m.nombre.toLowerCase().includes(filtro)
-                );
-                document.getElementById('lista-selector').innerHTML = generarListaMiembros(miembrosFiltrados);
-            });
+    function cargarPerfil(miembro) {
+        // Guardar datos originales
+        datosOriginales = JSON.parse(JSON.stringify(miembro));
 
-            document.getElementById('btn-volver-buscador').addEventListener('click', function () {
-                mostrarBuscador();
-            });
-        }
+        console.log('Cargando perfil para:', miembro.nombre);
 
-        function cargarPerfil(miembro) {
-            // Guardar datos originales
-            datosOriginales = JSON.parse(JSON.stringify(miembro));
-
-            console.log('Cargando perfil para:', miembro.nombre);
-
-            // Calcular edad
-            let edad = "No disponible";
-            let fechaFormateada = "No disponible";
-
-            if (miembro.nacimiento && miembro.nacimiento !== '' && miembro.nacimiento !== '####-##-##') {
-                try {
-                    const fechaNac = new Date(miembro.nacimiento);
-                    if (!isNaN(fechaNac.getTime())) {
-                        const hoy = new Date();
-                        let calculoEdad = hoy.getFullYear() - fechaNac.getFullYear();
-                        const mes = hoy.getMonth() - fechaNac.getMonth();
-                        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-                            calculoEdad--;
-                        }
-                        edad = `${calculoEdad} años`;
-
-                        const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
-                        fechaFormateada = fechaNac.toLocaleDateString('es-ES', opciones);
-
-                        // Guardar fecha formateada para el input
-                        miembro._fechaInput = fechaNac.toISOString().split('T')[0];
+        // Calcular edad
+        let edad = "No disponible";
+        let fechaFormateada = "No disponible";
+        
+        if (miembro.nacimiento && miembro.nacimiento !== '' && miembro.nacimiento !== '####-##-##') {
+            try {
+                const fechaNac = new Date(miembro.nacimiento);
+                if (!isNaN(fechaNac.getTime())) {
+                    const hoy = new Date();
+                    let calculoEdad = hoy.getFullYear() - fechaNac.getFullYear();
+                    const mes = hoy.getMonth() - fechaNac.getMonth();
+                    if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+                        calculoEdad--;
                     }
-                } catch (error) {
-                    console.error('Error al procesar fecha:', error);
-                    miembro._fechaInput = '';
+                    edad = `${calculoEdad} años`;
+                    
+                    const opciones = { year: 'numeric', month: 'long', day: 'numeric' };
+                    fechaFormateada = fechaNac.toLocaleDateString('es-ES', opciones);
+                    
+                    // Guardar fecha formateada para el input
+                    miembro._fechaInput = fechaNac.toISOString().split('T')[0];
                 }
-            } else {
+            } catch (error) {
+                console.error('Error al procesar fecha:', error);
                 miembro._fechaInput = '';
             }
+        } else {
+            miembro._fechaInput = '';
+        }
 
-            // Actualizar título
-            document.getElementById('nombre-perfil').textContent = miembro.nombre || 'Miembro';
+        // Actualizar título
+        document.getElementById('nombre-perfil').textContent = miembro.nombre || 'Miembro';
 
-            // Crear contenido del perfil
-            const perfilCard = document.getElementById('perfil-card');
+        // Crear contenido del perfil
+        const perfilCard = document.getElementById('perfil-card');
 
-            // Estadísticas
-            const stats = {
-                eventos: Number(miembro.eventos) || 0,
-                intervenciones: Number(miembro.intervenciones) || 0,
-                talleres: Number(miembro.talleres) || 0,
-                proyectos: Number(miembro.proyectos) || 0
-            };
+        // Estadísticas
+        const stats = {
+            eventos: Number(miembro.eventos) || 0,
+            intervenciones: Number(miembro.intervenciones) || 0,
+            talleres: Number(miembro.talleres) || 0,
+            proyectos: Number(miembro.proyectos) || 0
+        };
 
-            perfilCard.innerHTML = `
+        perfilCard.innerHTML = `
             <!-- BOTÓN PARA VOLVER AL BUSCADOR -->
             <div style="padding: 20px; background-color: var(--light-gray); border-bottom: 1px solid #ddd;">
                 <button onclick="mostrarBuscador()" style="background-color: var(--dark-green); color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: 600;">
@@ -1052,15 +1033,15 @@
                             </button>
                             <div id="intereses-container">
                                 <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;" id="intereses">
-                                    ${miembro.intereses ?
-                    miembro.intereses.split(',').map(interes =>
-                        `<span class="interes-tag">${interes.trim()}</span>`
-                    ).join('')
-                    :
-                    `<span class="interes-tag">Diplomacia</span>
+                                    ${miembro.intereses ? 
+                                        miembro.intereses.split(',').map(interes => 
+                                            `<span class="interes-tag">${interes.trim()}</span>`
+                                        ).join('') 
+                                        : 
+                                        `<span class="interes-tag">Diplomacia</span>
                                          <span class="interes-tag">Relaciones Internacionales</span>
                                          <span class="interes-tag">Liderazgo</span>`
-                }
+                                    }
                                 </div>
                                 <textarea id="intereses-input" style="display: none; width: 100%; margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;" 
                                           placeholder="Separar intereses con comas (ej: Diplomacia, Relaciones Internacionales, Liderazgo)">${miembro.intereses || ''}</textarea>
@@ -1083,234 +1064,234 @@
                 </div>
             </div>
         `;
+        
+        // Ocultar botones de guardar/cancelar
+        ocultarBotonesGuardar();
+    }
 
-            // Ocultar botones de guardar/cancelar
-            ocultarBotonesGuardar();
-        }
+    // Funciones para activar edición de cada sección
+    function activarEdicionPersonal() {
+        modoEdicion = true;
+        mostrarBotonesGuardar();
+        
+        document.getElementById('nombre-value').style.display = 'none';
+        document.getElementById('nombre-input').style.display = 'block';
+        
+        document.getElementById('fecha-value').style.display = 'none';
+        document.getElementById('fecha-input').style.display = 'block';
+        
+        document.getElementById('municipio-value').style.display = 'none';
+        document.getElementById('municipio-input').style.display = 'block';
+    }
 
-        // Funciones para activar edición de cada sección
-        function activarEdicionPersonal() {
-            modoEdicion = true;
-            mostrarBotonesGuardar();
+    function activarEdicionInstitucional() {
+        modoEdicion = true;
+        mostrarBotonesGuardar();
+        
+        document.getElementById('comision-value').style.display = 'none';
+        document.getElementById('comision-input').style.display = 'block';
+        
+        document.getElementById('cargo-value').style.display = 'none';
+        document.getElementById('cargo-input').style.display = 'block';
+        
+        document.getElementById('tipo-value').style.display = 'none';
+        document.getElementById('tipo-input').style.display = 'block';
+    }
 
-            document.getElementById('nombre-value').style.display = 'none';
-            document.getElementById('nombre-input').style.display = 'block';
+    function activarEdicionBiografia() {
+        modoEdicion = true;
+        mostrarBotonesGuardar();
+        
+        document.getElementById('biografia-texto').style.display = 'none';
+        document.getElementById('biografia-input').style.display = 'block';
+    }
 
-            document.getElementById('fecha-value').style.display = 'none';
-            document.getElementById('fecha-input').style.display = 'block';
+    function activarEdicionEstadisticas() {
+        modoEdicion = true;
+        mostrarBotonesGuardar();
+        
+        document.getElementById('eventos-value').style.display = 'none';
+        document.getElementById('eventos-input').style.display = 'block';
+        
+        document.getElementById('intervenciones-value').style.display = 'none';
+        document.getElementById('intervenciones-input').style.display = 'block';
+        
+        document.getElementById('talleres-value').style.display = 'none';
+        document.getElementById('talleres-input').style.display = 'block';
+        
+        document.getElementById('proyectos-value').style.display = 'none';
+        document.getElementById('proyectos-input').style.display = 'block';
+    }
 
-            document.getElementById('municipio-value').style.display = 'none';
-            document.getElementById('municipio-input').style.display = 'block';
-        }
+    function activarEdicionContacto() {
+        modoEdicion = true;
+        mostrarBotonesGuardar();
+        
+        document.getElementById('telefono-input').style.display = 'block';
+    }
 
-        function activarEdicionInstitucional() {
-            modoEdicion = true;
-            mostrarBotonesGuardar();
+    function activarEdicionIntereses() {
+        modoEdicion = true;
+        mostrarBotonesGuardar();
+        
+        document.getElementById('intereses').style.display = 'none';
+        document.getElementById('intereses-input').style.display = 'block';
+    }
 
-            document.getElementById('comision-value').style.display = 'none';
-            document.getElementById('comision-input').style.display = 'block';
-
-            document.getElementById('cargo-value').style.display = 'none';
-            document.getElementById('cargo-input').style.display = 'block';
-
-            document.getElementById('tipo-value').style.display = 'none';
-            document.getElementById('tipo-input').style.display = 'block';
-        }
-
-        function activarEdicionBiografia() {
-            modoEdicion = true;
-            mostrarBotonesGuardar();
-
-            document.getElementById('biografia-texto').style.display = 'none';
-            document.getElementById('biografia-input').style.display = 'block';
-        }
-
-        function activarEdicionEstadisticas() {
-            modoEdicion = true;
-            mostrarBotonesGuardar();
-
-            document.getElementById('eventos-value').style.display = 'none';
-            document.getElementById('eventos-input').style.display = 'block';
-
-            document.getElementById('intervenciones-value').style.display = 'none';
-            document.getElementById('intervenciones-input').style.display = 'block';
-
-            document.getElementById('talleres-value').style.display = 'none';
-            document.getElementById('talleres-input').style.display = 'block';
-
-            document.getElementById('proyectos-value').style.display = 'none';
-            document.getElementById('proyectos-input').style.display = 'block';
-        }
-
-        function activarEdicionContacto() {
-            modoEdicion = true;
-            mostrarBotonesGuardar();
-
-            document.getElementById('telefono-input').style.display = 'block';
-        }
-
-        function activarEdicionIntereses() {
-            modoEdicion = true;
-            mostrarBotonesGuardar();
-
-            document.getElementById('intereses').style.display = 'none';
-            document.getElementById('intereses-input').style.display = 'block';
-        }
-
-        async function guardarCambios() {
-            if (!modoEdicion || !miembroActual) return;
-
-            const confirmar = confirm('¿Guardar cambios en el perfil?\n\nLos cambios se actualizarán en Google Sheets.');
-
-            if (!confirmar) return;
-
-            try {
-                // Mostrar carga
-                document.getElementById('btn-guardar').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-                document.getElementById('btn-guardar').disabled = true;
-
-                // Recopilar datos actualizados
-                const datosActualizados = {
-                    id: miembroActual.id,
-                    action: 'updateMember'
-                };
-
-                // Información personal
-                if (document.getElementById('nombre-input').style.display === 'block') {
-                    datosActualizados.nombre = document.getElementById('nombre-input').value;
-                    datosActualizados.nacimiento = document.getElementById('fecha-input').value;
-                    datosActualizados.municipio = document.getElementById('municipio-input').value;
-                }
-
-                // Información institucional
-                if (document.getElementById('comision-input').style.display === 'block') {
-                    datosActualizados.comision = document.getElementById('comision-input').value;
-                    datosActualizados.cargo = document.getElementById('cargo-input').value;
-                    datosActualizados.tipo = document.getElementById('tipo-input').value;
-                }
-
-                // Biografía
-                if (document.getElementById('biografia-input').style.display === 'block') {
-                    datosActualizados.biografia = document.getElementById('biografia-input').value;
-                }
-
-                // Estadísticas
-                if (document.getElementById('eventos-input').style.display === 'block') {
-                    datosActualizados.eventos = parseInt(document.getElementById('eventos-input').value) || 0;
-                    datosActualizados.intervenciones = parseInt(document.getElementById('intervenciones-input').value) || 0;
-                    datosActualizados.talleres = parseInt(document.getElementById('talleres-input').value) || 0;
-                    datosActualizados.proyectos = parseInt(document.getElementById('proyectos-input').value) || 0;
-                }
-
-                // Contacto
-                if (document.getElementById('telefono-input').style.display === 'block') {
-                    datosActualizados.telefono = document.getElementById('telefono-input').value;
-                }
-
-                // Intereses
-                if (document.getElementById('intereses-input').style.display === 'block') {
-                    datosActualizados.intereses = document.getElementById('intereses-input').value;
-                }
-
-                // Enviar actualización a Google Sheets
-                const formData = new URLSearchParams();
-                for (const key in datosActualizados) {
-                    formData.append(key, datosActualizados[key]);
-                }
-
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    alert('✅ Cambios guardados exitosamente en Google Sheets');
-
-                    // Actualizar miembroActual con los nuevos datos
-                    Object.assign(miembroActual, datosActualizados);
-                    datosOriginales = JSON.parse(JSON.stringify(miembroActual));
-
-                    // Salir del modo edición
-                    modoEdicion = false;
-                    ocultarBotonesGuardar();
-
-                    // Recargar el perfil
-                    cargarPerfil(miembroActual);
-
-                } else {
-                    alert('❌ Error al guardar cambios: ' + result.error);
-                }
-
-            } catch (error) {
-                console.error('Error al guardar:', error);
-                alert('❌ Error de conexión al guardar cambios');
-            } finally {
-                // Restaurar botón
-                document.getElementById('btn-guardar').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
-                document.getElementById('btn-guardar').disabled = false;
+    async function guardarCambios() {
+        if (!modoEdicion || !miembroActual) return;
+        
+        const confirmar = confirm('¿Guardar cambios en el perfil?\n\nLos cambios se actualizarán en Google Sheets.');
+        
+        if (!confirmar) return;
+        
+        try {
+            // Mostrar carga
+            document.getElementById('btn-guardar').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            document.getElementById('btn-guardar').disabled = true;
+            
+            // Recopilar datos actualizados
+            const datosActualizados = {
+                id: miembroActual.id,
+                action: 'updateMember'
+            };
+            
+            // Información personal
+            if (document.getElementById('nombre-input').style.display === 'block') {
+                datosActualizados.nombre = document.getElementById('nombre-input').value;
+                datosActualizados.nacimiento = document.getElementById('fecha-input').value;
+                datosActualizados.municipio = document.getElementById('municipio-input').value;
             }
-        }
-
-        function cancelarEdicion() {
-            const confirmar = confirm('¿Cancelar todos los cambios?');
-
-            if (confirmar) {
-                // Volver a los datos originales
-                miembroActual = JSON.parse(JSON.stringify(datosOriginales));
-
+            
+            // Información institucional
+            if (document.getElementById('comision-input').style.display === 'block') {
+                datosActualizados.comision = document.getElementById('comision-input').value;
+                datosActualizados.cargo = document.getElementById('cargo-input').value;
+                datosActualizados.tipo = document.getElementById('tipo-input').value;
+            }
+            
+            // Biografía
+            if (document.getElementById('biografia-input').style.display === 'block') {
+                datosActualizados.biografia = document.getElementById('biografia-input').value;
+            }
+            
+            // Estadísticas
+            if (document.getElementById('eventos-input').style.display === 'block') {
+                datosActualizados.eventos = parseInt(document.getElementById('eventos-input').value) || 0;
+                datosActualizados.intervenciones = parseInt(document.getElementById('intervenciones-input').value) || 0;
+                datosActualizados.talleres = parseInt(document.getElementById('talleres-input').value) || 0;
+                datosActualizados.proyectos = parseInt(document.getElementById('proyectos-input').value) || 0;
+            }
+            
+            // Contacto
+            if (document.getElementById('telefono-input').style.display === 'block') {
+                datosActualizados.telefono = document.getElementById('telefono-input').value;
+            }
+            
+            // Intereses
+            if (document.getElementById('intereses-input').style.display === 'block') {
+                datosActualizados.intereses = document.getElementById('intereses-input').value;
+            }
+            
+            // Enviar actualización a Google Sheets
+            const formData = new URLSearchParams();
+            for (const key in datosActualizados) {
+                formData.append(key, datosActualizados[key]);
+            }
+            
+            const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('✅ Cambios guardados exitosamente en Google Sheets');
+                
+                // Actualizar miembroActual con los nuevos datos
+                Object.assign(miembroActual, datosActualizados);
+                datosOriginales = JSON.parse(JSON.stringify(miembroActual));
+                
                 // Salir del modo edición
                 modoEdicion = false;
                 ocultarBotonesGuardar();
-
-                // Recargar el perfil con los datos originales
+                
+                // Recargar el perfil
                 cargarPerfil(miembroActual);
+                
+            } else {
+                alert('❌ Error al guardar cambios: ' + result.error);
             }
+            
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            alert('❌ Error de conexión al guardar cambios');
+        } finally {
+            // Restaurar botón
+            document.getElementById('btn-guardar').innerHTML = '<i class="fas fa-save"></i> Guardar Cambios';
+            document.getElementById('btn-guardar').disabled = false;
         }
+    }
 
-        function mostrarBotonesGuardar() {
-            document.getElementById('btn-guardar').style.display = 'inline-block';
-            document.getElementById('btn-cancelar').style.display = 'inline-block';
+    function cancelarEdicion() {
+        const confirmar = confirm('¿Cancelar todos los cambios?');
+        
+        if (confirmar) {
+            // Volver a los datos originales
+            miembroActual = JSON.parse(JSON.stringify(datosOriginales));
+            
+            // Salir del modo edición
+            modoEdicion = false;
+            ocultarBotonesGuardar();
+            
+            // Recargar el perfil con los datos originales
+            cargarPerfil(miembroActual);
         }
+    }
 
-        function ocultarBotonesGuardar() {
-            document.getElementById('btn-guardar').style.display = 'none';
-            document.getElementById('btn-cancelar').style.display = 'none';
-        }
+    function mostrarBotonesGuardar() {
+        document.getElementById('btn-guardar').style.display = 'inline-block';
+        document.getElementById('btn-cancelar').style.display = 'inline-block';
+    }
 
-        function compartirPerfil() {
-            if (miembroActual) {
-                const url = window.location.href;
-                const texto = `Mira el perfil de ${miembroActual.nombre} en GDB Beni: ${url}`;
+    function ocultarBotonesGuardar() {
+        document.getElementById('btn-guardar').style.display = 'none';
+        document.getElementById('btn-cancelar').style.display = 'none';
+    }
 
-                if (navigator.share) {
-                    navigator.share({
-                        title: `Perfil de ${miembroActual.nombre} - GDB Beni`,
-                        text: texto,
-                        url: url
-                    });
-                } else {
-                    // Fallback para navegadores sin Web Share API
-                    navigator.clipboard.writeText(texto).then(() => {
-                        alert('Enlace copiado al portapapeles. ¡Compártelo!');
-                    });
-                }
-            }
-        }
-
-        function copiarEnlace() {
+    function compartirPerfil() {
+        if (miembroActual) {
             const url = window.location.href;
-            navigator.clipboard.writeText(url).then(() => {
-                alert('Enlace copiado al portapapeles');
-            }).catch(err => {
-                alert('Error al copiar el enlace');
-            });
+            const texto = `Mira el perfil de ${miembroActual.nombre} en GDB Beni: ${url}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `Perfil de ${miembroActual.nombre} - GDB Beni`,
+                    text: texto,
+                    url: url
+                });
+            } else {
+                // Fallback para navegadores sin Web Share API
+                navigator.clipboard.writeText(texto).then(() => {
+                    alert('Enlace copiado al portapapeles. ¡Compártelo!');
+                });
+            }
         }
+    }
 
-        function mostrarError(mensaje) {
-            const perfilCard = document.getElementById('perfil-card');
-            perfilCard.innerHTML = `
+    function copiarEnlace() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url).then(() => {
+            alert('Enlace copiado al portapapeles');
+        }).catch(err => {
+            alert('Error al copiar el enlace');
+        });
+    }
+
+    function mostrarError(mensaje) {
+        const perfilCard = document.getElementById('perfil-card');
+        perfilCard.innerHTML = `
             <div class="perfil-header" style="text-align: center; padding: 60px;">
                 <div class="perfil-info">
                     <h2>Error al cargar perfil</h2>
@@ -1326,54 +1307,54 @@
                 </div>
             </div>
         `;
+    }
+
+    function contactarMiembro(telefono) {
+        if (!telefono || telefono === '#######' || telefono === 'No disponible') {
+            alert('Número de teléfono no disponible para este miembro.');
+            return;
         }
 
-        function contactarMiembro(telefono) {
-            if (!telefono || telefono === '#######' || telefono === 'No disponible') {
-                alert('Número de teléfono no disponible para este miembro.');
-                return;
-            }
-
-            const confirmar = confirm(`¿Deseas contactar a ${miembroActual.nombre}?\nNúmero: ${telefono}\n\n¿Deseas copiar el número?`);
-            if (confirmar) {
-                navigator.clipboard.writeText(telefono).then(() => {
-                    alert(`Número ${telefono} copiado al portapapeles.`);
-                }).catch(err => {
-                    alert(`Número: ${telefono}\nPuedes copiarlo manualmente.`);
-                });
-            }
-        }
-
-        // Menu toggle
-        const menuToggle = document.querySelector('.menu-toggle');
-        const navLinks = document.querySelector('.nav-links');
-
-        if (menuToggle && navLinks) {
-            const overlay = document.createElement('div');
-            overlay.className = 'overlay';
-            document.body.appendChild(overlay);
-
-            menuToggle.addEventListener('click', function () {
-                navLinks.classList.toggle('active');
-                overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
-                menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+        const confirmar = confirm(`¿Deseas contactar a ${miembroActual.nombre}?\nNúmero: ${telefono}\n\n¿Deseas copiar el número?`);
+        if (confirmar) {
+            navigator.clipboard.writeText(telefono).then(() => {
+                alert(`Número ${telefono} copiado al portapapeles.`);
+            }).catch(err => {
+                alert(`Número: ${telefono}\nPuedes copiarlo manualmente.`);
             });
+        }
+    }
 
-            overlay.addEventListener('click', function () {
+    // Menu toggle
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (menuToggle && navLinks) {
+        const overlay = document.createElement('div');
+        overlay.className = 'overlay';
+        document.body.appendChild(overlay);
+
+        menuToggle.addEventListener('click', function () {
+            navLinks.classList.toggle('active');
+            overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
+            menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
+        });
+
+        overlay.addEventListener('click', function () {
+            navLinks.classList.remove('active');
+            overlay.style.display = 'none';
+            menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        });
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
                 navLinks.classList.remove('active');
                 overlay.style.display = 'none';
                 menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
             });
-
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.addEventListener('click', () => {
-                    navLinks.classList.remove('active');
-                    overlay.style.display = 'none';
-                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-                });
-            });
-        }
-    </script>
+        });
+    }
+</script>
 </body>
 
 </html>
