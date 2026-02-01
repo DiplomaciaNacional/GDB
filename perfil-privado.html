@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil Privado - GDB Beni</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ESTILOS ESPECÍFICOS PARA PERFIL PRIVADO */
+        .perfil-privado-header {
+            background: linear-gradient(135deg, var(--dark-green), #004d00);
+            color: white;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .perfil-privado-header h1 {
+            color: white;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--dark-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .perfil-privado-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .perfil-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+        
+        .tab-btn {
+            padding: 12px 25px;
+            background: none;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            color: var(--medium-gray);
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        
+        .tab-btn:hover {
+            color: var(--burgundy);
+            background-color: rgba(139, 0, 0, 0.05);
+        }
+        
+        .tab-btn.active {
+            color: var(--dark-green);
+            border-bottom: 3px solid var(--dark-green);
+            background-color: rgba(0, 100, 0, 0.05);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .perfil-card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .perfil-header {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+        
+        .perfil-avatar-grande {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: var(--dark-green);
+            border: 5px solid var(--gold);
+        }
+        
+        .perfil-datos h2 {
+            color: var(--dark-green);
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        
+        .perfil-datos h2::after {
+            display: none;
+        }
+        
+        .perfil-titulo {
+            color: var(--burgundy);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .datos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .dato-item {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--burgundy);
+        }
+        
+        .dato-label {
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .dato-valor {
+            color: var(--dark-green);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .seccion-titulo {
+            color: var(--dark-green);
+            margin: 30px 0 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .seccion-titulo i {
+            color: var(--gold);
+        }
+        
+        .lista-datos {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .lista-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+        
+        .lista-item:hover {
+            background-color: rgba(139, 0, 0, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .lista-icono {
+            color: var(--burgundy);
+            font-size: 1.2rem;
+            width: 30px;
+            text-align: center;
+        }
+        
+        /* ESTILOS PARA FORMULARIOS DE EDICIÓN */
+        .form-edicion {
+            background-color: var(--light-gray);
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .form-fila {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-fila {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .botones-accion {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-editar {
+            background-color: var(--gold);
+            color: var(--dark-gray);
+        }
+        
+        .btn-guardar {
+            background-color: var(--dark-green);
+            color: white;
+        }
+        
+        .btn-cancelar {
+            background-color: var(--medium-gray);
+            color: white;
+        }
+        
+        /* ANIMACIONES */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ESTADÍSTICAS */
+        .estadisticas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .estadistica-item {
+            background: linear-gradient(135deg, var(--dark-green), #004d00);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .estadistica-numero {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .estadistica-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .perfil-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .perfil-tabs {
+                flex-wrap: wrap;
+            }
+            
+            .perfil-privado-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 15px 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ENCABEZADO DEL PERFIL PRIVADO -->
+    <header class="perfil-privado-header">
+        <h1><i class="fas fa-user-shield"></i> Perfil Privado - GDB Beni</h1>
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">JD</div>
+            <div>
+                <div id="user-name" style="font-weight: 600;">Cargando...</div>
+                <div style="font-size: 0.8rem; opacity: 0.8;" id="user-email">...</div>
+            </div>
+            <button class="logout-btn" id="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </header>
+    
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="perfil-privado-container">
+        <!-- PESTAÑAS -->
+        <div class="perfil-tabs">
+            <button class="tab-btn active" data-tab="info">
+                <i class="fas fa-user"></i> Información Personal
+            </button>
+            <button class="tab-btn" data-tab="actividades">
+                <i class="fas fa-calendar-check"></i> Mis Actividades
+            </button>
+            <button class="tab-btn" data-tab="documentos">
+                <i class="fas fa-file-alt"></i> Documentos
+            </button>
+            <button class="tab-btn" data-tab="config">
+                <i class="fas fa-cog"></i> Configuración
+            </button>
+        </div>
+        
+        <!-- CONTENIDO DE PESTAÑAS -->
+        
+        <!-- PESTAÑA 1: INFORMACIÓN PERSONAL -->
+        <div class="tab-content active" id="tab-info">
+            <div class="perfil-card">
+                <div class="perfil-header">
+                    <div class="perfil-avatar-grande" id="grand-avatar">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="perfil-datos">
+                        <h2 id="full-name">Cargando nombre...</h2>
+                        <div class="perfil-titulo" id="user-title">Delegado GDB Beni</div>
+                        <div style="color: var(--medium-gray); margin-bottom: 15px;" id="user-id">
+                            ID: <span id="display-id">...</span>
+                        </div>
+                        <button class="btn-primary btn-editar" id="edit-info-btn">
+                            <i class="fas fa-edit"></i> Editar Información
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- DATOS PERSONALES -->
+                <h3 class="seccion-titulo">
+                    <i class="fas fa-id-card"></i> Datos Personales
+                </h3>
+                <div class="datos-grid" id="personal-data">
+                    <!-- Los datos se cargarán con JavaScript -->
+                </div>
+                
+                <!-- CONTACTO -->
+                <h3 class="seccion-titulo">
+                    <i class="fas fa-address-book"></i> Información de Contacto
+                </h3>
+                <div class="lista-datos" id="contact-data">
+                    <!-- Los datos se cargarán con JavaScript -->
+                </div>
+                
+                <!-- ESTADÍSTICAS -->
+                <h3 class="seccion-titulo">
+                    <i class="fas fa-chart-line"></i> Mis Estadísticas
+                </h3>
+                <div class="estadisticas-grid">
+                    <div class="estadistica-item">
+                        <div class="estadistica-numero" id="stat-events">0</div>
+                        <div class="estadistica-label">Eventos Asistidos</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-numero" id="stat-hours">0</div>
+                        <div class="estadistica-label">Horas de Voluntariado</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-numero" id="stat-projects">0</div>
+                        <div class="estadistica-label">Proyectos Participados</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-numero" id="stat-ranking">#0</div>
+                        <div class="estadistica-label">Ranking General</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PESTAÑA 2: ACTIVIDADES -->
+        <div class="tab-content" id="tab-actividades">
+            <div class="perfil-card">
+                <h2><i class="fas fa-calendar-check"></i> Mis Actividades</h2>
+                <p style="color: var(--medium-gray); margin-bottom: 30px;">
+                    Historial de tu participación en eventos GDB
+                </p>
+                
+                <div id="activities-list">
+                    <p style="text-align: center; padding: 40px; color: var(--medium-gray);">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando actividades...
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PESTAÑA 3: DOCUMENTOS -->
+        <div class="tab-content" id="tab-documentos">
+            <div class="perfil-card">
+                <h2><i class="fas fa-file-alt"></i> Mis Documentos</h2>
+                <p style="color: var(--medium-gray); margin-bottom: 30px;">
+                    Documentos personales y certificados GDB
+                </p>
+                
+                <div id="documents-list">
+                    <p style="text-align: center; padding: 40px; color: var(--medium-gray);">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando documentos...
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- PESTAÑA 4: CONFIGURACIÓN -->
+        <div class="tab-content" id="tab-config">
+            <div class="perfil-card">
+                <h2><i class="fas fa-cog"></i> Configuración de Cuenta</h2>
+                
+                <div class="form-edicion">
+                    <h3 style="color: var(--dark-green); margin-bottom: 20px;">
+                        <i class="fas fa-lock"></i> Seguridad
+                    </h3>
+                    
+                    <div class="form-fila">
+                        <div class="form-group">
+                            <label>Contraseña Actual</label>
+                            <input type="password" id="current-password" 
+                                   placeholder="Ingresa tu contraseña actual">
+                        </div>
+                        <div class="form-group">
+                            <label>Nueva Contraseña</label>
+                            <input type="password" id="new-password" 
+                                   placeholder="Mínimo 8 caracteres">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Confirmar Nueva Contraseña</label>
+                        <input type="password" id="confirm-password" 
+                               placeholder="Repite la nueva contraseña">
+                    </div>
+                    
+                    <div class="botones-accion">
+                        <button class="btn-primary btn-guardar" id="save-password-btn">
+                            <i class="fas fa-save"></i> Cambiar Contraseña
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid var(--light-gray);">
+                    <h3 style="color: var(--burgundy); margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i> Zona de Peligro
+                    </h3>
+                    
+                    <button class="btn-primary" id="delete-account-btn" 
+                            style="background-color: #d32f2f;">
+                        <i class="fas fa-trash"></i> Eliminar Mi Cuenta
+                    </button>
+                    
+                    <p style="color: var(--medium-gray); font-size: 0.9rem; margin-top: 15px;">
+                        <i class="fas fa-info-circle"></i>
+                        Esta acción eliminará permanentemente tu cuenta y todos tus datos.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- MODAL DE EDICIÓN -->
+    <div id="edit-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <h3 style="color: var(--dark-green); margin-bottom: 20px;">
+                <i class="fas fa-edit"></i> Editar Información
+            </h3>
+            <div id="edit-form-container">
+                <!-- Formulario se cargará dinámicamente -->
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button onclick="cerrarModal()" class="btn-primary btn-cancelar" style="flex: 1;">
+                    Cancelar
+                </button>
+                <button onclick="guardarCambios()" class="btn-primary btn-guardar" style="flex: 1;">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        // ============================================
+        // CONFIGURACIÓN
+        // ============================================
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzo6hBQAbtaP7QUQl3lPeczsZyYcFHSw6oLCee7aAq8HeGVZzVl_KvJ33TIl6S1pTTI/exec';
+        const STORAGE_KEYS = {
+            SESSION: 'gdb_session'
+        };
+        
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let usuarioActual = null;
+        let modoEdicion = false;
+        
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Perfil privado inicializado');
+            
+            // 1. Verificar sesión
+            if (!verificarSesion()) {
+                window.location.href = 'login.html?auth_required=true';
+                return;
+            }
+            
+            // 2. Cargar datos del usuario
+            await cargarDatosUsuario();
+            
+            // 3. Configurar eventos
+            configurarEventos();
+            
+            // 4. Inicializar pestañas
+            inicializarTabs();
+        });
+        
+        // ============================================
+        // FUNCIONES DE SESIÓN
+        // ============================================
+        function verificarSesion() {
+            try {
+                const sesionStr = localStorage.getItem(STORAGE_KEYS.SESSION) || 
+                                 sessionStorage.getItem(STORAGE_KEYS.SESSION);
+                
+                if (!sesionStr) return false;
+                
+                const sesion = JSON.parse(sesionStr);
+                const ahora = Date.now();
+                
+                // Verificar expiración
+                if (sesion.expiracion && ahora > sesion.expiracion) {
+                    limpiarSesion();
+                    return false;
+                }
+                
+                usuarioActual = sesion;
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Error verificando sesión:', error);
+                limpiarSesion();
+                return false;
+            }
+        }
+        
+        function limpiarSesion() {
+            localStorage.removeItem(STORAGE_KEYS.SESSION);
+            sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+            usuarioActual = null;
+        }
+        
+        function cerrarSesion() {
+            limpiarSesion();
+            window.location.href = 'login.html?logout=true';
+        }
+        
+        // ============================================
+        // CARGA DE DATOS
+        // ============================================
+        async function cargarDatosUsuario() {
+            if (!usuarioActual) return;
+            
+            mostrarLoading('Cargando perfil...');
+            
+            try {
+                // Obtener ID de la URL o de la sesión
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('id') || usuarioActual.id;
+                
+                // Solicitar datos al servidor
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getUserData',
+                        userId: userId,
+                        sessionToken: usuarioActual.token
+                    })
+                });
+                
+                const resultado = await response.json();
+                
+                if (resultado.success) {
+                    mostrarDatosUsuario(resultado.data);
+                } else {
+                    mostrarError('Error cargando datos: ' + resultado.error);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error cargando datos:', error);
+                mostrarError('Error de conexión');
+            } finally {
+                ocultarLoading();
+            }
+        }
+        
+        function mostrarDatosUsuario(datos) {
+            // Actualizar encabezado
+            document.getElementById('user-name').textContent = datos.nombre || 'Usuario';
+            document.getElementById('user-email').textContent = datos.email || '';
+            document.getElementById('user-avatar').textContent = 
+                datos.iniciales || datos.nombre.charAt(0).toUpperCase();
+            
+            // Actualizar perfil principal
+            document.getElementById('full-name').textContent = datos.nombre || 'Nombre no disponible';
+            document.getElementById('display-id').textContent = datos.id || '0000';
+            document.getElementById('grand-avatar').innerHTML = 
+                datos.iniciales ? datos.iniciales : '<i class="fas fa-user-graduate"></i>';
+            
+            // Actualizar datos personales
+            actualizarDatosPersonales(datos);
+            
+            // Actualizar estadísticas
+            actualizarEstadisticas(datos.estadisticas || {});
+        }
+        
+        function actualizarDatosPersonales(datos) {
+            const personalDataDiv = document.getElementById('personal-data');
+            const contactDataDiv = document.getElementById('contact-data');
+            
+            // Datos personales
+            const datosPersonales = [
+                { label: 'ID GDB', value: datos.id || 'No asignado', icon: 'fas fa-id-badge' },
+                { label: 'Fecha de Nacimiento', value: datos.fecha_nacimiento || 'No especificada', icon: 'fas fa-birthday-cake' },
+                { label: 'Edad', value: datos.edad || 'No especificada', icon: 'fas fa-user-clock' },
+                { label: 'Género', value: datos.genero || 'No especificado', icon: 'fas fa-venus-mars' },
+                { label: 'Departamento', value: datos.departamento || 'Beni', icon: 'fas fa-map-marker-alt' },
+                { label: 'Institución', value: datos.institucion || 'No especificada', icon: 'fas fa-university' }
+            ];
+            
+            personalDataDiv.innerHTML = datosPersonales.map(item => `
+                <div class="dato-item">
+                    <div class="dato-label">
+                        <i class="${item.icon}"></i> ${item.label}
+                    </div>
+                    <div class="dato-valor">${item.value}</div>
+                </div>
+            `).join('');
+            
+            // Datos de contacto
+            const datosContacto = [
+                { label: 'Email', value: datos.email || 'No especificado', icon: 'fas fa-envelope', type: 'email' },
+                { label: 'Teléfono', value: datos.telefono || 'No especificado', icon: 'fas fa-phone', type: 'tel' },
+                { label: 'WhatsApp', value: datos.whatsapp || datos.telefono || 'No especificado', icon: 'fab fa-whatsapp', type: 'whatsapp' },
+                { label: 'Facebook', value: datos.facebook || 'No especificado', icon: 'fab fa-facebook', type: 'facebook' },
+                { label: 'Instagram', value: datos.instagram || 'No especificado', icon: 'fab fa-instagram', type: 'instagram' }
+            ];
+            
+            contactDataDiv.innerHTML = datosContacto.map(item => `
+                <div class="lista-item">
+                    <div class="lista-icono">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: 600; margin-bottom: 5px;">${item.label}</div>
+                        <div>${item.value}</div>
+                    </div>
+                    ${item.value !== 'No especificado' ? `
+                    <a href="${getLinkPorTipo(item.type, item.value)}" target="_blank" 
+                       class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+        
+        function getLinkPorTipo(tipo, valor) {
+            switch(tipo) {
+                case 'email': return `mailto:${valor}`;
+                case 'tel': return `tel:${valor}`;
+                case 'whatsapp': return `https://wa.me/${valor.replace(/\D/g, '')}`;
+                case 'facebook': return valor.includes('http') ? valor : `https://facebook.com/${valor}`;
+                case 'instagram': return valor.includes('http') ? valor : `https://instagram.com/${valor}`;
+                default: return '#';
+            }
+        }
+        
+        function actualizarEstadisticas(stats) {
+            document.getElementById('stat-events').textContent = stats.eventos || 0;
+            document.getElementById('stat-hours').textContent = stats.horas || 0;
+            document.getElementById('stat-projects').textContent = stats.proyectos || 0;
+            document.getElementById('stat-ranking').textContent = stats.ranking ? `#${stats.ranking}` : '#0';
+        }
+        
+        // ============================================
+        // FUNCIONES DE UI
+        // ============================================
+        function configurarEventos() {
+            // Botón de logout
+            document.getElementById('logout-btn').addEventListener('click', cerrarSesion);
+            
+            // Botón de editar información
+            document.getElementById('edit-info-btn').addEventListener('click', abrirModalEdicion);
+            
+            // Cambio de contraseña
+            document.getElementById('save-password-btn').addEventListener('click', cambiarPassword);
+            
+            // Eliminar cuenta
+            document.getElementById('delete-account-btn').addEventListener('click', eliminarCuenta);
+        }
+        
+        function inicializarTabs() {
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remover clase active de todos
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Agregar clase active al seleccionado
+                    btn.classList.add('active');
+                    const tabId = btn.getAttribute('data-tab');
+                    document.getElementById(`tab-${tabId}`).classList.add('active');
+                });
+            });
+        }
+        
+        function abrirModalEdicion() {
+            // Cargar formulario de edición
+            const formHtml = `
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="edit-nombre" value="${usuarioActual.nombre || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="edit-telefono" placeholder="Ej: 77777777">
+                    </div>
+                </div>
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" id="edit-fecha-nac">
+                    </div>
+                    <div class="form-group">
+                        <label>Género</label>
+                        <select id="edit-genero">
+                            <option value="">Seleccionar</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Biografía</label>
+                    <textarea id="edit-bio" rows="4" placeholder="Cuéntanos sobre ti..."></textarea>
+                </div>
+            `;
+            
+            document.getElementById('edit-form-container').innerHTML = formHtml;
+            document.getElementById('edit-modal').style.display = 'flex';
+        }
+        
+        function cerrarModal() {
+            document.getElementById('edit-modal').style.display = 'none';
+        }
+        
+        async function guardarCambios() {
+            // Aquí implementarías la lógica para guardar cambios
+            mostrarExito('Cambios guardados correctamente');
+            cerrarModal();
+        }
+        
+        async function cambiarPassword() {
+            const currentPass = document.getElementById('current-password').value;
+            const newPass = document.getElementById('new-password').value;
+            const confirmPass = document.getElementById('confirm-password').value;
+            
+            // Validaciones
+            if (!currentPass || !newPass || !confirmPass) {
+                mostrarError('Todos los campos son obligatorios');
+                return;
+            }
+            
+            if (newPass.length < 8) {
+                mostrarError('La nueva contraseña debe tener al menos 8 caracteres');
+                return;
+            }
+            
+            if (newPass !== confirmPass) {
+                mostrarError('Las contraseñas no coinciden');
+                return;
+            }
+            
+            mostrarLoading('Cambiando contraseña...');
+            
+            try {
+                // Aquí iría la llamada a tu Apps Script
+                // Por ahora simulamos éxito
+                setTimeout(() => {
+                    ocultarLoading();
+                    mostrarExito('Contraseña cambiada exitosamente');
+                    // Limpiar campos
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                }, 1500);
+                
+            } catch (error) {
+                ocultarLoading();
+                mostrarError('Error cambiando contraseña');
+            }
+        }
+        
+        function eliminarCuenta() {
+            if (confirm('¿ESTÁS SEGURO? Esta acción eliminará permanentemente tu cuenta y todos tus datos. No podrás deshacer esto.')) {
+                if (prompt('Escribe "ELIMINAR" para confirmar:') === 'ELIMINAR') {
+                    mostrarLoading('Eliminando cuenta...');
+                    // Aquí iría la lógica para eliminar la cuenta
+                    setTimeout(() => {
+                        alert('Cuenta eliminada. Serás redirigido.');
+                        cerrarSesion();
+                    }, 2000);
+                }
+            }
+        }
+        
+        // ============================================
+        // FUNCIONES AUXILIARES
+        // ============================================
+        function mostrarLoading(mensaje) {
+            // Implementar overlay de loading similar a login.html
+        }
+        
+        function ocultarLoading() {
+            // Implementar
+        }
+        
+        function mostrarError(mensaje) {
+            alert('Error: ' + mensaje);
+        }
+        
+        function mostrarExito(mensaje) {
+            alert('Éxito: ' + mensaje);
+        }
+    </script>
+</body>
+</html>

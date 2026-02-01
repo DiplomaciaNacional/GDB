@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - GDB Beni</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ESTILOS ESPECÍFICOS PARA LOGIN */
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.05) 0%, rgba(0, 100, 0, 0.05) 100%);
+            padding: 20px;
+        }
+
+        .login-container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Banderas decorativas */
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg,
+                    var(--burgundy) 0%,
+                    var(--burgundy) 25%,
+                    var(--gold) 25%,
+                    var(--gold) 50%,
+                    var(--dark-green) 50%,
+                    var(--dark-green) 75%,
+                    var(--soft-g) 75%,
+                    var(--soft-g) 100%);
+        }
+
+        .login-logo {
+            margin-bottom: 25px;
+        }
+
+        .login-logo img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid var(--burgundy);
+            padding: 10px;
+            background-color: white;
+        }
+
+        .login-title {
+            color: var(--dark-green);
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        .login-subtitle {
+            color: var(--medium-gray);
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+        }
+
+        .login-form .input-with-icon {
+            position: relative;
+        }
+
+        .login-form .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--burgundy);
+            font-size: 1.1rem;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--medium-gray);
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .password-toggle:hover {
+            color: var(--burgundy);
+        }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            width: auto;
+            margin: 0;
+        }
+
+        .forgot-password {
+            color: var(--burgundy);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            background-color: var(--dark-green);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .login-btn:hover:not(:disabled) {
+            background-color: #004d00;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 100, 0, 0.2);
+        }
+
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: var(--medium-gray);
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #e0e0e0;
+        }
+
+        .login-divider span {
+            padding: 0 15px;
+            font-size: 0.9rem;
+        }
+
+        .login-links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .login-link {
+            color: var(--burgundy);
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 6px;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .login-link:hover {
+            background-color: rgba(139, 0, 0, 0.05);
+            border-color: rgba(139, 0, 0, 0.1);
+        }
+
+        .login-footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: var(--medium-gray);
+            font-size: 0.85rem;
+        }
+
+        /* MENSAJES DE ESTADO */
+        .alert-message {
+            padding: 12px 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: none;
+            text-align: left;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .alert-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .alert-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .alert-info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            width: 70px;
+            height: 70px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--gold);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .loading-subtext {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 600px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 15px;
+            }
+
+            .login-logo img {
+                width: 100px;
+                height: 100px;
+            }
+
+            .login-title {
+                font-size: 1.5rem;
+            }
+
+            .login-options {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .login-form input {
+                font-size: 16px;
+                /* Evita zoom en iOS */
+            }
+        }
+
+        /* ANIMACIÓN DE ENTRADA */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-container {
+            animation: slideIn 0.5s ease-out;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- LOADING OVERLAY -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loading-text">Iniciando sesión...</div>
+        <div class="loading-subtext" id="loading-subtext">Verificando credenciales</div>
+    </div>
+
+    <div class="login-page">
+        <div class="login-container">
+            <!-- LOGO -->
+            <div class="login-logo">
+                <img src="img/LOGO GDB.png" alt="Logo GDB Beni" id="logo-gdb">
+            </div>
+
+            <!-- TÍTULO -->
+            <h1 class="login-title">Acceso Delegados GDB</h1>
+            <p class="login-subtitle">
+                Sistema privado de la Generación Diplomática del Beni
+            </p>
+
+            <!-- MENSAJES DE ALERTA -->
+            <div class="alert-message" id="alert-error"></div>
+            <div class="alert-message" id="alert-success"></div>
+            <div class="alert-message" id="alert-info"></div>
+
+            <!-- FORMULARIO DE LOGIN -->
+            <form class="login-form" id="login-form" autocomplete="on">
+                <!-- EMAIL -->
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> Email institucional
+                    </label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user input-icon"></i>
+                        <input type="email" id="email" name="email" required placeholder="ejemplo@institucion.edu.bo"
+                            autocomplete="username">
+                    </div>
+                </div>
+
+                <!-- CONTRASEÑA -->
+                <div class="form-group">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label for="password">
+                            <i class="fas fa-lock"></i> Contraseña
+                        </label>
+                        <span style="font-size: 0.8rem; color: var(--medium-gray);">
+                            Temporal: ID + "GDB" (ej: 0015GDB)
+                        </span>
+                    </div>
+                    <div class="input-with-icon">
+                        <i class="fas fa-key input-icon"></i>
+                        <input type="password" id="password" name="password" required
+                            placeholder="Ingresa tu contraseña temporal" autocomplete="current-password">
+                        <button type="button" class="password-toggle" id="toggle-password">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- OPCIONES -->
+                <div class="login-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember-me">
+                        <span>Recordar sesión</span>
+                    </label>
+                    <a href="#" class="forgot-password" id="forgot-password">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <!-- BOTÓN DE LOGIN -->
+                <button type="submit" class="login-btn" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Iniciar Sesión</span>
+                </button>
+            </form>
+
+            <!-- DIVISOR -->
+            <div class="login-divider">
+                <span>O accede como</span>
+            </div>
+
+            <!-- ENLACES ALTERNATIVOS -->
+            <div class="login-links">
+                <a href="index.html" class="login-link">
+                    <i class="fas fa-home"></i>
+                    <span>Visitar sitio público</span>
+                </a>
+                <a href="directorio.html" class="login-link">
+                    <i class="fas fa-users"></i>
+                    <span>Ver directorio público</span>
+                </a>
+                <a href="#" class="login-link" id="contact-admin">
+                    <i class="fas fa-headset"></i>
+                    <span>Contactar al administrador</span>
+                </a>
+            </div>
+
+            <!-- PIE DE PÁGINA -->
+            <div class="login-footer">
+                <p>
+                    <i class="fas fa-shield-alt"></i>
+                    <strong>Sistema seguro</strong> - Solo miembros registrados pueden acceder.
+                </p>
+                <p style="margin-top: 10px; font-size: 0.8rem;">
+                    Si necesitas una cuenta, contacta al equipo directivo de GDB.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA RECUPERACIÓN DE CONTRASEÑA -->
+    <div id="recovery-modal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 400px; width: 90%;">
+            <h3 style="color: var(--dark-green); margin-bottom: 20px;">
+                <i class="fas fa-key"></i> Recuperar Contraseña
+            </h3>
+            <p style="margin-bottom: 20px; color: var(--medium-gray);">
+                Contacta al administrador para recuperar tu contraseña.
+            </p>
+            <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <p style="margin: 0; font-size: 0.9rem;">
+                    <strong>Administrador:</strong> admin@gdb.edu.bo<br>
+                    <strong>Teléfono:</strong> [Tu número de contacto]
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="cerrarRecuperacion()"
+                    style="flex: 1; padding: 10px; background: #ddd; border: none; border-radius: 5px; cursor: pointer;">
+                    Cerrar
+                </button>
+                <button onclick="contactarAdmin()"
+                    style="flex: 1; padding: 10px; background: var(--burgundy); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    <i class="fas fa-envelope"></i> Contactar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DEL SISTEMA - VERSIÓN CORREGIDA
+        // ============================================
+
+        // 🔥 URL ACTUALIZADA - Reemplaza con tu URL real
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzo6hBQAbtaP7QUQl3lPeczsZyYcFHSw6oLCee7aAq8HeGVZzVl_KvJ33TIl6S1pTTI/exec';
+
+        // 🔥 URL ALTERNATIVA para desarrollo (agrega '/dev' al final)
+        const APPS_SCRIPT_URL_DEV = 'https://script.google.com/macros/s/AKfycbzo6hBQAbtaP7QUQl3lPeczsZyYcFHSw6oLCee7aAq8HeGVZzVl_KvJ33TIl6S1pTTI/exec/dev';
+
+        // CLAVES PARA LOCALSTORAGE
+        const STORAGE_KEYS = {
+            SESSION: 'gdb_session',
+            REMEMBER_ME: 'gdb_remember_me',
+            LAST_EMAIL: 'gdb_last_email'
+        };
+
+        // TIEMPO DE SESIÓN (24 horas en milisegundos)
+        const SESSION_DURATION = 24 * 60 * 60 * 1000;
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Sistema de login GDB - Versión Corregida');
+            console.log('🔗 URL Apps Script:', APPS_SCRIPT_URL);
+
+            // 1. Configurar eventos
+            configurarEventos();
+
+            // 2. Verificar si hay sesión guardada
+            verificarSesionGuardada();
+
+            // 3. Cargar email recordado si existe
+            cargarEmailRecordado();
+
+            // 4. Verificar parámetros de URL
+            verificarParametrosURL();
+        });
+
+        // ============================================
+        // CONFIGURACIÓN DE EVENTOS
+        // ============================================
+
+        function configurarEventos() {
+            // Formulario de login
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', manejarLoginNuevo);
+            }
+
+            // Toggle de contraseña
+            const toggleBtn = document.getElementById('toggle-password');
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', togglePasswordVisibility);
+            }
+
+            // Recuperación de contraseña
+            const forgotLink = document.getElementById('forgot-password');
+            if (forgotLink) {
+                forgotLink.addEventListener('click', mostrarRecuperacion);
+            }
+
+            // Contactar administrador
+            const contactAdmin = document.getElementById('contact-admin');
+            if (contactAdmin) {
+                contactAdmin.addEventListener('click', contactarAdmin);
+            }
+
+            // Enter en campos de formulario
+            document.getElementById('password')?.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    loginForm.requestSubmit();
+                }
+            });
+        }
+
+        // ============================================
+        // 🔥 NUEVA FUNCIÓN DE LOGIN (PASO 2 Y 3 INTEGRADOS)
+        // ============================================
+
+        async function manejarLoginNuevo(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            // Validación básica
+            if (!email || !password) {
+                mostrarError('Por favor, completa todos los campos');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                mostrarError('Por favor, ingresa un email válido');
+                return;
+            }
+
+            mostrarLoading('Conectando con GDB...', 'Esto puede tomar unos segundos');
+
+            try {
+                // 🔥 PASO 2: MÉTODO ALTERNATIVO QUE FUNCIONA MEJOR
+                console.log('🔄 Probando método alternativo de login...');
+
+                // 🔥 PRIMER INTENTO: Usar ventana emergente para evitar CORS
+                await loginConVentanaEmergente(email, password);
+
+            } catch (error) {
+                console.error('❌ Error en método alternativo:', error);
+
+                // 🔥 PASO 3: MODO EMERGENCIA - Login local
+                console.log('🚨 Activando modo de emergencia...');
+                loginModoEmergencia(email, password);
+            } finally {
+                ocultarLoading();
+            }
+        }
+
+        // 🔥 FUNCIÓN DE LOGIN CON VENTANA EMERGENTE (evita CORS)
+        function loginConVentanaEmergente(email, password) {
+            return new Promise((resolve, reject) => {
+                console.log('🪟 Abriendo ventana de autenticación...');
+
+                // Crear ventana emergente
+                const authWindow = window.open(
+                    `gdb-auth.html?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&timestamp=${Date.now()}`,
+                    'GDB Authentication',
+                    'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
+                );
+
+                if (!authWindow) {
+                    mostrarError('El navegador bloqueó la ventana emergente. Por favor, permite ventanas emergentes.');
+                    reject(new Error('Ventana bloqueada'));
+                    return;
+                }
+
+                // Configurar listener para mensajes de la ventana
+                window.addEventListener('message', function manejarMensajeAuth(event) {
+                    console.log('📩 Mensaje recibido:', event.data);
+
+                    // Verificar que el mensaje sea de nuestra ventana de autenticación
+                    if (event.data && event.data.type === 'gdb_auth_result') {
+                        window.removeEventListener('message', manejarMensajeAuth);
+
+                        if (authWindow && !authWindow.closed) {
+                            authWindow.close();
+                        }
+
+                        if (event.data.success) {
+                            // 🔥 LOGIN EXITOSO
+                            const datosUsuario = event.data.data;
+                            const rememberMe = document.getElementById('remember-me').checked;
+
+                            // Guardar sesión
+                            guardarSesion({
+                                id: datosUsuario.id,
+                                email: datosUsuario.email,
+                                tipo: datosUsuario.tipo,
+                                nombre: datosUsuario.nombre,
+                                token: datosUsuario.sessionToken || 'auth_token_' + Date.now(),
+                                timestamp: Date.now(),
+                                expiracion: Date.now() + SESSION_DURATION
+                            }, rememberMe);
+
+                            mostrarExito(`¡Bienvenido ${datosUsuario.nombre}!`);
+
+                            // Redirigir después de 1.5 segundos
+                            setTimeout(() => {
+                                redirigirAPerfil(datosUsuario.id);
+                            }, 1500);
+
+                            resolve();
+                        } else {
+                            // 🔥 LOGIN FALLIDO
+                            mostrarError(event.data.error || 'Error de autenticación');
+                            reject(new Error(event.data.error));
+                        }
+                    }
+                });
+
+                // Verificar cada segundo si la ventana se cerró manualmente
+                const checkInterval = setInterval(() => {
+                    if (authWindow.closed) {
+                        clearInterval(checkInterval);
+                        console.log('🪟 Ventana cerrada por el usuario');
+
+                        // Verificar si ya hay sesión guardada
+                        const sesion = localStorage.getItem(STORAGE_KEYS.SESSION) ||
+                            sessionStorage.getItem(STORAGE_KEYS.SESSION);
+
+                        if (!sesion) {
+                            mostrarError('Autenticación cancelada por el usuario');
+                            reject(new Error('Cancelado por usuario'));
+                        }
+                    }
+                }, 1000);
+
+                // Timeout después de 30 segundos
+                setTimeout(() => {
+                    if (authWindow && !authWindow.closed) {
+                        authWindow.close();
+                        mostrarError('Tiempo de espera agotado. Intenta nuevamente.');
+                        reject(new Error('Timeout'));
+                    }
+                }, 30000);
+            });
+        }
+
+        // 🔥 CREAR ARCHIVO GDB-AUTH.HTML (PASO 3)
+        // Este archivo se abre en la ventana emergente y maneja la autenticación real
+
+        // 🔥 FUNCIÓN DE LOGIN LOCAL (MODO EMERGENCIA)
+        function loginModoEmergencia(email, password) {
+            console.log('🚨 Usando modo emergencia...');
+
+            // Base de datos local de usuarios (solo para desarrollo/pruebas)
+            const usuariosPrueba = {
+                'adr.cxsz@gmail.com': {
+                    password: '0001GDB',
+                    id: 1,
+                    nombre: 'Adrian Suárez',
+                    tipo: 'admin'
+                },
+                'angeldavidvillavicenciolopez@gmail.com': {
+                    password: '0015GDB',
+                    id: 15,
+                    nombre: 'Angel David',
+                    tipo: 'delegado'
+                },
+                'carlitosyverjustiniano@gmail.com': {
+                    password: '0052GDB',
+                    id: 52,
+                    nombre: 'Carlos Yver',
+                    tipo: 'admin'
+                }
+            };
+
+            if (usuariosPrueba[email] && usuariosPrueba[email].password === password) {
+                const usuario = usuariosPrueba[email];
+                const rememberMe = document.getElementById('remember-me').checked;
+
+                // Guardar sesión en modo emergencia
+                guardarSesion({
+                    id: usuario.id,
+                    email: email,
+                    tipo: usuario.tipo,
+                    nombre: usuario.nombre,
+                    token: 'emergency_token_' + Date.now(),
+                    timestamp: Date.now(),
+                    expiracion: Date.now() + SESSION_DURATION,
+                    modoEmergencia: true
+                }, rememberMe);
+
+                mostrarExito(`✅ Modo emergencia - ¡Bienvenido ${usuario.nombre}!`);
+                mostrarInfo('Conectando en modo local. Algunas funciones pueden estar limitadas.');
+
+                // Redirigir después de 2 segundos
+                setTimeout(() => {
+                    redirigirAPerfil(usuario.id);
+                }, 2000);
+
+            } else {
+                mostrarError('Credenciales incorrectas en modo emergencia');
+                mostrarInfo('Contacta al administrador para obtener acceso completo');
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE SESIÓN
+        // ============================================
+
+        function guardarSesion(sesion, rememberMe) {
+            if (rememberMe) {
+                localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sesion));
+                localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
+                localStorage.setItem(STORAGE_KEYS.LAST_EMAIL, sesion.email);
+            } else {
+                sessionStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sesion));
+                localStorage.removeItem(STORAGE_KEYS.SESSION);
+                localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+            }
+            console.log('💾 Sesión guardada:', { modo: rememberMe ? 'localStorage' : 'sessionStorage' });
+        }
+
+        function verificarSesionGuardada() {
+            try {
+                let sesionStr = localStorage.getItem(STORAGE_KEYS.SESSION) ||
+                    sessionStorage.getItem(STORAGE_KEYS.SESSION);
+
+                if (sesionStr) {
+                    const sesion = JSON.parse(sesionStr);
+                    const ahora = Date.now();
+                    const expirada = sesion.expiracion && ahora > sesion.expiracion;
+
+                    if (!expirada) {
+                        console.log('🔄 Sesión activa encontrada, redirigiendo...');
+                        mostrarInfo(`Redirigiendo a ${sesion.nombre}...`);
+                        setTimeout(() => redirigirAPerfil(sesion.id), 1000);
+                        return true;
+                    } else {
+                        limpiarSesion();
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error verificando sesión:', error);
+                limpiarSesion();
+            }
+            return false;
+        }
+
+        function limpiarSesion() {
+            localStorage.removeItem(STORAGE_KEYS.SESSION);
+            sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+        }
+
+        function cargarEmailRecordado() {
+            const lastEmail = localStorage.getItem(STORAGE_KEYS.LAST_EMAIL);
+            if (lastEmail) {
+                document.getElementById('email').value = lastEmail;
+                document.getElementById('remember-me').checked = true;
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE UI/UX
+        // ============================================
+
+        function mostrarLoading(mensaje = 'Procesando...', subtexto = '') {
+            const overlay = document.getElementById('loading-overlay');
+            const texto = document.getElementById('loading-text');
+            const subtext = document.getElementById('loading-subtext');
+
+            if (overlay && texto) {
+                texto.textContent = mensaje;
+                if (subtext && subtexto) {
+                    subtext.textContent = subtexto;
+                }
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function ocultarLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function mostrarError(mensaje) {
+            const alertDiv = document.getElementById('alert-error');
+            if (alertDiv) {
+                alertDiv.textContent = mensaje;
+                alertDiv.className = 'alert-message alert-error';
+                alertDiv.style.display = 'block';
+                setTimeout(() => { alertDiv.style.display = 'none'; }, 5000);
+            }
+        }
+
+        function mostrarExito(mensaje) {
+            const alertDiv = document.getElementById('alert-success');
+            if (alertDiv) {
+                alertDiv.textContent = mensaje;
+                alertDiv.className = 'alert-message alert-success';
+                alertDiv.style.display = 'block';
+            }
+        }
+
+        function mostrarInfo(mensaje) {
+            const alertDiv = document.getElementById('alert-info');
+            if (alertDiv) {
+                alertDiv.textContent = mensaje;
+                alertDiv.className = 'alert-message alert-info';
+                alertDiv.style.display = 'block';
+                setTimeout(() => { alertDiv.style.display = 'none'; }, 3000);
+            }
+        }
+
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.getElementById('toggle-password').querySelector('i');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye';
+            }
+        }
+
+        function redirigirAPerfil(usuarioId) {
+            window.location.href = `perfil-privado.html?id=${usuarioId}`;
+        }
+
+        // ============================================
+        // FUNCIONES DE RECUPERACIÓN
+        // ============================================
+
+        function mostrarRecuperacion(event) {
+            event.preventDefault();
+            document.getElementById('recovery-modal').style.display = 'flex';
+        }
+
+        function cerrarRecuperacion() {
+            document.getElementById('recovery-modal').style.display = 'none';
+        }
+
+        function contactarAdmin(event) {
+            if (event) event.preventDefault();
+            const email = document.getElementById('email').value;
+            const mensaje = `Necesito ayuda con mi cuenta GDB.\n\nEmail: ${email || 'No proporcionado'}\n\nProblema: `;
+            const mailtoLink = `mailto:admin@gdb.edu.bo?subject=Solicitud de ayuda - GDB Login&body=${encodeURIComponent(mensaje)}`;
+            window.open(mailtoLink, '_blank');
+            cerrarRecuperacion();
+            mostrarInfo('Se abrirá tu cliente de email. Describe tu problema.');
+        }
+
+        function verificarParametrosURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('logout')) {
+                mostrarInfo('Has cerrado sesión correctamente.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            if (urlParams.has('auth_required')) {
+                mostrarError('Debes iniciar sesión para acceder a esa página.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // ============================================
+        // 🔥 CREAR ARCHIVO GDB-AUTH.HTML AUTOMÁTICAMENTE
+        // ============================================
+</script>
+</body>
+
+</html>
