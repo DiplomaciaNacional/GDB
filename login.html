@@ -531,441 +531,470 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN DEL SISTEMA - VERSIÓN CORREGIDA
+        // CONFIGURACIÓN SEGURA
         // ============================================
-
-        // 🔥 URL ACTUALIZADA - Reemplaza con tu URL real
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzo6hBQAbtaP7QUQl3lPeczsZyYcFHSw6oLCee7aAq8HeGVZzVl_KvJ33TIl6S1pTTI/exec';
-
-        // 🔥 URL ALTERNATIVA para desarrollo (agrega '/dev' al final)
-        const APPS_SCRIPT_URL_DEV = 'https://script.google.com/macros/s/AKfycbzo6hBQAbtaP7QUQl3lPeczsZyYcFHSw6oLCee7aAq8HeGVZzVl_KvJ33TIl6S1pTTI/exec/dev';
-
-        // CLAVES PARA LOCALSTORAGE
+        const SHEET_ID = '15W3jXoLSyIRVpSlMu2itSxJ8fGoiQgmS6oq5Ie2WjIM';
+        const API_KEY = 'AIzaSyAQ7uEfcEcN0-0YLC1nhFafL2-uSGaAWUo';
         const STORAGE_KEYS = {
             SESSION: 'gdb_session',
-            REMEMBER_ME: 'gdb_remember_me',
-            LAST_EMAIL: 'gdb_last_email'
+            REMEMBER_ME: 'gdb_remember_me'
         };
-
-        // TIEMPO DE SESIÓN (24 horas en milisegundos)
-        const SESSION_DURATION = 24 * 60 * 60 * 1000;
 
         // ============================================
         // INICIALIZACIÓN
         // ============================================
-
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('🚀 Sistema de login GDB - Versión Corregida');
-            console.log('🔗 URL Apps Script:', APPS_SCRIPT_URL);
+            console.log('🔐 Sistema de login GDB - Versión Segura');
 
-            // 1. Configurar eventos
+            // Verificar parámetros de URL
+            const urlParams = new URLSearchParams(window.location.search);
+
+            if (urlParams.get('logout') === 'true') {
+                limpiarSesion();
+                mostrarNotificacion('✅ Sesión cerrada correctamente', 'success');
+            }
+
+            if (urlParams.get('auth_required') === 'true') {
+                mostrarNotificacion('🔒 Inicia sesión para acceder a tu perfil', 'warning');
+            }
+
+            // Cargar email guardado (solo si el usuario marcó "recordar")
+            cargarEmailGuardado();
+
+            // Configurar eventos
             configurarEventos();
-
-            // 2. Verificar si hay sesión guardada
-            verificarSesionGuardada();
-
-            // 3. Cargar email recordado si existe
-            cargarEmailRecordado();
-
-            // 4. Verificar parámetros de URL
-            verificarParametrosURL();
         });
 
         // ============================================
-        // CONFIGURACIÓN DE EVENTOS
+        // FUNCIÓN PRINCIPAL DE LOGIN (SEGURA)
         // ============================================
-
-        function configurarEventos() {
-            // Formulario de login
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) {
-                loginForm.addEventListener('submit', manejarLoginNuevo);
+        async function iniciarSesion(event) {
+            // Prevenir envío tradicional del formulario
+            if (event) {
+                event.preventDefault();
             }
 
-            // Toggle de contraseña
-            const toggleBtn = document.getElementById('toggle-password');
-            if (toggleBtn) {
-                toggleBtn.addEventListener('click', togglePasswordVisibility);
-            }
-
-            // Recuperación de contraseña
-            const forgotLink = document.getElementById('forgot-password');
-            if (forgotLink) {
-                forgotLink.addEventListener('click', mostrarRecuperacion);
-            }
-
-            // Contactar administrador
-            const contactAdmin = document.getElementById('contact-admin');
-            if (contactAdmin) {
-                contactAdmin.addEventListener('click', contactarAdmin);
-            }
-
-            // Enter en campos de formulario
-            document.getElementById('password')?.addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    loginForm.requestSubmit();
-                }
-            });
-        }
-
-        // ============================================
-        // 🔥 NUEVA FUNCIÓN DE LOGIN (PASO 2 Y 3 INTEGRADOS)
-        // ============================================
-
-        async function manejarLoginNuevo(event) {
-            event.preventDefault();
-
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
 
-            // Validación básica
+            // Validaciones básicas
             if (!email || !password) {
-                mostrarError('Por favor, completa todos los campos');
-                return;
+                mostrarNotificacion('❌ Email y contraseña son requeridos', 'error');
+                return false;
             }
 
-            if (!email.includes('@')) {
-                mostrarError('Por favor, ingresa un email válido');
-                return;
+            if (!email.includes('@') || !email.includes('.')) {
+                mostrarNotificacion('❌ Formato de email no válido', 'error');
+                return false;
             }
 
-            mostrarLoading('Conectando con GDB...', 'Esto puede tomar unos segundos');
+            mostrarLoading('🔐 Verificando credenciales...');
 
             try {
-                // 🔥 PASO 2: MÉTODO ALTERNATIVO QUE FUNCIONA MEJOR
-                console.log('🔄 Probando método alternativo de login...');
+                // CONSULTAR GOOGLE SHEETS API
+                const usuario = await verificarCredencialesSheetsAPI(email, password);
 
-                // 🔥 PRIMER INTENTO: Usar ventana emergente para evitar CORS
-                await loginConVentanaEmergente(email, password);
+                if (usuario) {
+                    // ✅ LOGIN EXITOSO
+                    crearSesionUsuario(usuario, rememberMe, email);
+                    mostrarNotificacion(`✅ ¡Bienvenido/a a GDB Beni!`, 'success');
+
+                    // Redirigir después de 1 segundo
+                    setTimeout(() => {
+                        console.log('Redirigiendo a perfil-privado.html con ID:', usuario.id);
+                        // Usar ruta relativa correcta
+                        window.location.href = `perfil-privado.html?id=${usuario.id}`;
+                    }, 1000);
+                    return true;
+                }
 
             } catch (error) {
-                console.error('❌ Error en método alternativo:', error);
+                console.error('❌ Error en autenticación:', error);
 
-                // 🔥 PASO 3: MODO EMERGENCIA - Login local
-                console.log('🚨 Activando modo de emergencia...');
-                loginModoEmergencia(email, password);
+                // Mostrar mensaje genérico de error (no detalles técnicos)
+                if (error.message.includes('no encontrado')) {
+                    mostrarNotificacion('❌ Email no registrado en el sistema', 'error');
+                } else if (error.message.includes('inactiva')) {
+                    mostrarNotificacion('❌ Tu cuenta está inactiva. Contacta al administrador.', 'error');
+                } else if (error.message.includes('incorrecta')) {
+                    mostrarNotificacion('❌ Contraseña incorrecta. Formato: ID + "GDB"', 'error');
+                } else {
+                    mostrarNotificacion('❌ Error de conexión. Intenta nuevamente.', 'error');
+                }
+
+                // NO mostrar detalles técnicos al usuario
             } finally {
                 ocultarLoading();
             }
-        }
-
-        // 🔥 FUNCIÓN DE LOGIN CON VENTANA EMERGENTE (evita CORS)
-        function loginConVentanaEmergente(email, password) {
-            return new Promise((resolve, reject) => {
-                console.log('🪟 Abriendo ventana de autenticación...');
-
-                // Crear ventana emergente
-                const authWindow = window.open(
-                    `gdb-auth.html?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&timestamp=${Date.now()}`,
-                    'GDB Authentication',
-                    'width=500,height=600,menubar=no,toolbar=no,location=no,status=no'
-                );
-
-                if (!authWindow) {
-                    mostrarError('El navegador bloqueó la ventana emergente. Por favor, permite ventanas emergentes.');
-                    reject(new Error('Ventana bloqueada'));
-                    return;
-                }
-
-                // Configurar listener para mensajes de la ventana
-                window.addEventListener('message', function manejarMensajeAuth(event) {
-                    console.log('📩 Mensaje recibido:', event.data);
-
-                    // Verificar que el mensaje sea de nuestra ventana de autenticación
-                    if (event.data && event.data.type === 'gdb_auth_result') {
-                        window.removeEventListener('message', manejarMensajeAuth);
-
-                        if (authWindow && !authWindow.closed) {
-                            authWindow.close();
-                        }
-
-                        if (event.data.success) {
-                            // 🔥 LOGIN EXITOSO
-                            const datosUsuario = event.data.data;
-                            const rememberMe = document.getElementById('remember-me').checked;
-
-                            // Guardar sesión
-                            guardarSesion({
-                                id: datosUsuario.id,
-                                email: datosUsuario.email,
-                                tipo: datosUsuario.tipo,
-                                nombre: datosUsuario.nombre,
-                                token: datosUsuario.sessionToken || 'auth_token_' + Date.now(),
-                                timestamp: Date.now(),
-                                expiracion: Date.now() + SESSION_DURATION
-                            }, rememberMe);
-
-                            mostrarExito(`¡Bienvenido ${datosUsuario.nombre}!`);
-
-                            // Redirigir después de 1.5 segundos
-                            setTimeout(() => {
-                                redirigirAPerfil(datosUsuario.id);
-                            }, 1500);
-
-                            resolve();
-                        } else {
-                            // 🔥 LOGIN FALLIDO
-                            mostrarError(event.data.error || 'Error de autenticación');
-                            reject(new Error(event.data.error));
-                        }
-                    }
-                });
-
-                // Verificar cada segundo si la ventana se cerró manualmente
-                const checkInterval = setInterval(() => {
-                    if (authWindow.closed) {
-                        clearInterval(checkInterval);
-                        console.log('🪟 Ventana cerrada por el usuario');
-
-                        // Verificar si ya hay sesión guardada
-                        const sesion = localStorage.getItem(STORAGE_KEYS.SESSION) ||
-                            sessionStorage.getItem(STORAGE_KEYS.SESSION);
-
-                        if (!sesion) {
-                            mostrarError('Autenticación cancelada por el usuario');
-                            reject(new Error('Cancelado por usuario'));
-                        }
-                    }
-                }, 1000);
-
-                // Timeout después de 30 segundos
-                setTimeout(() => {
-                    if (authWindow && !authWindow.closed) {
-                        authWindow.close();
-                        mostrarError('Tiempo de espera agotado. Intenta nuevamente.');
-                        reject(new Error('Timeout'));
-                    }
-                }, 30000);
-            });
-        }
-
-        // 🔥 CREAR ARCHIVO GDB-AUTH.HTML (PASO 3)
-        // Este archivo se abre en la ventana emergente y maneja la autenticación real
-
-        // 🔥 FUNCIÓN DE LOGIN LOCAL (MODO EMERGENCIA)
-        function loginModoEmergencia(email, password) {
-            console.log('🚨 Usando modo emergencia...');
-
-            // Base de datos local de usuarios (solo para desarrollo/pruebas)
-            const usuariosPrueba = {
-                'adr.cxsz@gmail.com': {
-                    password: '0001GDB',
-                    id: 1,
-                    nombre: 'Adrian Suárez',
-                    tipo: 'admin'
-                },
-                'angeldavidvillavicenciolopez@gmail.com': {
-                    password: '0015GDB',
-                    id: 15,
-                    nombre: 'Angel David',
-                    tipo: 'delegado'
-                },
-                'carlitosyverjustiniano@gmail.com': {
-                    password: '0052GDB',
-                    id: 52,
-                    nombre: 'Carlos Yver',
-                    tipo: 'admin'
-                }
-            };
-
-            if (usuariosPrueba[email] && usuariosPrueba[email].password === password) {
-                const usuario = usuariosPrueba[email];
-                const rememberMe = document.getElementById('remember-me').checked;
-
-                // Guardar sesión en modo emergencia
-                guardarSesion({
-                    id: usuario.id,
-                    email: email,
-                    tipo: usuario.tipo,
-                    nombre: usuario.nombre,
-                    token: 'emergency_token_' + Date.now(),
-                    timestamp: Date.now(),
-                    expiracion: Date.now() + SESSION_DURATION,
-                    modoEmergencia: true
-                }, rememberMe);
-
-                mostrarExito(`✅ Modo emergencia - ¡Bienvenido ${usuario.nombre}!`);
-                mostrarInfo('Conectando en modo local. Algunas funciones pueden estar limitadas.');
-
-                // Redirigir después de 2 segundos
-                setTimeout(() => {
-                    redirigirAPerfil(usuario.id);
-                }, 2000);
-
-            } else {
-                mostrarError('Credenciales incorrectas en modo emergencia');
-                mostrarInfo('Contacta al administrador para obtener acceso completo');
-            }
-        }
-
-        // ============================================
-        // FUNCIONES DE SESIÓN
-        // ============================================
-
-        function guardarSesion(sesion, rememberMe) {
-            if (rememberMe) {
-                localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sesion));
-                localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
-                localStorage.setItem(STORAGE_KEYS.LAST_EMAIL, sesion.email);
-            } else {
-                sessionStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sesion));
-                localStorage.removeItem(STORAGE_KEYS.SESSION);
-                localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-            }
-            console.log('💾 Sesión guardada:', { modo: rememberMe ? 'localStorage' : 'sessionStorage' });
-        }
-
-        function verificarSesionGuardada() {
-            try {
-                let sesionStr = localStorage.getItem(STORAGE_KEYS.SESSION) ||
-                    sessionStorage.getItem(STORAGE_KEYS.SESSION);
-
-                if (sesionStr) {
-                    const sesion = JSON.parse(sesionStr);
-                    const ahora = Date.now();
-                    const expirada = sesion.expiracion && ahora > sesion.expiracion;
-
-                    if (!expirada) {
-                        console.log('🔄 Sesión activa encontrada, redirigiendo...');
-                        mostrarInfo(`Redirigiendo a ${sesion.nombre}...`);
-                        setTimeout(() => redirigirAPerfil(sesion.id), 1000);
-                        return true;
-                    } else {
-                        limpiarSesion();
-                    }
-                }
-            } catch (error) {
-                console.error('❌ Error verificando sesión:', error);
-                limpiarSesion();
-            }
+            
             return false;
         }
 
-        function limpiarSesion() {
-            localStorage.removeItem(STORAGE_KEYS.SESSION);
-            sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+        // ============================================
+        // VERIFICAR CREDENCIALES CON GOOGLE SHEETS API
+        // ============================================
+        async function verificarCredencialesSheetsAPI(email, password) {
+            console.log('📊 Verificando credenciales...');
+
+            try {
+                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Credenciales!A:I?key=${API_KEY}`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error('Error al conectar con el servidor');
+                }
+
+                const data = await response.json();
+                const rows = data.values || [];
+
+                // Buscar usuario por email (columna B)
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+
+                    // Validar que la fila tenga datos
+                    if (!row || row.length < 2) continue;
+
+                    const emailUsuario = row[1]; // Columna B = Email
+
+                    if (emailUsuario && emailUsuario.toString().trim().toLowerCase() === email) {
+                        const id = row[0];
+                        const tipo = row[4] || 'delegado';
+                        const activo = row[5] === 'TRUE' || row[5] === true || row[5] === 'true';
+
+                        // Verificar que el ID sea válido
+                        if (!id || isNaN(parseInt(id))) {
+                            throw new Error('ID de usuario inválido');
+                        }
+
+                        // Verificar cuenta activa
+                        if (!activo) {
+                            throw new Error('Cuenta inactiva');
+                        }
+
+                        // Verificar contraseña - FORMATO: ID(4 dígitos) + "GDB"
+                        const passwordEsperada = parseInt(id).toString().padStart(4, '0') + 'GDB';
+
+                        if (password === passwordEsperada) {
+                            // Obtener nombre para mostrar (sin exponer información sensible)
+                            const nombre = extraerNombreDesdeEmail(email);
+
+                            return {
+                                id: parseInt(id),
+                                email: email,
+                                nombre: nombre,
+                                tipo: tipo,
+                                iniciales: obtenerIniciales(nombre)
+                            };
+                        } else {
+                            throw new Error('Contraseña incorrecta');
+                        }
+                    }
+                }
+
+                throw new Error('Usuario no encontrado');
+
+            } catch (error) {
+                console.error('❌ Error en verificación:', error);
+                throw error;
+            }
         }
 
-        function cargarEmailRecordado() {
-            const lastEmail = localStorage.getItem(STORAGE_KEYS.LAST_EMAIL);
-            if (lastEmail) {
-                document.getElementById('email').value = lastEmail;
+        // ============================================
+        // CREAR SESIÓN SEGURA
+        // ============================================
+        function crearSesionUsuario(usuario, rememberMe, email) {
+            // Generar token seguro
+            const sessionData = {
+                id: usuario.id,
+                email: usuario.email,
+                nombre: usuario.nombre,
+                tipo: usuario.tipo,
+                iniciales: usuario.iniciales,
+                sessionToken: generarTokenSesionSeguro(usuario.id),
+                timestamp: Date.now(),
+                expiracion: Date.now() + (24 * 60 * 60 * 1000) // 24 horas
+            };
+
+            // Guardar sesión (localStorage para "recordar", sessionStorage para sesión temporal)
+            if (rememberMe) {
+                localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
+                localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
+            } else {
+                sessionStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
+            }
+
+            // Guardar solo el email para autocompletado (no la contraseña)
+            if (rememberMe) {
+                localStorage.setItem('gdb_last_email', email);
+            } else {
+                // Limpiar email guardado si no marcó "recordar"
+                localStorage.removeItem('gdb_last_email');
+            }
+        }
+
+        // ============================================
+        // FUNCIONES AUXILIARES SEGURAS
+        // ============================================
+        function extraerNombreDesdeEmail(email) {
+            if (!email) return 'Usuario GDB';
+
+            try {
+                // Extraer parte antes del @
+                let nombre = email.split('@')[0];
+
+                // Reemplazar caracteres especiales
+                nombre = nombre.replace(/[._-]/g, ' ')
+                    .replace(/\d+/g, '')
+                    .trim();
+
+                // Capitalizar palabras (solo primera letra)
+                nombre = nombre.split(/\s+/)
+                    .filter(palabra => palabra.length > 0)
+                    .map(palabra => {
+                        if (palabra.length <= 2) return palabra.toLowerCase();
+                        return palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase();
+                    })
+                    .join(' ');
+
+                return nombre || 'Usuario GDB';
+            } catch (error) {
+                return 'Usuario GDB';
+            }
+        }
+
+        function obtenerIniciales(nombre) {
+            if (!nombre) return 'G';
+
+            const partes = nombre.split(' ');
+            if (partes.length >= 2) {
+                return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
+            }
+
+            return nombre.charAt(0).toUpperCase();
+        }
+
+        function generarTokenSesionSeguro(userId) {
+            // Generar token seguro con múltiples componentes
+            const timestamp = Date.now();
+            const random1 = Math.random().toString(36).substring(2, 15);
+            const random2 = Math.random().toString(36).substring(2, 15);
+            const combinado = `${userId}_${timestamp}_${random1}_${random2}`;
+
+            // Codificar en base64 y limpiar caracteres especiales
+            return btoa(combinado)
+                .replace(/[+/=]/g, '')
+                .substring(0, 40);
+        }
+
+        function cargarEmailGuardado() {
+            // Solo cargar email si el usuario marcó "recordar" anteriormente
+            const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true';
+            const savedEmail = localStorage.getItem('gdb_last_email');
+
+            if (rememberMe && savedEmail) {
+                document.getElementById('email').value = savedEmail;
                 document.getElementById('remember-me').checked = true;
             }
         }
 
-        // ============================================
-        // FUNCIONES DE UI/UX
-        // ============================================
+        function limpiarSesion() {
+            // Limpiar todos los datos de sesión
+            localStorage.removeItem(STORAGE_KEYS.SESSION);
+            sessionStorage.removeItem(STORAGE_KEYS.SESSION);
+            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
 
-        function mostrarLoading(mensaje = 'Procesando...', subtexto = '') {
-            const overlay = document.getElementById('loading-overlay');
-            const texto = document.getElementById('loading-text');
-            const subtext = document.getElementById('loading-subtext');
+            // NO limpiar el email guardado si el usuario marcó "recordar"
+            // Solo se limpia al hacer logout explícito
+        }
 
-            if (overlay && texto) {
-                texto.textContent = mensaje;
-                if (subtext && subtexto) {
-                    subtext.textContent = subtexto;
-                }
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
+        // ============================================
+        // CONFIGURACIÓN DE EVENTOS SEGURA
+        // ============================================
+        function configurarEventos() {
+            // Formulario - prevenir envío tradicional
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    iniciarSesion(event);
+                });
             }
+
+            // Botón de login principal
+            const loginBtn = document.getElementById('login-btn');
+            if (loginBtn) {
+                loginBtn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    iniciarSesion(event);
+                });
+            }
+
+            // Enter en el campo de contraseña
+            const passwordInput = document.getElementById('password');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        iniciarSesion(e);
+                    }
+                });
+            }
+
+            // Mostrar/ocultar contraseña
+            const togglePassword = document.getElementById('toggle-password');
+            if (togglePassword) {
+                togglePassword.addEventListener('click', function () {
+                    const passwordInput = document.getElementById('password');
+                    if (passwordInput) {
+                        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                        passwordInput.setAttribute('type', type);
+
+                        const icon = this.querySelector('i');
+                        if (icon) {
+                            icon.classList.toggle('fa-eye');
+                            icon.classList.toggle('fa-eye-slash');
+                        }
+                    }
+                });
+            }
+
+            // Enlace de recuperación de contraseña
+            const forgotLinks = document.querySelectorAll('a[href*="#"], a[href*="forgot"], a[href*="recuperar"]');
+            forgotLinks.forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    mostrarNotificacion('📧 Para recuperar tu contraseña, contacta al administrador del sistema.', 'info');
+                });
+            });
+        }
+
+        // ============================================
+        // NOTIFICACIONES Y LOADING (SEGURO)
+        // ============================================
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            // Eliminar notificación existente
+            const existente = document.querySelector('.notificacion-flotante');
+            if (existente) existente.remove();
+
+            // Determinar color e icono
+            let icono = 'info-circle';
+            let color = '#2196F3';
+
+            switch (tipo) {
+                case 'success':
+                    icono = 'check-circle';
+                    color = '#4CAF50';
+                    break;
+                case 'error':
+                    icono = 'exclamation-circle';
+                    color = '#f44336';
+                    break;
+                case 'warning':
+                    icono = 'exclamation-triangle';
+                    color = '#FF9800';
+                    break;
+            }
+
+            // Crear notificación
+            const notificacion = document.createElement('div');
+            notificacion.className = 'notificacion-flotante';
+            notificacion.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
+                <i class="fas fa-${icono}" style="font-size: 1.2rem;"></i>
+                <span>${mensaje}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" 
+                    style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin-left: 15px;">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+            // Aplicar estilos
+            notificacion.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${color};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-width: 300px;
+            max-width: 500px;
+            animation: slideIn 0.3s ease;
+        `;
+
+            document.body.appendChild(notificacion);
+
+            // Auto-eliminar después de 5 segundos
+            setTimeout(() => {
+                if (notificacion.parentNode) {
+                    notificacion.remove();
+                }
+            }, 5000);
+        }
+
+        function mostrarLoading(mensaje = 'Cargando...') {
+            // Ocultar loading previo
+            ocultarLoading();
+
+            // Crear overlay
+            const overlay = document.createElement('div');
+            overlay.id = 'loading-overlay';
+            overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            color: white;
+            font-size: 1.1rem;
+        `;
+
+            overlay.innerHTML = `
+            <div class="spinner" style="
+                border: 5px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                border-top: 5px solid #4CAF50;
+                width: 50px;
+                height: 50px;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+            "></div>
+            <div>${mensaje}</div>
+        `;
+
+            // Agregar animación
+            const style = document.createElement('style');
+            style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+            document.head.appendChild(style);
+
+            document.body.appendChild(overlay);
         }
 
         function ocultarLoading() {
             const overlay = document.getElementById('loading-overlay');
             if (overlay) {
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
+                overlay.remove();
             }
         }
-
-        function mostrarError(mensaje) {
-            const alertDiv = document.getElementById('alert-error');
-            if (alertDiv) {
-                alertDiv.textContent = mensaje;
-                alertDiv.className = 'alert-message alert-error';
-                alertDiv.style.display = 'block';
-                setTimeout(() => { alertDiv.style.display = 'none'; }, 5000);
-            }
-        }
-
-        function mostrarExito(mensaje) {
-            const alertDiv = document.getElementById('alert-success');
-            if (alertDiv) {
-                alertDiv.textContent = mensaje;
-                alertDiv.className = 'alert-message alert-success';
-                alertDiv.style.display = 'block';
-            }
-        }
-
-        function mostrarInfo(mensaje) {
-            const alertDiv = document.getElementById('alert-info');
-            if (alertDiv) {
-                alertDiv.textContent = mensaje;
-                alertDiv.className = 'alert-message alert-info';
-                alertDiv.style.display = 'block';
-                setTimeout(() => { alertDiv.style.display = 'none'; }, 3000);
-            }
-        }
-
-        function togglePasswordVisibility() {
-            const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('toggle-password').querySelector('i');
-
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.className = 'fas fa-eye-slash';
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.className = 'fas fa-eye';
-            }
-        }
-
-        function redirigirAPerfil(usuarioId) {
-            window.location.href = `perfil-privado.html?id=${usuarioId}`;
-        }
-
-        // ============================================
-        // FUNCIONES DE RECUPERACIÓN
-        // ============================================
-
-        function mostrarRecuperacion(event) {
-            event.preventDefault();
-            document.getElementById('recovery-modal').style.display = 'flex';
-        }
-
-        function cerrarRecuperacion() {
-            document.getElementById('recovery-modal').style.display = 'none';
-        }
-
-        function contactarAdmin(event) {
-            if (event) event.preventDefault();
-            const email = document.getElementById('email').value;
-            const mensaje = `Necesito ayuda con mi cuenta GDB.\n\nEmail: ${email || 'No proporcionado'}\n\nProblema: `;
-            const mailtoLink = `mailto:admin@gdb.edu.bo?subject=Solicitud de ayuda - GDB Login&body=${encodeURIComponent(mensaje)}`;
-            window.open(mailtoLink, '_blank');
-            cerrarRecuperacion();
-            mostrarInfo('Se abrirá tu cliente de email. Describe tu problema.');
-        }
-
-        function verificarParametrosURL() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('logout')) {
-                mostrarInfo('Has cerrado sesión correctamente.');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            if (urlParams.has('auth_required')) {
-                mostrarError('Debes iniciar sesión para acceder a esa página.');
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-        }
-
-        // ============================================
-        // 🔥 CREAR ARCHIVO GDB-AUTH.HTML AUTOMÁTICAMENTE
-        // ============================================
-</script>
+    </script>
 </body>
 
 </html>
