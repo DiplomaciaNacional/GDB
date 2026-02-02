@@ -1,0 +1,2262 @@
+// ============================================
+// SISTEMA GDB BENI - VERSIÓN DEFINITIVA 5.0
+// TOTALMENTE COMPATIBLE CON GITHUB PAGES
+// ============================================
+
+// CONFIGURACIÓN - NOMBRES DE HOJAS
+const CONFIG = {
+  sheetNames: {
+    credenciales: 'Credenciales',
+    logs: 'Logs',
+    configuracion: 'Configuracion',
+    detalles: 'DetallesUsuarios',
+    actividades: 'ActividadesGDB'
+  }
+};
+
+// MAPA DE COLUMNAS (Columna A=0, B=1, C=2, etc.)
+const COLUMNAS = {
+  CREDENCIALES: {
+    ID: 0,                 // A
+    EMAIL: 1,              // B
+    PASSWORD_HASH: 2,      // C
+    SALT: 3,               // D
+    TIPO_USUARIO: 4,       // E
+    ACTIVO: 5,             // F
+    FECHA_CREACION: 6,     // G
+    ULTIMO_ACCESO: 7,      // H
+    TOKEN_RECUPERACION: 8  // I
+  },
+  LOGS: {
+    TIMESTAMP: 0,
+    ID_USUARIO: 1,
+    EMAIL: 2,
+    ACCION: 3,
+    EXITOSO: 4,
+    DETALLES: 5
+  }
+};
+
+// ============================================
+// 1. FUNCIÓN PRINCIPAL: DOGET (PARA GITHUB PAGES)
+// ============================================
+
+function doGet(e) {
+  const params = e.parameter || {};
+  const callback = params.callback || 'callback';
+  const action = params.action;
+  
+  let respuesta;
+  
+  try {
+    switch(action) {
+      case 'login':
+        respuesta = autenticarUsuario(params.email, params.password);
+        break;
+        
+      case 'getUserData':
+        respuesta = obtenerPerfilCompleto(params.userId, params.sessionToken);
+        break;
+        
+      case 'verifyPassword':
+        respuesta = verificarContraseña(params.userId, params.password);
+        break;
+        
+      case 'status':
+        respuesta = {
+          success: true,
+          status: 'online',
+          version: '5.0.0',
+          system: 'GDB Beni',
+          timestamp: new Date().toISOString()
+        };
+        break;
+        
+      default:
+        respuesta = {
+          success: true,
+          message: 'Servidor GDB funcionando',
+          url: ScriptApp.getService().getUrl(),
+          allowedOrigins: ['https://diplomacianacional.github.io', 'http://localhost:5500']
+        };
+    }
+  } catch(error) {
+    respuesta = {
+      success: false,
+      error: error.message
+    };
+  }
+  
+  // 🔥 CLAVE: Configurar encabezados CORS explícitamente
+  const output = ContentService.createTextOutput();
+  
+  // Para JSONP (cuando hay callback)
+  if (params.callback) {
+    output.setContent(callback + '(' + JSON.stringify(respuesta) + ')');
+    output.setMimeType(ContentService.MimeType.JAVASCRIPT);
+  } 
+  // Para fetch normal (cuando no hay callback)
+  else {
+    output.setContent(JSON.stringify(respuesta));
+    output.setMimeType(ContentService.MimeType.JSON);
+  }
+  
+  // 🔥 AÑADIR ENCABEZADOS CORS EXPLÍCITOS
+  output.setHeaders({
+    'Access-Control-Allow-Origin': '*', // Permite GitHub Pages
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400'
+  });
+  
+  return output;
+}
+
+// Función OPTIONS para preflight requests
+function doOptions(e) {
+  const output = ContentService.createTextOutput();
+  
+  output.setHeaders({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400'
+  });
+  
+  return output;
+}
+
+// ============================================
+// 2. AUTENTICACIÓN DE USUARIO
+// ============================================
+
+function autenticarUsuario(email, password) {
+  console.log(`🔐 Autenticando: ${email}`);
+  
+  // Validación básica
+  if (!email || !password) {
+    return {
+      success: false,
+      error: 'Email y contraseña son requeridos'
+    };
+  }
+  
+  try {
+    const emailLimpio = email.trim().toLowerCase();
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    
+    if (!hojaCredenciales) {
+      return {
+        success: false,
+        error: 'Error de configuración del sistema'
+      };
+    }
+    
+    // Obtener datos de la hoja
+    const datos = hojaCredenciales.getDataRange().getValues();
+    
+    // Buscar usuario por email
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const fila = datos[filaIndex];
+      const idUsuario = fila[COLUMNAS.CREDENCIALES.ID];
+      const emailUsuario = fila[COLUMNAS.CREDENCIALES.EMAIL];
+      const hashAlmacenado = fila[COLUMNAS.CREDENCIALES.PASSWORD_HASH];
+      const saltAlmacenado = fila[COLUMNAS.CREDENCIALES.SALT];
+      const tipoUsuario = fila[COLUMNAS.CREDENCIALES.TIPO_USUARIO] || 'delegado';
+      const activo = esValorVerdadero(fila[COLUMNAS.CREDENCIALES.ACTIVO]);
+      
+      if (!emailUsuario) continue;
+      
+      // Verificar email
+      if (emailUsuario.toString().trim().toLowerCase() === emailLimpio) {
+        
+        // Verificar si la cuenta está activa
+        if (!activo) {
+          registrarLogSistema(idUsuario, emailLimpio, 'LOGIN', false, 'Cuenta inactiva');
+          return {
+            success: false,
+            error: 'Tu cuenta está inactiva. Contacta al administrador.'
+          };
+        }
+        
+        // Verificar contraseña
+        const hashIngresado = generarHashContrasena(password, saltAlmacenado);
+        
+        if (hashIngresado === hashAlmacenado) {
+          // Actualizar último acceso
+          const fechaAcceso = new Date().toISOString();
+          hojaCredenciales.getRange(filaIndex + 1, COLUMNAS.CREDENCIALES.ULTIMO_ACCESO + 1)
+                         .setValue(fechaAcceso);
+          
+          // Registrar login exitoso
+          registrarLogSistema(idUsuario, emailLimpio, 'LOGIN', true, 'Acceso exitoso');
+          
+          // Obtener información del usuario
+          const nombreMostrar = extraerNombreDesdeEmail(emailLimpio);
+          const iniciales = obtenerIniciales(nombreMostrar);
+          
+          // Generar token de sesión
+          const tokenSesion = generarTokenDeSesion(idUsuario);
+          
+          return {
+            success: true,
+            message: '¡Bienvenido a GDB Beni!',
+            data: {
+              id: idUsuario,
+              email: emailLimpio,
+              nombre: nombreMostrar,
+              tipo: tipoUsuario,
+              iniciales: iniciales,
+              sessionToken: tokenSesion,
+              timestamp: Date.now(),
+              expiracion: Date.now() + (24 * 60 * 60 * 1000) // 24 horas
+            }
+          };
+          
+        } else {
+          // Contraseña incorrecta
+          registrarLogSistema(idUsuario, emailLimpio, 'LOGIN', false, 'Contraseña incorrecta');
+          return {
+            success: false,
+            error: 'Contraseña incorrecta'
+          };
+        }
+      }
+    }
+    
+    // Usuario no encontrado
+    registrarLogSistema(null, emailLimpio, 'LOGIN', false, 'Email no registrado');
+    return {
+      success: false,
+      error: 'Email no registrado en el sistema'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error en autenticarUsuario:', error);
+    registrarLogSistema(null, email, 'LOGIN_ERROR', false, error.toString());
+    
+    return {
+      success: false,
+      error: 'Error en el servidor. Intenta nuevamente.'
+    };
+  }
+}
+
+// ============================================
+// 3. OBTENER PERFIL COMPLETO DEL USUARIO
+// ============================================
+
+function obtenerPerfilCompleto(usuarioId, tokenSesion) {
+  console.log(`👤 Obteniendo perfil para ID: ${usuarioId}`);
+  
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // 1. Obtener datos básicos de credenciales
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    
+    if (!hojaCredenciales) {
+      return {
+        success: false,
+        error: 'Sistema no configurado correctamente'
+      };
+    }
+    
+    const datosCredenciales = hojaCredenciales.getDataRange().getValues();
+    let datosUsuario = null;
+    
+    // Buscar usuario por ID
+    for (let filaIndex = 1; filaIndex < datosCredenciales.length; filaIndex++) {
+      if (parseInt(datosCredenciales[filaIndex][COLUMNAS.CREDENCIALES.ID]) === parseInt(usuarioId)) {
+        datosUsuario = {
+          id: datosCredenciales[filaIndex][COLUMNAS.CREDENCIALES.ID],
+          email: datosCredenciales[filaIndex][COLUMNAS.CREDENCIALES.EMAIL],
+          tipo: datosCredenciales[filaIndex][COLUMNAS.CREDENCIALES.TIPO_USUARIO] || 'delegado',
+          activo: esValorVerdadero(datosCredenciales[filaIndex][COLUMNAS.CREDENCIALES.ACTIVO]),
+          fechaRegistro: datosCredenciales[filaIndex][COLUMNAS.CREDENCIALES.FECHA_CREACION],
+          ultimoAcceso: datosCredenciales[filaIndex][COLUMNAS.CREDENCIALES.ULTIMO_ACCESO]
+        };
+        break;
+      }
+    }
+    
+    if (!datosUsuario) {
+      return {
+        success: false,
+        error: 'Usuario no encontrado'
+      };
+    }
+    
+    // 2. Obtener nombre e iniciales
+    datosUsuario.nombre = extraerNombreDesdeEmail(datosUsuario.email);
+    datosUsuario.iniciales = obtenerIniciales(datosUsuario.nombre);
+    
+    // 3. Obtener detalles adicionales
+    const detalles = obtenerDetallesAdicionales(usuarioId);
+    datosUsuario = { ...datosUsuario, ...detalles };
+    
+    // 4. Obtener estadísticas
+    datosUsuario.estadisticas = obtenerEstadisticasParticipacion(usuarioId);
+    
+    // 5. Obtener actividades recientes
+    datosUsuario.actividadesRecientes = obtenerActividadesRecientes(usuarioId);
+    
+    return {
+      success: true,
+      message: 'Perfil obtenido exitosamente',
+      data: datosUsuario
+    };
+    
+  } catch (error) {
+    console.error('❌ Error en obtenerPerfilCompleto:', error);
+    return {
+      success: false,
+      error: 'Error al obtener perfil: ' + error.message
+    };
+  }
+}
+
+// ============================================
+// 4. ACTUALIZAR PERFIL DEL USUARIO
+// ============================================
+
+function actualizarPerfilUsuario(usuarioId, datosActualizados, tokenSesion) {
+  console.log(`✏️ Actualizando perfil ID: ${usuarioId}`);
+  
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // Asegurar que existe la hoja de detalles
+    let hojaDetalles = spreadsheet.getSheetByName(CONFIG.sheetNames.detalles);
+    if (!hojaDetalles) {
+      crearHojaDetallesUsuariosCompleta();
+      hojaDetalles = spreadsheet.getSheetByName(CONFIG.sheetNames.detalles);
+    }
+    
+    const datos = hojaDetalles.getDataRange().getValues();
+    let filaIndex = -1;
+    
+    // Buscar usuario en detalles
+    for (let i = 1; i < datos.length; i++) {
+      if (parseInt(datos[i][0]) === parseInt(usuarioId)) {
+        filaIndex = i;
+        break;
+      }
+    }
+    
+    if (filaIndex === -1) {
+      // Crear nueva entrada
+      const nuevaFila = [
+        usuarioId,
+        datosActualizados.nombreCompleto || '',
+        datosActualizados.fechaNacimiento || '',
+        datosActualizados.telefono || '',
+        datosActualizados.whatsapp || '',
+        datosActualizados.departamento || 'Beni',
+        datosActualizados.ciudad || 'Trinidad',
+        datosActualizados.institucion || 'GDB Beni',
+        datosActualizados.carrera || '',
+        datosActualizados.semestre || '',
+        datosActualizados.genero || '',
+        datosActualizados.facebook || '',
+        datosActualizados.instagram || '',
+        datosActualizados.biografia || 'Miembro de GDB Beni',
+        '', // FotoURL
+        datosActualizados.intereses || 'Diplomacia, Liderazgo',
+        datosActualizados.habilidades || 'Comunicación',
+        datosActualizados.idiomas || 'Español',
+        new Date().toISOString(), // FechaRegistro
+        new Date().toISOString()  // FechaActualizacion
+      ];
+      
+      hojaDetalles.appendRow(nuevaFila);
+      
+    } else {
+      // Actualizar entrada existente
+      const filaNum = filaIndex + 1;
+      
+      // Actualizar cada campo si está presente en datosActualizados
+      if (datosActualizados.nombreCompleto !== undefined) {
+        hojaDetalles.getRange(filaNum, 2).setValue(datosActualizados.nombreCompleto);
+      }
+      if (datosActualizados.fechaNacimiento !== undefined) {
+        hojaDetalles.getRange(filaNum, 3).setValue(datosActualizados.fechaNacimiento);
+      }
+      if (datosActualizados.telefono !== undefined) {
+        hojaDetalles.getRange(filaNum, 4).setValue(datosActualizados.telefono);
+      }
+      if (datosActualizados.whatsapp !== undefined) {
+        hojaDetalles.getRange(filaNum, 5).setValue(datosActualizados.whatsapp);
+      }
+      if (datosActualizados.departamento !== undefined) {
+        hojaDetalles.getRange(filaNum, 6).setValue(datosActualizados.departamento);
+      }
+      if (datosActualizados.ciudad !== undefined) {
+        hojaDetalles.getRange(filaNum, 7).setValue(datosActualizados.ciudad);
+      }
+      if (datosActualizados.institucion !== undefined) {
+        hojaDetalles.getRange(filaNum, 8).setValue(datosActualizados.institucion);
+      }
+      if (datosActualizados.carrera !== undefined) {
+        hojaDetalles.getRange(filaNum, 9).setValue(datosActualizados.carrera);
+      }
+      if (datosActualizados.semestre !== undefined) {
+        hojaDetalles.getRange(filaNum, 10).setValue(datosActualizados.semestre);
+      }
+      if (datosActualizados.genero !== undefined) {
+        hojaDetalles.getRange(filaNum, 11).setValue(datosActualizados.genero);
+      }
+      if (datosActualizados.facebook !== undefined) {
+        hojaDetalles.getRange(filaNum, 12).setValue(datosActualizados.facebook);
+      }
+      if (datosActualizados.instagram !== undefined) {
+        hojaDetalles.getRange(filaNum, 13).setValue(datosActualizados.instagram);
+      }
+      if (datosActualizados.biografia !== undefined) {
+        hojaDetalles.getRange(filaNum, 14).setValue(datosActualizados.biografia);
+      }
+      if (datosActualizados.intereses !== undefined) {
+        hojaDetalles.getRange(filaNum, 16).setValue(datosActualizados.intereses);
+      }
+      if (datosActualizados.habilidades !== undefined) {
+        hojaDetalles.getRange(filaNum, 17).setValue(datosActualizados.habilidades);
+      }
+      if (datosActualizados.idiomas !== undefined) {
+        hojaDetalles.getRange(filaNum, 18).setValue(datosActualizados.idiomas);
+      }
+      
+      // Actualizar fecha de modificación
+      hojaDetalles.getRange(filaNum, 20).setValue(new Date().toISOString());
+    }
+    
+    registrarLogSistema(usuarioId, 'N/A', 'UPDATE_PROFILE', true, 'Perfil actualizado');
+    
+    return {
+      success: true,
+      message: 'Perfil actualizado correctamente'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error actualizando perfil:', error);
+    registrarLogSistema(usuarioId, 'N/A', 'UPDATE_PROFILE', false, error.toString());
+    
+    return {
+      success: false,
+      error: 'Error al actualizar perfil: ' + error.message
+    };
+  }
+}
+
+// ============================================
+// 5. CAMBIAR CONTRASEÑA
+// ============================================
+
+// ============================================
+// 5. CAMBIAR CONTRASEÑA (ACTUALIZADA CON TU ESTRUCTURA)
+// ============================================
+
+function cambiarContraseñaUsuarioWeb(usuarioId, currentPassword, newPassword, sessionToken) {
+  console.log(`🔐 Cambiando contraseña para ID: ${usuarioId}`);
+  
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    
+    if (!hojaCredenciales) {
+      return {
+        success: false,
+        error: 'Hoja de credenciales no encontrada'
+      };
+    }
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    let filaIndex = -1;
+    let emailUsuario = '';
+    
+    // Buscar usuario por ID
+    for (let i = 1; i < datos.length; i++) {
+      if (parseInt(datos[i][COLUMNAS.CREDENCIALES.ID]) === parseInt(usuarioId)) {
+        filaIndex = i;
+        emailUsuario = datos[i][COLUMNAS.CREDENCIALES.EMAIL];
+        break;
+      }
+    }
+    
+    if (filaIndex === -1) {
+      return {
+        success: false,
+        error: 'Usuario no encontrado'
+      };
+    }
+    
+    // Obtener datos del usuario
+    const hashAlmacenado = datos[filaIndex][COLUMNAS.CREDENCIALES.PASSWORD_HASH];
+    const saltAlmacenado = datos[filaIndex][COLUMNAS.CREDENCIALES.SALT];
+    
+    // Verificar contraseña actual
+    const hashIngresado = generarHashContrasena(currentPassword, saltAlmacenado);
+    
+    if (hashIngresado !== hashAlmacenado) {
+      // También verificar contraseña temporal
+      const passwordTemporal = usuarioId.toString().padStart(4, '0') + 'GDB';
+      const hashTemporal = generarHashContrasena(passwordTemporal, saltAlmacenado);
+      
+      if (hashTemporal !== hashIngresado) {
+        registrarLogSistema(usuarioId, emailUsuario, 'CHANGE_PASSWORD', false, 'Contraseña actual incorrecta');
+        return {
+          success: false,
+          error: 'La contraseña actual es incorrecta'
+        };
+      }
+    }
+    
+    // Validar nueva contraseña
+    if (!newPassword || newPassword.length < 8) {
+      return {
+        success: false,
+        error: 'La nueva contraseña debe tener al menos 8 caracteres'
+      };
+    }
+    
+    // Generar nuevo hash y salt
+    const nuevoSalt = generarSaltAleatorio();
+    const nuevoHash = generarHashContrasena(newPassword, nuevoSalt);
+    
+    // Actualizar en la hoja
+    const filaNum = filaIndex + 1;
+    
+    hojaCredenciales.getRange(filaNum, COLUMNAS.CREDENCIALES.PASSWORD_HASH + 1)
+                   .setValue(nuevoHash);
+    hojaCredenciales.getRange(filaNum, COLUMNAS.CREDENCIALES.SALT + 1)
+                   .setValue(nuevoSalt);
+    
+    // Registrar cambio
+    registrarLogSistema(usuarioId, emailUsuario, 'CHANGE_PASSWORD', true, 'Contraseña actualizada exitosamente');
+    
+    return {
+      success: true,
+      message: '✅ Contraseña actualizada exitosamente'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error cambiando contraseña:', error);
+    registrarLogSistema(usuarioId, 'N/A', 'CHANGE_PASSWORD_ERROR', false, error.toString());
+    
+    return {
+      success: false,
+      error: 'Error al cambiar contraseña: ' + error.message
+    };
+  }
+}
+
+// ============================================
+// NUEVA FUNCIÓN: verificarContraseña (para validación)
+// ============================================
+
+function verificarContraseña(usuarioId, password) {
+  console.log(`🔍 Verificando contraseña para ID: ${usuarioId}`);
+  
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    
+    if (!hojaCredenciales) {
+      return {
+        success: false,
+        error: 'Hoja de credenciales no encontrada'
+      };
+    }
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    
+    // Buscar usuario por ID
+    for (let i = 1; i < datos.length; i++) {
+      if (parseInt(datos[i][COLUMNAS.CREDENCIALES.ID]) === parseInt(usuarioId)) {
+        const hashAlmacenado = datos[i][COLUMNAS.CREDENCIALES.PASSWORD_HASH];
+        const saltAlmacenado = datos[i][COLUMNAS.CREDENCIALES.SALT];
+        
+        // Verificar contraseña ingresada
+        const hashIngresado = generarHashContrasena(password, saltAlmacenado);
+        
+        if (hashIngresado === hashAlmacenado) {
+          return {
+            success: true,
+            message: 'Contraseña válida'
+          };
+        }
+        
+        // Verificar contraseña temporal
+        const passwordTemporal = usuarioId.toString().padStart(4, '0') + 'GDB';
+        const hashTemporal = generarHashContrasena(passwordTemporal, saltAlmacenado);
+        
+        if (hashTemporal === hashIngresado) {
+          return {
+            success: true,
+            message: 'Contraseña temporal válida'
+          };
+        }
+        
+        return {
+          success: false,
+          error: 'Contraseña incorrecta'
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      error: 'Usuario no encontrado'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error verificando contraseña:', error);
+    return {
+      success: false,
+      error: 'Error en el servidor: ' + error.message
+    };
+  }
+}
+
+// ============================================
+// 6. FUNCIONES AUXILIARES
+// ============================================
+
+function obtenerDetallesAdicionales(usuarioId) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaDetalles = spreadsheet.getSheetByName(CONFIG.sheetNames.detalles);
+    
+    if (!hojaDetalles) {
+      return {
+        nombreCompleto: 'Por completar',
+        telefono: '',
+        whatsapp: '',
+        departamento: 'Beni',
+        ciudad: 'Trinidad',
+        institucion: 'GDB Beni',
+        carrera: '',
+        semestre: '',
+        genero: '',
+        facebook: '',
+        instagram: '',
+        biografia: 'Miembro de GDB Beni',
+        fechaNacimiento: '',
+        intereses: 'Diplomacia, Liderazgo',
+        habilidades: 'Comunicación',
+        idiomas: 'Español'
+      };
+    }
+    
+    const datos = hojaDetalles.getDataRange().getValues();
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      if (parseInt(datos[filaIndex][0]) === parseInt(usuarioId)) {
+        return {
+          nombreCompleto: datos[filaIndex][1] || '',
+          fechaNacimiento: datos[filaIndex][2] || '',
+          telefono: datos[filaIndex][3] || '',
+          whatsapp: datos[filaIndex][4] || '',
+          departamento: datos[filaIndex][5] || 'Beni',
+          ciudad: datos[filaIndex][6] || 'Trinidad',
+          institucion: datos[filaIndex][7] || 'GDB Beni',
+          carrera: datos[filaIndex][8] || '',
+          semestre: datos[filaIndex][9] || '',
+          genero: datos[filaIndex][10] || '',
+          facebook: datos[filaIndex][11] || '',
+          instagram: datos[filaIndex][12] || '',
+          biografia: datos[filaIndex][13] || 'Miembro de GDB Beni',
+          fotoURL: datos[filaIndex][14] || '',
+          intereses: datos[filaIndex][15] || 'Diplomacia, Liderazgo',
+          habilidades: datos[filaIndex][16] || 'Comunicación',
+          idiomas: datos[filaIndex][17] || 'Español',
+          fechaRegistroDetalles: datos[filaIndex][18] || '',
+          fechaActualizacion: datos[filaIndex][19] || ''
+        };
+      }
+    }
+    
+    // Si no encontró detalles, retornar valores por defecto
+    return {
+      nombreCompleto: 'Por completar',
+      telefono: '',
+      whatsapp: '',
+      departamento: 'Beni',
+      ciudad: 'Trinidad',
+      institucion: 'GDB Beni',
+      carrera: '',
+      semestre: '',
+      genero: '',
+      facebook: '',
+      instagram: '',
+      biografia: 'Miembro de GDB Beni',
+      fechaNacimiento: '',
+      intereses: 'Diplomacia, Liderazgo',
+      habilidades: 'Comunicación',
+      idiomas: 'Español'
+    };
+    
+  } catch (error) {
+    console.error('Error obteniendo detalles:', error);
+    return {};
+  }
+}
+
+function obtenerEstadisticasParticipacion(usuarioId) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaActividades = spreadsheet.getSheetByName(CONFIG.sheetNames.actividades);
+    
+    if (!hojaActividades) {
+      return {
+        eventosAsistidos: 0,
+        horasVoluntariado: 0,
+        proyectosParticipados: 0,
+        puntosAcumulados: 0,
+        ranking: 'Nuevo'
+      };
+    }
+    
+    const datos = hojaActividades.getDataRange().getValues();
+    let eventos = 0, horas = 0, proyectos = 0, puntos = 0;
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      if (parseInt(datos[filaIndex][1]) === parseInt(usuarioId)) {
+        eventos++;
+        horas += parseFloat(datos[filaIndex][4]) || 0;
+        puntos += parseInt(datos[filaIndex][6]) || 0;
+        
+        if (datos[filaIndex][3] === 'Proyecto') {
+          proyectos++;
+        }
+      }
+    }
+    
+    // Determinar ranking basado en puntos
+    let ranking = 'Nuevo';
+    if (puntos >= 100) ranking = 'Líder';
+    else if (puntos >= 50) ranking = 'Destacado';
+    else if (puntos >= 20) ranking = 'Activo';
+    else if (puntos > 0) ranking = 'Participante';
+    
+    return {
+      eventosAsistidos: eventos,
+      horasVoluntariado: horas,
+      proyectosParticipados: proyectos,
+      puntosAcumulados: puntos,
+      ranking: ranking
+    };
+    
+  } catch (error) {
+    console.error('Error obteniendo estadísticas:', error);
+    return {
+      eventosAsistidos: 0,
+      horasVoluntariado: 0,
+      proyectosParticipados: 0,
+      puntosAcumulados: 0,
+      ranking: 'Nuevo'
+    };
+  }
+}
+
+function obtenerActividadesRecientes(usuarioId) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaActividades = spreadsheet.getSheetByName(CONFIG.sheetNames.actividades);
+    
+    if (!hojaActividades) {
+      return [];
+    }
+    
+    const datos = hojaActividades.getDataRange().getValues();
+    const actividades = [];
+    
+    // Obtener máximo 5 actividades recientes
+    for (let filaIndex = 1; filaIndex < datos.length && actividades.length < 5; filaIndex++) {
+      if (parseInt(datos[filaIndex][1]) === parseInt(usuarioId)) {
+        actividades.push({
+          id: datos[filaIndex][0],
+          nombre: datos[filaIndex][2] || 'Actividad sin nombre',
+          tipo: datos[filaIndex][3] || 'Evento',
+          horas: datos[filaIndex][4] || 0,
+          fecha: datos[filaIndex][5] || '',
+          puntos: datos[filaIndex][6] || 0,
+          descripcion: datos[filaIndex][7] || '',
+          estado: datos[filaIndex][9] || 'Completada'
+        });
+      }
+    }
+    
+    return actividades;
+    
+  } catch (error) {
+    console.error('Error obteniendo actividades:', error);
+    return [];
+  }
+}
+
+function obtenerActividadesUsuario(usuarioId) {
+  try {
+    const actividades = obtenerActividadesRecientes(usuarioId);
+    
+    return {
+      success: true,
+      data: actividades
+    };
+    
+  } catch (error) {
+    console.error('Error obteniendo actividades:', error);
+    return {
+      success: false,
+      error: 'Error al obtener actividades'
+    };
+  }
+}
+
+// ============================================
+// 7. FUNCIONES DE UTILIDAD
+// ============================================
+
+function extraerNombreDesdeEmail(email) {
+  if (!email) return 'Usuario GDB';
+  
+  try {
+    // Obtener parte antes del @
+    let nombre = email.split('@')[0];
+    
+    // Reemplazar caracteres especiales por espacios
+    nombre = nombre.replace(/[._-]/g, ' ')
+                   .replace(/\d+/g, '')
+                   .trim();
+    
+    // Capitalizar palabras
+    nombre = nombre.split(/\s+/)
+      .filter(palabra => palabra.length > 0)
+      .map(palabra => {
+        if (palabra.length <= 2) return palabra.toLowerCase();
+        return palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase();
+      })
+      .join(' ');
+    
+    return nombre || 'Usuario GDB';
+    
+  } catch (error) {
+    return 'Usuario GDB';
+  }
+}
+
+function obtenerIniciales(nombre) {
+  if (!nombre) return 'G';
+  
+  const partes = nombre.split(' ');
+  if (partes.length >= 2) {
+    return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
+  }
+  
+  return nombre.charAt(0).toUpperCase();
+}
+
+function generarSaltAleatorio() {
+  const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let salt = '';
+  
+  for (let i = 0; i < 16; i++) {
+    salt += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  }
+  
+  return salt;
+}
+
+function generarHashContrasena(password, salt) {
+  const combinado = salt + password;
+  
+  const hash = Utilities.computeDigest(
+    Utilities.DigestAlgorithm.SHA_256,
+    combinado,
+    Utilities.Charset.UTF_8
+  );
+  
+  // Convertir a hexadecimal
+  return hash.map(byte => ('00' + (byte & 0xFF).toString(16)).slice(-2)).join('');
+}
+
+function generarTokenDeSesion(usuarioId) {
+  const timestamp = Date.now();
+  const aleatorio = Math.random().toString(36).substring(2, 15);
+  const combinado = `${usuarioId}${timestamp}${aleatorio}`;
+  
+  return Utilities.base64Encode(combinado).substring(0, 50);
+}
+
+function esValorVerdadero(valor) {
+  if (!valor) return false;
+  
+  const valorString = valor.toString().toLowerCase().trim();
+  
+  return valorString === 'true' ||
+         valorString === '1' ||
+         valorString === 'si' ||
+         valorString === 'yes' ||
+         valorString === 'verdadero';
+}
+
+function registrarLogSistema(idUsuario, email, accion, exitoso, detalles = '') {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    let hojaLogs = spreadsheet.getSheetByName(CONFIG.sheetNames.logs);
+    
+    // Crear hoja de logs si no existe
+    if (!hojaLogs) {
+      hojaLogs = spreadsheet.insertSheet(CONFIG.sheetNames.logs);
+      
+      // Crear encabezados
+      const encabezados = ['Timestamp', 'ID_Usuario', 'Email', 'Accion', 'Exitoso', 'Detalles'];
+      hojaLogs.appendRow(encabezados);
+      
+      // Formatear encabezados
+      hojaLogs.getRange('A1:F1')
+        .setFontWeight('bold')
+        .setBackground('#2196F3')
+        .setFontColor('white');
+      
+      console.log('✅ Hoja de Logs creada');
+    }
+    
+    // Preparar nueva fila de log
+    const nuevaFilaLog = [
+      new Date().toISOString(),
+      idUsuario || 'N/A',
+      email || 'N/A',
+      accion,
+      exitoso ? 'TRUE' : 'FALSE',
+      detalles.substring(0, 400) // Limitar longitud
+    ];
+    
+    // Agregar fila
+    hojaLogs.appendRow(nuevaFilaLog);
+    
+    // Mantener máximo 5000 registros
+    if (hojaLogs.getLastRow() > 5000) {
+      hojaLogs.deleteRow(2);
+    }
+    
+    console.log(`📝 Log: ${accion} - ${exitoso ? '✅' : '❌'}`);
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Error registrando log:', error);
+    return false;
+  }
+}
+
+// ============================================
+// 8. CREACIÓN DE HOJAS COMPLEMENTARIAS
+// ============================================
+
+function crearHojaDetallesUsuariosCompleta() {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    let hojaDetalles = spreadsheet.getSheetByName(CONFIG.sheetNames.detalles);
+    
+    if (!hojaDetalles) {
+      console.log('📁 Creando hoja DetallesUsuarios...');
+      hojaDetalles = spreadsheet.insertSheet(CONFIG.sheetNames.detalles);
+      
+      // ENCABEZADOS COMPLETOS
+      const encabezados = [
+        'ID',                    // A
+        'NombreCompleto',        // B
+        'FechaNacimiento',       // C
+        'Telefono',              // D
+        'WhatsApp',              // E
+        'Departamento',          // F
+        'Ciudad',                // G
+        'Institucion',           // H
+        'Carrera',               // I
+        'Semestre',              // J
+        'Genero',                // K
+        'Facebook',              // L
+        'Instagram',             // M
+        'Biografia',             // N
+        'FotoURL',               // O
+        'Intereses',             // P
+        'Habilidades',           // Q
+        'Idiomas',               // R
+        'FechaRegistro',         // S
+        'FechaActualizacion'     // T
+      ];
+      
+      // Agregar encabezados
+      hojaDetalles.appendRow(encabezados);
+      
+      // Formatear encabezados
+      hojaDetalles.getRange('A1:T1')
+        .setFontWeight('bold')
+        .setBackground('#4CAF50')
+        .setFontColor('white');
+      
+      // Congelar primera fila
+      hojaDetalles.setFrozenRows(1);
+      
+      // Ajustar ancho de columnas
+      hojaDetalles.autoResizeColumns(1, encabezados.length);
+      
+      console.log('✅ Hoja DetallesUsuarios creada con estructura completa');
+      
+      // COPIAR USUARIOS EXISTENTES DESDE CREDENCIALES
+      const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+      
+      if (hojaCredenciales && hojaCredenciales.getLastRow() > 1) {
+        const usuarios = hojaCredenciales.getDataRange().getValues();
+        let usuariosCopiados = 0;
+        
+        for (let filaIndex = 1; filaIndex < usuarios.length; filaIndex++) {
+          const id = usuarios[filaIndex][COLUMNAS.CREDENCIALES.ID];
+          const email = usuarios[filaIndex][COLUMNAS.CREDENCIALES.EMAIL];
+          
+          if (id && email) {
+            const nombre = extraerNombreDesdeEmail(email);
+            const fechaActual = new Date().toISOString();
+            
+            // Agregar fila con datos básicos
+            hojaDetalles.appendRow([
+              id,                    // ID
+              nombre,               // NombreCompleto
+              '',                   // FechaNacimiento
+              '',                   // Telefono
+              '',                   // WhatsApp
+              'Beni',               // Departamento
+              'Trinidad',           // Ciudad
+              'Generación Diplomática del Beni', // Institución
+              '',                   // Carrera
+              '',                   // Semestre
+              '',                   // Género
+              '',                   // Facebook
+              '',                   // Instagram
+              `Miembro de GDB Beni. Email: ${email}`, // Biografía
+              '',                   // FotoURL
+              'Diplomacia, Liderazgo, Voluntariado', // Intereses
+              'Comunicación, Trabajo en equipo', // Habilidades
+              'Español',            // Idiomas
+              fechaActual,          // FechaRegistro
+              fechaActual           // FechaActualizacion
+            ]);
+            
+            usuariosCopiados++;
+          }
+        }
+        
+        console.log(`✅ ${usuariosCopiados} usuarios copiados a DetallesUsuarios`);
+      }
+    }
+    
+    return {
+      success: true,
+      message: 'Hoja DetallesUsuarios lista'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error creando hoja DetallesUsuarios:', error);
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+function crearHojaActividadesGDB() {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    let hojaActividades = spreadsheet.getSheetByName(CONFIG.sheetNames.actividades);
+    
+    if (!hojaActividades) {
+      console.log('📁 Creando hoja ActividadesGDB...');
+      hojaActividades = spreadsheet.insertSheet(CONFIG.sheetNames.actividades);
+      
+      // ENCABEZADOS PARA ACTIVIDADES
+      const encabezados = [
+        'ID_Actividad',      // A
+        'ID_Usuario',        // B
+        'Nombre_Actividad',  // C
+        'Tipo',              // D
+        'Horas',             // E
+        'Fecha',             // F
+        'Puntos',            // G
+        'Descripcion',       // H
+        'Responsable',       // I
+        'Estado',            // J
+        'Evidencia_URL',     // K
+        'Fecha_Registro'     // L
+      ];
+      
+      // Agregar encabezados
+      hojaActividades.appendRow(encabezados);
+      
+      // Formatear encabezados
+      hojaActividades.getRange('A1:L1')
+        .setFontWeight('bold')
+        .setBackground('#FF9800')
+        .setFontColor('white');
+      
+      // Congelar primera fila
+      hojaActividades.setFrozenRows(1);
+      
+      // Ajustar ancho de columnas
+      hojaActividades.autoResizeColumns(1, encabezados.length);
+      
+      console.log('✅ Hoja ActividadesGDB creada');
+    }
+    
+    return {
+      success: true,
+      message: 'Hoja ActividadesGDB lista'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error creando hoja ActividadesGDB:', error);
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+// ============================================
+// 9. CREACIÓN DE USUARIOS INICIALES (FUNCIÓN DEL MENÚ)
+// ============================================
+
+function crearUsuariosInicialesGDB() {
+  console.log("🚀 INICIANDO: Creación de usuarios GDB Beni");
+  
+  try {
+    const ui = SpreadsheetApp.getUi();
+    
+    // CONFIRMACIÓN
+    const respuesta = ui.alert(
+      '👥 CREAR USUARIOS GDB BENI',
+      '¿Crear los 53 usuarios iniciales?\n\n' +
+      'Se crearán con estos datos:\n' +
+      '• Email: Lista completa GDB\n' +
+      '• Contraseña: ID + "GDB" (ej: 0001GDB)\n' +
+      '• Tipo: Según lista (admin/delegado)',
+      ui.ButtonSet.YES_NO
+    );
+    
+    if (respuesta !== ui.Button.YES) {
+      console.log("❌ Cancelado por el usuario");
+      return { success: false, message: "Operación cancelada" };
+    }
+    
+    // LISTA COMPLETA DE USUARIOS GDB
+    const usuariosGDB = [
+      [1, 'adr.cxsz@gmail.com', 'Adrian Suárez Suárez', 'admin'],
+      [15, 'angeldavidvillavicenciolopez@gmail.com', 'Angel David Villavicencio López', 'delegado'],
+      [17, 'barriosbianca103@gmail.com', 'Bianca Paola Barrios', 'delegado'],
+      [19, 'carry_vhg1605@icloud.com', 'Carla Lorena Herrera', 'delegado'],
+      [22, 'hurtadoquevedof@gmail.com', 'Freddy Hurtado Quevedo', 'delegado'],
+      [36, 'herreralucianac10@gmail.com', 'Luciana Emily Herrera', 'delegado'],
+      [37, 'mariateresasotomayorrodriguez@gmail.com', 'Maria Teresa Sotomayor Rodríguez', 'delegado'],
+      [39, 'marytrujillo027@gmail.com', 'Mariel Trujillo', 'delegado'],
+      [42, 'nuriaangelica01@gmail.com', 'Nuria Angelica Rojas', 'delegado'],
+      [43, 'pedrojoelrp@gmail.com', 'Pedro Joel Rivas', 'delegado'],
+      [46, 'puertachavezt@gmail.com', 'Thiago Puertas Chávez', 'delegado'],
+      [48, 'zammatorra@gmail.com', 'Zamara Matorra', 'delegado'],
+      [44, '171208ssfl@gmail.com', 'Sara Sthepany Flores', 'delegado'],
+      [33, 'kamilarubicallezambrana@gmail.com', 'Kamila Rubi Calles Zambrana', 'delegado'],
+      [52, 'carlitosyverjustiniano@gmail.com', 'Carlos Yver Justiniano', 'admin'],
+      [26, 'suarezjohnny0806@gmail.com', 'Johnny Suarez', 'delegado'],
+      [27, 'Joseeliasmunoznajar@gmail.com', 'Jose Elias Muñoz Najar Saucedo', 'delegado'],
+      [53, 'milenanube1@gmail.com', 'Milena Yusara Lopez', 'delegado'],
+      [7, 'jorgegab1205@gmail.com', 'Jorge Gabriel Chavez', 'director'],
+    ];
+    
+    let resultados = [];
+    let nuevosCreados = 0;
+    let yaExistentes = 0;
+    let errores = 0;
+    
+    // PROCESAR CADA USUARIO
+    usuariosGDB.forEach((usuario, index) => {
+      const [idEspecifico, email, nombre, tipo] = usuario;
+      
+      try {
+        console.log(`🔄 Procesando ${index + 1}/${usuariosGDB.length}: ${email}`);
+        
+        // VERIFICAR SI YA EXISTE
+        const existe = verificarSiUsuarioExiste(email);
+        
+        if (existe) {
+          console.log(`   ⚠️ Ya existe: ${email}`);
+          yaExistentes++;
+          resultados.push({
+            id: idEspecifico,
+            email: email,
+            nombre: nombre,
+            estado: '⚠️ YA_EXISTE',
+            mensaje: 'Usuario ya registrado'
+          });
+          return;
+        }
+        
+        // CREAR CONTRASEÑA TEMPORAL
+        const passwordTemporal = idEspecifico.toString().padStart(4, '0') + 'GDB';
+        
+        // REGISTRAR NUEVO USUARIO
+        const resultadoRegistro = registrarNuevoUsuario(email, passwordTemporal, tipo, idEspecifico);
+        
+        if (resultadoRegistro.success) {
+          nuevosCreados++;
+          resultados.push({
+            id: idEspecifico,
+            email: email,
+            nombre: nombre,
+            password: passwordTemporal,
+            tipo: tipo,
+            estado: '✅ NUEVO_CREADO',
+            mensaje: 'Usuario creado exitosamente'
+          });
+          console.log(`   ✅ Creado: ${email} - ${passwordTemporal}`);
+        } else {
+          errores++;
+          resultados.push({
+            id: idEspecifico,
+            email: email,
+            nombre: nombre,
+            estado: '❌ ERROR',
+            mensaje: resultadoRegistro.error || 'Error desconocido'
+          });
+          console.log(`   ❌ Error: ${email} - ${resultadoRegistro.error}`);
+        }
+        
+      } catch (error) {
+        errores++;
+        resultados.push({
+          id: idEspecifico,
+          email: email,
+          nombre: nombre,
+          estado: '💥 EXCEPCIÓN',
+          mensaje: error.toString()
+        });
+        console.error(`   💥 Excepción con ${email}:`, error);
+      }
+    });
+    
+    // CREAR HOJAS COMPLEMENTARIAS
+    crearHojaDetallesUsuariosCompleta();
+    crearHojaActividadesGDB();
+    
+    // MOSTRAR RESULTADO
+    const mensajeFinal = `
+📊 PROCESO COMPLETADO
+
+✅ Nuevos usuarios creados: ${nuevosCreados}
+⚠️ Usuarios ya existentes: ${yaExistentes}
+❌ Errores encontrados: ${errores}
+📋 Total procesados: ${usuariosGDB.length}
+
+🔑 Formato de contraseña: ID(4 dígitos) + "GDB"
+Ejemplo: ID 15 → Contraseña: 0015GDB
+
+📍 Las hojas "DetallesUsuarios" y "ActividadesGDB" han sido configuradas.
+    `;
+    
+    ui.alert('📊 PROCESO COMPLETADO', mensajeFinal, ui.ButtonSet.OK);
+    
+    return {
+      success: nuevosCreados > 0 || errores === 0,
+      nuevosCreados: nuevosCreados,
+      yaExistentes: yaExistentes,
+      errores: errores,
+      totalProcesados: usuariosGDB.length
+    };
+    
+  } catch (error) {
+    console.error('💥 ERROR CRÍTICO en crearUsuariosInicialesGDB:', error);
+    SpreadsheetApp.getUi().alert('❌ ERROR CRÍTICO', error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+    return { success: false, error: error.toString() };
+  }
+}
+
+function verificarSiUsuarioExiste(email) {
+  try {
+    if (!email) return false;
+    
+    const emailLimpio = email.trim().toLowerCase();
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    
+    if (!hojaCredenciales) return false;
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const emailExistente = datos[filaIndex][COLUMNAS.CREDENCIALES.EMAIL];
+      
+      if (emailExistente &&
+          emailExistente.toString().trim().toLowerCase() === emailLimpio) {
+        return true;
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error verificando usuario:', error);
+    return false;
+  }
+}
+
+function registrarNuevoUsuario(email, password, tipoUsuario = 'delegado', idEspecifico = null) {
+  console.log(`📝 Registrando usuario: ${email}, Tipo: ${tipoUsuario}`);
+  
+  // VALIDACIÓN
+  if (!email || typeof email !== 'string') {
+    return {
+      success: false,
+      error: 'El email es requerido y debe ser texto'
+    };
+  }
+  
+  const emailLimpio = email.trim().toLowerCase();
+  
+  if (emailLimpio === '' || emailLimpio === 'undefined') {
+    return {
+      success: false,
+      error: 'El email no puede estar vacío'
+    };
+  }
+  
+  if (!emailLimpio.includes('@') || !emailLimpio.includes('.')) {
+    return {
+      success: false,
+      error: 'Formato de email no válido'
+    };
+  }
+  
+  if (!password || password.length < 6) {
+    return {
+      success: false,
+      error: 'La contraseña debe tener al menos 6 caracteres'
+    };
+  }
+  
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    
+    if (!hojaCredenciales) {
+      return {
+        success: false,
+        error: 'No se encuentra la hoja "Credenciales"'
+      };
+    }
+    
+    // OBTENER DATOS EXISTENTES
+    const datos = hojaCredenciales.getDataRange().getValues();
+    
+    // VERIFICAR SI EL EMAIL YA EXISTE
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const emailExistente = datos[filaIndex][COLUMNAS.CREDENCIALES.EMAIL];
+      
+      if (emailExistente &&
+          emailExistente.toString().trim().toLowerCase() === emailLimpio) {
+        return {
+          success: false,
+          error: 'Este email ya está registrado'
+        };
+      }
+    }
+    
+    // DETERMINAR NUEVO ID
+    let nuevoId;
+    
+    if (idEspecifico !== null && idEspecifico !== undefined && !isNaN(parseInt(idEspecifico))) {
+      const idEspecificoNum = parseInt(idEspecifico);
+      
+      // Verificar que el ID específico no exista
+      for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+        if (parseInt(datos[filaIndex][COLUMNAS.CREDENCIALES.ID]) === idEspecificoNum) {
+          return {
+            success: false,
+            error: `El ID ${idEspecifico} ya está en uso`
+          };
+        }
+      }
+      
+      nuevoId = idEspecificoNum;
+    } else {
+      // ID auto-incremental
+      let maxId = 0;
+      for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+        const idActual = parseInt(datos[filaIndex][COLUMNAS.CREDENCIALES.ID]) || 0;
+        if (idActual > maxId) maxId = idActual;
+      }
+      nuevoId = maxId + 1;
+    }
+    
+    // CORREGIR TIPO DE USUARIO
+    const tipoCorregido = tipoUsuario.toLowerCase() === 'admin' ? 'admin' : 'delegado';
+    
+    // GENERAR HASH DE CONTRASEÑA
+    const salt = generarSaltAleatorio();
+    const hashContrasena = generarHashContrasena(password, salt);
+    const fechaActualISO = new Date().toISOString();
+    
+    // PREPARAR NUEVA FILA
+    const nuevaFila = [
+      nuevoId,                    // ID
+      emailLimpio,               // Email
+      hashContrasena,            // PasswordHash
+      salt,                      // Salt
+      tipoCorregido,             // TipoUsuario
+      true,                      // Activo
+      fechaActualISO,            // FechaCreacion
+      null,                      // UltimoAcceso
+      null                       // TokenRecuperacion
+    ];
+    
+    // AGREGAR A LA HOJA
+    hojaCredenciales.appendRow(nuevaFila);
+    
+    // REGISTRAR EN LOGS
+    registrarLogSistema(nuevoId, emailLimpio, 'REGISTRO', true,
+                       `Nuevo ${tipoCorregido} registrado - ID: ${nuevoId}`);
+    
+    return {
+      success: true,
+      message: 'Usuario registrado exitosamente',
+      data: {
+        id: nuevoId,
+        email: emailLimpio,
+        tipo: tipoCorregido,
+        passwordTemporal: password
+      }
+    };
+    
+  } catch (error) {
+    console.error('❌ Error en registrarNuevoUsuario:', error);
+    registrarLogSistema(null, emailLimpio || 'N/A', 'REGISTRO_ERROR', false,
+                       error.toString());
+    
+    return {
+      success: false,
+      error: 'Error en el servidor: ' + error.message
+    };
+  }
+}
+function completarCredencialesFaltantes() {
+  console.log("🔧 Completando credenciales faltantes...");
+  
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    const ui = SpreadsheetApp.getUi();
+    
+    if (!hojaCredenciales) {
+      ui.alert('❌ Error', 'No se encuentra la hoja "Credenciales"', ui.ButtonSet.OK);
+      return;
+    }
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    let actualizados = 0;
+    let errores = 0;
+    let resultados = [];
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const filaNum = filaIndex + 1;
+      const id = datos[filaIndex][COLUMNAS.CREDENCIALES.ID];
+      const email = datos[filaIndex][COLUMNAS.CREDENCIALES.EMAIL];
+      const hashActual = datos[filaIndex][COLUMNAS.CREDENCIALES.PASSWORD_HASH];
+      const saltActual = datos[filaIndex][COLUMNAS.CREDENCIALES.SALT];
+      const tipo = datos[filaIndex][COLUMNAS.CREDENCIALES.TIPO_USUARIO] || 'delegado';
+      
+      // Solo procesar si hay email pero falta hash o salt
+      if (email && email.toString().trim() !== '' && (!hashActual || !saltActual || hashActual === '' || saltActual === '')) {
+        try {
+          console.log(`📝 Procesando ID ${id}: ${email}`);
+          
+          // Generar contraseña temporal (ID + "GDB")
+          const passwordTemporal = id.toString().padStart(4, '0') + 'GDB';
+          
+          // Generar nuevo salt y hash
+          const nuevoSalt = generarSaltAleatorio();
+          const nuevoHash = generarHashContrasena(passwordTemporal, nuevoSalt);
+          
+          // Actualizar en la hoja
+          hojaCredenciales.getRange(filaNum, COLUMNAS.CREDENCIALES.PASSWORD_HASH + 1)
+                         .setValue(nuevoHash);
+          hojaCredenciales.getRange(filaNum, COLUMNAS.CREDENCIALES.SALT + 1)
+                         .setValue(nuevoSalt);
+          
+          // Asegurar que el tipo de usuario esté correcto
+          if (!tipo || tipo === '') {
+            hojaCredenciales.getRange(filaNum, COLUMNAS.CREDENCIALES.TIPO_USUARIO + 1)
+                           .setValue('delegado');
+          }
+          
+          // Establecer como activo si no está definido
+          const activoActual = datos[filaIndex][COLUMNAS.CREDENCIALES.ACTIVO];
+          if (activoActual === '' || activoActual === undefined) {
+            hojaCredenciales.getRange(filaNum, COLUMNAS.CREDENCIALES.ACTIVO + 1)
+                           .setValue(true);
+          }
+          
+          actualizados++;
+          resultados.push({
+            id: id,
+            email: email,
+            estado: '✅ ACTUALIZADO',
+            password: passwordTemporal,
+            mensaje: `Credenciales creadas - Contraseña: ${passwordTemporal}`
+          });
+          
+          console.log(`   ✅ Credenciales creadas para ${email} - ${passwordTemporal}`);
+          
+        } catch (error) {
+          errores++;
+          resultados.push({
+            id: id,
+            email: email,
+            estado: '❌ ERROR',
+            mensaje: error.toString()
+          });
+          console.error(`   ❌ Error con ID ${id}:`, error);
+        }
+      }
+    }
+    
+    // Actualizar fecha de creación para los nuevos
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const filaNum = filaIndex + 1;
+      const fechaCreacion = datos[filaIndex][COLUMNAS.CREDENCIALES.FECHA_CREACION];
+      
+      if (!fechaCreacion || fechaCreacion === '') {
+        hojaCredenciales.getRange(filaNum, COLUMNAS.CREDENCIALES.FECHA_CREACION + 1)
+                       .setValue(new Date().toISOString());
+      }
+    }
+    
+    // Crear mensaje de resultado
+    let mensajeResultado = `📊 PROCESO DE ACTUALIZACIÓN COMPLETADO\n\n`;
+    mensajeResultado += `✅ Usuarios actualizados: ${actualizados}\n`;
+    mensajeResultado += `❌ Errores: ${errores}\n`;
+    mensajeResultado += `📋 Total procesados: ${datos.length - 1}\n\n`;
+    
+    mensajeResultado += `🔑 Formato de contraseña: ID(4 dígitos) + "GDB"\n`;
+    mensajeResultado += `Ejemplo: ID 7 → Contraseña: 0007GDB\n\n`;
+    
+    if (resultados.length > 0) {
+      mensajeResultado += `📋 RESULTADOS DETALLADOS:\n`;
+      mensajeResultado += `='.repeat(50)}\n`;
+      
+      resultados.forEach((resultado, index) => {
+        if (index < 10) { // Mostrar solo los primeros 10
+          mensajeResultado += `${resultado.estado} ID ${resultado.id}: ${resultado.email}\n`;
+          if (resultado.password) {
+            mensajeResultado += `   Contraseña: ${resultado.password}\n`;
+          }
+          if (index < 9) mensajeResultado += `\n`;
+        }
+      });
+      
+      if (resultados.length > 10) {
+        mensajeResultado += `\n... y ${resultados.length - 10} más`;
+      }
+    }
+    
+    ui.alert('🔧 Actualización Completada', mensajeResultado, ui.ButtonSet.OK);
+    
+    return {
+      success: true,
+      actualizados: actualizados,
+      errores: errores,
+      total: datos.length - 1
+    };
+    
+  } catch (error) {
+    console.error('💥 ERROR CRÍTICO en completarCredencialesFaltantes:', error);
+    SpreadsheetApp.getUi().alert('❌ ERROR CRÍTICO', error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+    return { success: false, error: error.toString() };
+  }
+}
+
+function verificarEstadoCredenciales() {
+  console.log("🔍 Verificando estado de credenciales...");
+  
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    const ui = SpreadsheetApp.getUi();
+    
+    if (!hojaCredenciales) {
+      ui.alert('❌ Error', 'No se encuentra la hoja "Credenciales"', ui.ButtonSet.OK);
+      return;
+    }
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    let sinEmail = 0;
+    let sinPassword = 0;
+    let sinSalt = 0;
+    let completos = 0;
+    let problemas = [];
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const id = datos[filaIndex][COLUMNAS.CREDENCIALES.ID];
+      const email = datos[filaIndex][COLUMNAS.CREDENCIALES.EMAIL];
+      const hash = datos[filaIndex][COLUMNAS.CREDENCIALES.PASSWORD_HASH];
+      const salt = datos[filaIndex][COLUMNAS.CREDENCIALES.SALT];
+      const tipo = datos[filaIndex][COLUMNAS.CREDENCIALES.TIPO_USUARIO];
+      
+      if (!email || email.toString().trim() === '') {
+        sinEmail++;
+      } else if (!hash || hash === '' || !salt || salt === '') {
+        sinPassword++;
+        problemas.push({
+          id: id,
+          email: email,
+          problema: 'Falta PasswordHash o Salt',
+          fila: filaIndex + 1
+        });
+      } else {
+        completos++;
+      }
+    }
+    
+    let mensaje = `🔍 DIAGNÓSTICO DE CREDENCIALES\n\n`;
+    mensaje += `📊 ESTADÍSTICAS:\n`;
+    mensaje += `✅ Completos: ${completos}\n`;
+    mensaje += `❌ Sin Password/Salt: ${sinPassword}\n`;
+    mensaje += `📭 Sin Email: ${sinEmail}\n`;
+    mensaje += `📋 Total registros: ${datos.length - 1}\n\n`;
+    
+    if (problemas.length > 0) {
+      mensaje += `⚠️ USUARIOS CON PROBLEMAS:\n`;
+      mensaje += `='.repeat(50)}\n`;
+      
+      problemas.forEach((problema, index) => {
+        if (index < 15) { // Mostrar solo primeros 15
+          mensaje += `${index + 1}. ID ${problema.id}: ${problema.email}\n`;
+          mensaje += `   Fila: ${problema.fila} - ${problema.problema}\n`;
+          if (index < 14) mensaje += `\n`;
+        }
+      });
+      
+      if (problemas.length > 15) {
+        mensaje += `\n... y ${problemas.length - 15} más`;
+      }
+      
+      mensaje += `\n\n💡 RECOMENDACIÓN: Ejecuta "Completar Credenciales Faltantes"`;
+    } else {
+      mensaje += `🎉 ¡Todas las credenciales están completas!`;
+    }
+    
+    ui.alert('🔍 Diagnóstico del Sistema', mensaje, ui.ButtonSet.OK);
+    
+    return {
+      completos: completos,
+      sinPassword: sinPassword,
+      sinEmail: sinEmail,
+      problemas: problemas
+    };
+    
+  } catch (error) {
+    console.error('Error en verificarEstadoCredenciales:', error);
+    SpreadsheetApp.getUi().alert('❌ Error', error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+    return { error: error.toString() };
+  }
+}
+// ============================================
+// 10. FUNCIONES DEL MENÚ
+// ============================================
+
+function onOpen() {
+  try {
+    const ui = SpreadsheetApp.getUi();
+    
+    // Crear menú principal
+    const menu = ui.createMenu('🚀 GDB SISTEMA DEFINITIVO');
+    
+    // Agregar elementos del menú
+    menu.addItem('👥 CREAR 15 USUARIOS GDB', 'crearUsuariosInicialesGDB')
+        .addSeparator()
+        .addItem('🔧 Completar Credenciales Faltantes', 'completarCredencialesFaltantes')
+        .addItem('🔍 Verificar Estado Credenciales', 'verificarEstadoCredenciales')
+        .addSeparator()
+        .addItem('📊 Ver Estado del Sistema', 'mostrarEstadoSistema')
+        .addItem('👤 Ver Lista de Usuarios', 'mostrarListaUsuarios')
+        .addItem('🔑 Ver Contraseñas', 'mostrarContrasenas')
+        .addSeparator()
+        .addItem('📁 Crear Hoja Detalles', 'crearHojaDetallesUsuariosCompleta')
+        .addItem('📁 Crear Hoja Actividades', 'crearHojaActividadesGDB')
+        .addSeparator()
+        .addItem('🔗 Obtener URL Web', 'mostrarUrlWeb')
+        .addItem('🧪 Probar Sistema', 'probarSistema');
+    
+    // Agregar menú a la interfaz
+    menu.addToUi();
+    
+    console.log('✅ Menú GDB Sistema cargado correctamente');
+    
+    // Mostrar notificación
+    SpreadsheetApp.getActiveSpreadsheet().toast(
+      '🚀 Menú GDB cargado. Usa "GDB SISTEMA DEFINITIVO"',
+      '✅ Sistema Listo',
+      5
+    );
+    
+  } catch (error) {
+    console.error('❌ Error creando menú:', error);
+  }
+}
+
+function mostrarEstadoSistema() {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const ui = SpreadsheetApp.getUi();
+    
+    let mensaje = '📊 ESTADO DEL SISTEMA GDB\n\n';
+    
+    // Contar usuarios
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    let totalUsuarios = 0;
+    
+    if (hojaCredenciales) {
+      totalUsuarios = hojaCredenciales.getLastRow() - 1;
+      mensaje += `👥 Usuarios registrados: ${totalUsuarios}\n`;
+    }
+    
+    // Verificar hojas
+    const hojasRequeridas = ['Credenciales', 'Logs', 'DetallesUsuarios', 'ActividadesGDB'];
+    hojasRequeridas.forEach(hoja => {
+      const existe = spreadsheet.getSheetByName(hoja);
+      mensaje += `${existe ? '✅' : '❌'} ${hoja}\n`;
+    });
+    
+    // URL del servicio
+    mensaje += `\n🔗 URL del servicio: ${ScriptApp.getService().getUrl()}`;
+    mensaje += `\n📅 Última verificación: ${new Date().toLocaleString('es-ES')}`;
+    
+    ui.alert('📊 Estado del Sistema', mensaje, ui.ButtonSet.OK);
+    
+  } catch (error) {
+    console.error('Error mostrando estado:', error);
+    SpreadsheetApp.getUi().alert('❌ Error', error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
+function mostrarListaUsuarios() {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    const ui = SpreadsheetApp.getUi();
+    
+    if (!hojaCredenciales || hojaCredenciales.getLastRow() <= 1) {
+      ui.alert('👤 Usuarios', 'No hay usuarios registrados en el sistema', ui.ButtonSet.OK);
+      return;
+    }
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    let mensaje = `👥 USUARIOS REGISTRADOS (${datos.length - 1}):\n\n`;
+    
+    // Mostrar primeros 10 usuarios
+    const limiteMostrar = Math.min(10, datos.length - 1);
+    
+    for (let i = 1; i <= limiteMostrar; i++) {
+      const usuario = datos[i];
+      const estado = esValorVerdadero(usuario[COLUMNAS.CREDENCIALES.ACTIVO]) ? '✅' : '❌';
+      
+      mensaje += `${i}. ${estado} ID ${usuario[COLUMNAS.CREDENCIALES.ID]}\n`;
+      mensaje += `   📧 ${usuario[COLUMNAS.CREDENCIALES.EMAIL]}\n`;
+      mensaje += `   🏷️  ${usuario[COLUMNAS.CREDENCIALES.TIPO_USUARIO]}\n`;
+      
+      if (i < limiteMostrar) {
+        mensaje += `   ──────────────\n`;
+      }
+    }
+    
+    if (datos.length - 1 > limiteMostrar) {
+      mensaje += `\n... y ${datos.length - 1 - limiteMostrar} usuarios más`;
+    }
+    
+    ui.alert('👥 Lista de Usuarios', mensaje, ui.ButtonSet.OK);
+    
+  } catch (error) {
+    console.error('Error mostrando usuarios:', error);
+    SpreadsheetApp.getUi().alert('❌ Error', error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
+function mostrarContrasenas() {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    const ui = SpreadsheetApp.getUi();
+    
+    if (!hojaCredenciales || hojaCredenciales.getLastRow() <= 1) {
+      ui.alert('🔑 Contraseñas', 'No hay usuarios registrados', ui.ButtonSet.OK);
+      return;
+    }
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    let mensaje = '🔑 CONTRASEÑAS TEMPORALES GDB\n\n';
+    mensaje += 'Formato: ID(4 dígitos) + "GDB"\n';
+    mensaje += 'Ejemplo: ID 15 → Contraseña: 0015GDB\n\n';
+    mensaje += '='.repeat(50) + '\n\n';
+    
+    // Mostrar contraseñas de primeros 10 usuarios
+    const limite = Math.min(10, datos.length - 1);
+    
+    for (let i = 1; i <= limite; i++) {
+      const usuario = datos[i];
+      const id = usuario[COLUMNAS.CREDENCIALES.ID];
+      const email = usuario[COLUMNAS.CREDENCIALES.EMAIL];
+      
+      if (!id || !email) continue;
+      
+      const contraseña = id.toString().padStart(4, '0') + 'GDB';
+      const nombre = extraerNombreDesdeEmail(email);
+      
+      mensaje += `${i}. ${nombre}\n`;
+      mensaje += `   ID: ${id}\n`;
+      mensaje += `   Email: ${email}\n`;
+      mensaje += `   🔑 ${contraseña}\n`;
+      
+      if (i < limite) {
+        mensaje += `   ───────────────────\n`;
+      }
+    }
+    
+    if (datos.length - 1 > limite) {
+      mensaje += `\n... y ${datos.length - 1 - limite} usuarios más`;
+    }
+    
+    ui.alert('🔑 Contraseñas del Sistema', mensaje, ui.ButtonSet.OK);
+    
+  } catch (error) {
+    console.error('Error mostrando contraseñas:', error);
+    SpreadsheetApp.getUi().alert('❌ Error', error.toString(), SpreadsheetApp.getUi().ButtonSet.OK);
+  }
+}
+
+function mostrarUrlWeb() {
+  const url = ScriptApp.getService().getUrl();
+  const ui = SpreadsheetApp.getUi();
+  
+  ui.alert(
+    '🔗 URL del Sistema Web',
+    'Copia esta URL para configurar tu sitio web:\n\n' +
+    url + '\n\n' +
+    'Debes usar esta URL en:\n' +
+    '• login.html\n' +
+    '• perfil-privado.html\n\n' +
+    'Ejemplo de código:\n' +
+    'const APPS_SCRIPT_URL = "' + url + '";',
+    ui.ButtonSet.OK
+  );
+}
+
+function probarSistema() {
+  const ui = SpreadsheetApp.getUi();
+  
+  ui.alert(
+    '🧪 Probar Sistema',
+    'Para probar el sistema:\n\n' +
+    '1. Usa el usuario admin:\n' +
+    '   📧 adr.cxsz@gmail.com\n' +
+    '   🔑 0001GDB\n\n' +
+    '2. O cualquier usuario:\n' +
+    '   📧 [cualquier email de la lista]\n' +
+    '   🔑 ID(4 dígitos) + "GDB"\n\n' +
+    '3. URL de prueba:\n' +
+    ScriptApp.getService().getUrl() + '?action=status\n\n' +
+    '4. Ejemplo de login:\n' +
+    ScriptApp.getService().getUrl() + '?action=login&email=adr.cxsz@gmail.com&password=0001GDB',
+    ui.ButtonSet.OK
+  );
+}
+
+// ============================================
+// 11. INICIALIZACIÓN
+// ============================================
+
+function onInstall() {
+  onOpen();
+  console.log('✅ GDB Sistema Definitivo instalado');
+  
+  // Mostrar mensaje de bienvenida
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '🚀 GDB Sistema Definitivo instalado. Usa el menú "GDB SISTEMA DEFINITIVO"',
+    '✅ Instalación Exitosa',
+    10
+  );
+}
+
+// ============================================
+// 12. FUNCIÓN DE PRUEBA RÁPIDA
+// ============================================
+
+function pruebaRapida() {
+  console.log('🧪 Ejecutando prueba rápida...');
+  
+  // Probar login
+  const resultado = autenticarUsuario('adr.cxsz@gmail.com', '0001GDB');
+  console.log('Resultado login:', resultado);
+  
+  // Probar obtener perfil
+  if (resultado.success) {
+    const perfil = obtenerPerfilCompleto(resultado.data.id, resultado.data.sessionToken);
+    console.log('Resultado perfil:', perfil.success ? '✅' : '❌');
+  }
+  
+  // Mostrar estado
+  const estado = ScriptApp.getService().getUrl() + '?action=status';
+  console.log('URL de estado:', estado);
+  
+  SpreadsheetApp.getActiveSpreadsheet().toast(
+    '✅ Prueba completada. Revisa la consola.',
+    '🧪 Prueba Rápida',
+    5
+  );
+}
+// ============================================
+// 13. FUNCIÓN DOPOST PARA ACTUALIZACIONES
+// ============================================
+
+function doPost(e) {
+  console.log('📨 POST recibido:', JSON.stringify(e));
+  
+  const params = e.postData ? JSON.parse(e.postData.contents) : e.parameter || {};
+  const action = params.action;
+  
+  let respuesta;
+  
+  try {
+    switch(action) {
+      case 'changePassword':
+        respuesta = cambiarContraseñaUsuarioWeb(
+          params.userId,
+          params.currentPassword,
+          params.newPassword,
+          params.sessionToken
+        );
+        break;
+        
+      case 'updateProfile':
+        respuesta = actualizarPerfilUsuario(
+          params.userId,
+          params,
+          params.sessionToken
+        );
+        break;
+        
+      case 'getAllMembers':
+        respuesta = obtenerTodosLosMiembros();
+        break;
+        
+      case 'getMemberById':
+        respuesta = obtenerMiembroPorId(params.id);
+        break;
+        
+      case 'updateMember':
+        respuesta = actualizarMiembroPerfil(params);
+        break;
+        
+      default:
+        respuesta = {
+          success: false,
+          error: 'Acción no válida'
+        };
+    }
+  } catch(error) {
+    respuesta = {
+      success: false,
+      error: error.message
+    };
+  }
+  
+  const output = ContentService.createTextOutput(JSON.stringify(respuesta));
+  output.setMimeType(ContentService.MimeType.JSON);
+  output.setHeaders({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  });
+  
+  return output;
+}
+
+// ============================================
+// 14. FUNCIONES PARA EL DIRECTORIO
+// ============================================
+
+function obtenerTodosLosMiembros() {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaDetalles = spreadsheet.getSheetByName(CONFIG.sheetNames.detalles);
+    
+    if (!hojaDetalles || hojaDetalles.getLastRow() <= 1) {
+      return {
+        success: true,
+        data: []
+      };
+    }
+    
+    const datos = hojaDetalles.getDataRange().getValues();
+    const miembros = [];
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const fila = datos[filaIndex];
+      
+      // Obtener datos de credenciales para el tipo
+      const id = parseInt(fila[0]);
+      const tipo = obtenerTipoUsuarioPorId(id);
+      
+      miembros.push({
+        id: id,
+        nombre: fila[1] || 'Nombre no disponible',
+        cargo: obtenerCargoPorTipo(tipo),
+        tipo: tipo,
+        comision: fila[7] || 'Sin comisión',
+        universidad: fila[8] || '',
+        semestre: fila[9] || '',
+        municipio: fila[6] || 'Trinidad',
+        telefono: fila[3] || '#######',
+        nacimiento: fila[2] || '',
+        biografia: fila[13] || 'Miembro de GDB Beni',
+        intereses: fila[15] || 'Diplomacia, Liderazgo',
+        avatar: fila[14] || '',
+        colegio: fila[8] || '', // Usamos el campo carrera para colegio
+        // Estadísticas dummy
+        eventos: Math.floor(Math.random() * 20),
+        intervenciones: Math.floor(Math.random() * 15),
+        talleres: Math.floor(Math.random() * 10),
+        proyectos: Math.floor(Math.random() * 5)
+      });
+    }
+    
+    return {
+      success: true,
+      data: miembros
+    };
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo miembros:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+function obtenerTipoUsuarioPorId(idUsuario) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+    
+    if (!hojaCredenciales) return 'delegado';
+    
+    const datos = hojaCredenciales.getDataRange().getValues();
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      if (parseInt(datos[filaIndex][COLUMNAS.CREDENCIALES.ID]) === idUsuario) {
+        return datos[filaIndex][COLUMNAS.CREDENCIALES.TIPO_USUARIO] || 'delegado';
+      }
+    }
+    
+    return 'delegado';
+  } catch (error) {
+    console.error('Error obteniendo tipo de usuario:', error);
+    return 'delegado';
+  }
+}
+
+function obtenerCargoPorTipo(tipo) {
+  switch(tipo) {
+    case 'admin':
+      return 'Administrador';
+    case 'directivo':
+      return 'Miembro Directivo';
+    default:
+      return 'Delegado';
+  }
+}
+
+function obtenerMiembroPorId(id) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaDetalles = spreadsheet.getSheetByName(CONFIG.sheetNames.detalles);
+    
+    if (!hojaDetalles || hojaDetalles.getLastRow() <= 1) {
+      return {
+        success: false,
+        error: 'No hay miembros registrados'
+      };
+    }
+    
+    const datos = hojaDetalles.getDataRange().getValues();
+    
+    for (let filaIndex = 1; filaIndex < datos.length; filaIndex++) {
+      const fila = datos[filaIndex];
+      
+      if (parseInt(fila[0]) === parseInt(id)) {
+        const tipo = obtenerTipoUsuarioPorId(id);
+        
+        const miembro = {
+          id: id,
+          nombre: fila[1] || 'Nombre no disponible',
+          cargo: obtenerCargoPorTipo(tipo),
+          tipo: tipo,
+          comision: fila[7] || 'Sin comisión',
+          universidad: fila[8] || '',
+          semestre: fila[9] || '',
+          municipio: fila[6] || 'Trinidad',
+          telefono: fila[3] || '#######',
+          nacimiento: fila[2] || '',
+          biografia: fila[13] || 'Miembro de GDB Beni',
+          intereses: fila[15] || 'Diplomacia, Liderazgo',
+          avatar: fila[14] || '',
+          colegio: fila[8] || '',
+          // Estadísticas dummy
+          eventos: Math.floor(Math.random() * 20),
+          intervenciones: Math.floor(Math.random() * 15),
+          talleres: Math.floor(Math.random() * 10),
+          proyectos: Math.floor(Math.random() * 5)
+        };
+        
+        return {
+          success: true,
+          data: miembro
+        };
+      }
+    }
+    
+    return {
+      success: false,
+      error: 'Miembro no encontrado'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo miembro:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+function actualizarMiembroPerfil(params) {
+  try {
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const hojaDetalles = spreadsheet.getSheetByName(CONFIG.sheetNames.detalles);
+    
+    if (!hojaDetalles) {
+      return {
+        success: false,
+        error: 'Hoja de detalles no encontrada'
+      };
+    }
+    
+    const datos = hojaDetalles.getDataRange().getValues();
+    let filaIndex = -1;
+    
+    // Buscar miembro por ID
+    for (let i = 1; i < datos.length; i++) {
+      if (parseInt(datos[i][0]) === parseInt(params.id)) {
+        filaIndex = i;
+        break;
+      }
+    }
+    
+    if (filaIndex === -1) {
+      return {
+        success: false,
+        error: 'Miembro no encontrado'
+      };
+    }
+    
+    const filaNum = filaIndex + 1;
+    
+    // Actualizar cada campo si está presente
+    if (params.nombre !== undefined) {
+      hojaDetalles.getRange(filaNum, 2).setValue(params.nombre);
+    }
+    if (params.nacimiento !== undefined) {
+      hojaDetalles.getRange(filaNum, 3).setValue(params.nacimiento);
+    }
+    if (params.telefono !== undefined) {
+      hojaDetalles.getRange(filaNum, 4).setValue(params.telefono);
+    }
+    if (params.whatsapp !== undefined) {
+      hojaDetalles.getRange(filaNum, 5).setValue(params.whatsapp);
+    }
+    if (params.departamento !== undefined) {
+      hojaDetalles.getRange(filaNum, 6).setValue(params.departamento);
+    }
+    if (params.municipio !== undefined) {
+      hojaDetalles.getRange(filaNum, 7).setValue(params.municipio);
+    }
+    if (params.institucion !== undefined) {
+      hojaDetalles.getRange(filaNum, 8).setValue(params.institucion);
+    }
+    if (params.carrera !== undefined) {
+      hojaDetalles.getRange(filaNum, 9).setValue(params.carrera);
+    }
+    if (params.semestre !== undefined) {
+      hojaDetalles.getRange(filaNum, 10).setValue(params.semestre);
+    }
+    if (params.genero !== undefined) {
+      hojaDetalles.getRange(filaNum, 11).setValue(params.genero);
+    }
+    if (params.facebook !== undefined) {
+      hojaDetalles.getRange(filaNum, 12).setValue(params.facebook);
+    }
+    if (params.instagram !== undefined) {
+      hojaDetalles.getRange(filaNum, 13).setValue(params.instagram);
+    }
+    if (params.biografia !== undefined) {
+      hojaDetalles.getRange(filaNum, 14).setValue(params.biografia);
+    }
+    if (params.fotoURL !== undefined) {
+      hojaDetalles.getRange(filaNum, 15).setValue(params.fotoURL);
+    }
+    if (params.intereses !== undefined) {
+      hojaDetalles.getRange(filaNum, 16).setValue(params.intereses);
+    }
+    if (params.habilidades !== undefined) {
+      hojaDetalles.getRange(filaNum, 17).setValue(params.habilidades);
+    }
+    if (params.idiomas !== undefined) {
+      hojaDetalles.getRange(filaNum, 18).setValue(params.idiomas);
+    }
+    
+    // Actualizar fecha de modificación
+    hojaDetalles.getRange(filaNum, 20).setValue(new Date().toISOString());
+    
+    // Si se cambió el tipo, actualizar en credenciales
+    if (params.tipo !== undefined) {
+      const hojaCredenciales = spreadsheet.getSheetByName(CONFIG.sheetNames.credenciales);
+      if (hojaCredenciales) {
+        const datosCred = hojaCredenciales.getDataRange().getValues();
+        
+        for (let i = 1; i < datosCred.length; i++) {
+          if (parseInt(datosCred[i][COLUMNAS.CREDENCIALES.ID]) === parseInt(params.id)) {
+            hojaCredenciales.getRange(i + 1, COLUMNAS.CREDENCIALES.TIPO_USUARIO + 1)
+                           .setValue(params.tipo);
+            break;
+          }
+        }
+      }
+    }
+    
+    return {
+      success: true,
+      message: 'Perfil actualizado correctamente'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error actualizando perfil:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
