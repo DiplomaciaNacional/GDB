@@ -329,7 +329,7 @@
             }
         }
 
-        /* Agrega al final de tu <style> */
+        /* NOTIFICACIONES FLOTANTES */
         .notificacion-flotante {
             position: fixed;
             top: 20px;
@@ -360,6 +360,11 @@
             color: white;
         }
 
+        .notificacion-flotante.warning {
+            background: #FF9800;
+            color: white;
+        }
+
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -369,6 +374,132 @@
             to {
                 transform: translateX(0);
                 opacity: 1;
+            }
+        }
+
+        /* ESTILOS PARA CAMPOS EDITABLES */
+        .campo-editable {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .campo-editable:hover {
+            background-color: rgba(0, 100, 0, 0.05);
+            border-radius: 4px;
+            padding-left: 5px;
+        }
+
+        .campo-editable::after {
+            content: '✏️';
+            margin-left: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .campo-editable:hover::after {
+            opacity: 1;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .modal-header h3 {
+            color: var(--dark-green);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--medium-gray);
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background-color: var(--light-gray);
+            color: var(--burgundy);
+        }
+
+        /* LOADING */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .loading-spinner {
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 5px solid var(--gold);
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
             }
         }
     </style>
@@ -554,34 +685,147 @@
     </main>
 
     <!-- MODAL DE EDICIÓN -->
-    <div id="edit-modal"
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
-        <div
-            style="background: white; padding: 30px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
-            <h3 style="color: var(--dark-green); margin-bottom: 20px;">
-                <i class="fas fa-edit"></i> Editar Información
-            </h3>
-            <div id="edit-form-container">
-                <!-- Formulario se cargará dinámicamente -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Editar Información Personal</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
             </div>
-            <div style="display: flex; gap: 10px; margin-top: 30px;">
-                <button onclick="cerrarModal()" class="btn-primary btn-cancelar" style="flex: 1;">
-                    Cancelar
-                </button>
-                <button onclick="guardarCambios()" class="btn-primary btn-guardar" style="flex: 1;">
-                    <i class="fas fa-save"></i> Guardar Cambios
-                </button>
-            </div>
+            <form id="edit-form">
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-nombre"><i class="fas fa-user"></i> Nombre Completo *</label>
+                        <input type="text" id="edit-nombre" required>
+                        <small>Tu nombre completo como aparece en documentos oficiales</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-fechaNacimiento"><i class="fas fa-birthday-cake"></i> Fecha de Nacimiento</label>
+                        <input type="date" id="edit-fechaNacimiento">
+                        <small>Formato: DD/MM/AAAA</small>
+                    </div>
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-telefono"><i class="fas fa-phone"></i> Teléfono</label>
+                        <input type="tel" id="edit-telefono" placeholder="Ej: 12345678">
+                        <small>Número de contacto personal</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</label>
+                        <input type="tel" id="edit-whatsapp" placeholder="Ej: 12345678">
+                        <small>Número para contactarte por WhatsApp</small>
+                    </div>
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-genero"><i class="fas fa-venus-mars"></i> Género</label>
+                        <select id="edit-genero">
+                            <option value="">Seleccionar...</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                            <option value="Prefiero no decir">Prefiero no decir</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-departamento"><i class="fas fa-map-marker-alt"></i> Departamento</label>
+                        <input type="text" id="edit-departamento" value="Beni" readonly>
+                    </div>
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-ciudad"><i class="fas fa-city"></i> Ciudad/Municipio</label>
+                        <input type="text" id="edit-ciudad" placeholder="Ej: Trinidad">
+                        <small>Ciudad o municipio donde resides</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-institucion"><i class="fas fa-university"></i> Institución (Universidad)</label>
+                        <input type="text" id="edit-institucion" placeholder="Ej: Universidad Autónoma del Beni">
+                        <small>Nombre de tu universidad o institución superior</small>
+                    </div>
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-colegio"><i class="fas fa-school"></i> Colegio *</label>
+                        <input type="text" id="edit-colegio" required placeholder="Ej: Colegio Nacional Florida">
+                        <small>Nombre del colegio donde estudiaste/estudias</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-carrera"><i class="fas fa-graduation-cap"></i> Carrera</label>
+                        <input type="text" id="edit-carrera" placeholder="Ej: Derecho, Medicina, etc.">
+                        <small>Tu carrera universitaria (si aplica)</small>
+                    </div>
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-semestre"><i class="fas fa-calendar-alt"></i> Semestre/Año</label>
+                        <input type="text" id="edit-semestre" placeholder="Ej: 5to semestre, 3er año">
+                        <small>Semestre o año que cursas</small>
+                    </div>
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-facebook"><i class="fab fa-facebook"></i> Facebook</label>
+                        <input type="text" id="edit-facebook" placeholder="Usuario o enlace">
+                        <small>Tu perfil de Facebook</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-instagram"><i class="fab fa-instagram"></i> Instagram</label>
+                        <input type="text" id="edit-instagram" placeholder="@usuario">
+                        <small>Tu usuario de Instagram</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-biografia"><i class="fas fa-edit"></i> Biografía</label>
+                    <textarea id="edit-biografia" rows="4" placeholder="Cuéntanos sobre ti..."></textarea>
+                    <small>Breve descripción sobre ti (máx. 500 caracteres)</small>
+                </div>
+
+                <div class="form-fila">
+                    <div class="form-group">
+                        <label for="edit-intereses"><i class="fas fa-heart"></i> Intereses</label>
+                        <input type="text" id="edit-intereses" placeholder="Diplomacia, Liderazgo, Voluntariado">
+                        <small>Tus áreas de interés separadas por comas</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-habilidades"><i class="fas fa-tools"></i> Habilidades</label>
+                        <input type="text" id="edit-habilidades" placeholder="Comunicación, Trabajo en equipo">
+                        <small>Tus principales habilidades</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-idiomas"><i class="fas fa-language"></i> Idiomas</label>
+                    <input type="text" id="edit-idiomas" value="Español" placeholder="Español, Inglés, etc.">
+                    <small>Idiomas que hablas separados por comas</small>
+                </div>
+
+                <div class="botones-accion">
+                    <button type="button" class="btn-primary btn-cancelar" id="cancel-edit-btn">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn-primary btn-guardar">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- SCRIPT PRINCIPAL -->
     <script>
         // ============================================
-        // CONFIGURACIÓN GOOGLE SHEETS API
+        // CONFIGURACIÓN
         // ============================================
-        const SHEET_ID = '15W3jXoLSyIRVpSlMu2itSxJ8fGoiQgmS6oq5Ie2WjIM'; // Reemplaza con tu ID de Google Sheet
-        const API_KEY = 'AIzaSyAQ7uEfcEcN0-0YLC1nhFafL2-uSGaAWUo';   // Reemplaza con tu API Key
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6eUBqVW4UfSx1LQxx4xVZgFwwNV6Z7Rh5eX2KjVUyg00KCsY5CXV_-lOXfPNV7xO-zw/exec'; // Reemplaza con tu URL
+        
         const STORAGE_KEYS = {
             SESSION: 'gdb_session',
             USER_DATA: 'gdb_user_data'
@@ -605,8 +849,8 @@
                 return;
             }
 
-            // 2. Cargar datos del usuario DESDE GOOGLE SHEETS
-            await cargarDatosDesdeSheets();
+            // 2. Cargar datos del usuario
+            await cargarDatosUsuario();
 
             // 3. Configurar eventos
             configurarEventos();
@@ -616,7 +860,7 @@
         });
 
         // ============================================
-        // FUNCIONES DE SESIÓN (MANTENER IGUAL)
+        // FUNCIONES DE SESIÓN
         // ============================================
         function verificarSesion() {
             try {
@@ -665,72 +909,43 @@
         }
 
         // ============================================
-        // CARGA DE DATOS DESDE GOOGLE SHEETS API
+        // CARGA DE DATOS DEL USUARIO
         // ============================================
-        async function cargarDatosDesdeSheets() {
+        async function cargarDatosUsuario() {
             if (!usuarioActual) return;
 
-            mostrarLoading('Conectando a Google Sheets...');
+            mostrarLoading('Cargando tu perfil...');
 
             try {
-                console.log('📊 Buscando usuario ID:', usuarioActual.id);
-
-                // 1. Obtener datos de la hoja "Credenciales"
-                const credencialesUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Credenciales!A:I?key=${API_KEY}`;
-                const credencialesResponse = await fetch(credencialesUrl);
-
-                if (!credencialesResponse.ok) {
-                    throw new Error(`Error Sheets API: ${credencialesResponse.status}`);
-                }
-
-                const credencialesData = await credencialesResponse.json();
-                const credencialesRows = credencialesData.values || [];
-
-                // 2. Buscar usuario por ID
-                let usuarioEncontrado = null;
-                for (let i = 1; i < credencialesRows.length; i++) {
-                    const row = credencialesRows[i];
-                    if (row[0] == usuarioActual.id) { // Columna A = ID
-                        usuarioEncontrado = {
-                            id: row[0],
-                            email: row[1],
-                            tipo: row[4] || 'delegado',
-                            activo: row[5] === 'TRUE' || row[5] === true,
-                            fechaRegistro: row[6],
-                            ultimoAcceso: row[7]
-                        };
-                        break;
+                // Intentar obtener datos del servidor
+                const url = `${APPS_SCRIPT_URL}?action=getUserData&userId=${usuarioActual.id}&sessionToken=${usuarioActual.sessionToken}&callback=callback`;
+                
+                const response = await fetch(url);
+                const text = await response.text();
+                
+                // Parsear respuesta JSONP
+                const jsonpMatch = text.match(/callback\((.+)\)/);
+                if (jsonpMatch && jsonpMatch[1]) {
+                    const result = JSON.parse(jsonpMatch[1]);
+                    
+                    if (result.success && result.data) {
+                        datosUsuarioCompletos = result.data;
+                        mostrarDatosUsuario(datosUsuarioCompletos);
+                        
+                        // Guardar en caché
+                        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
+                        
+                        console.log('✅ Datos cargados desde servidor');
+                        mostrarNotificacion('✅ Perfil actualizado', 'success');
+                    } else {
+                        throw new Error(result.error || 'Error al cargar datos');
                     }
+                } else {
+                    throw new Error('Formato de respuesta inválido');
                 }
-
-                if (!usuarioEncontrado) {
-                    throw new Error('Usuario no encontrado en Sheets');
-                }
-
-                // 3. Obtener nombre e iniciales
-                usuarioEncontrado.nombre = extraerNombreDesdeEmail(usuarioEncontrado.email);
-                usuarioEncontrado.iniciales = obtenerIniciales(usuarioEncontrado.nombre);
-
-                // 4. Intentar obtener detalles adicionales
-                try {
-                    const detalles = await obtenerDetallesDesdeSheets(usuarioActual.id);
-                    usuarioEncontrado = { ...usuarioEncontrado, ...detalles };
-                } catch (detallesError) {
-                    console.warn('⚠️ No se pudieron cargar detalles:', detallesError.message);
-                }
-
-                // 5. Asignar datos
-                datosUsuarioCompletos = usuarioEncontrado;
-                mostrarDatosUsuario(datosUsuarioCompletos);
-
-                // 6. Guardar en caché
-                localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
-
-                console.log('✅ Datos reales cargados desde Google Sheets');
-                mostrarNotificacion('✅ Perfil actualizado', 'success');
 
             } catch (error) {
-                console.error('❌ Error cargando desde Sheets:', error);
+                console.error('❌ Error cargando desde servidor:', error);
 
                 // Fallback a caché
                 const datosCache = localStorage.getItem(STORAGE_KEYS.USER_DATA);
@@ -750,110 +965,6 @@
             }
         }
 
-        async function obtenerDetallesDesdeSheets(userId) {
-            try {
-                const detallesUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/DetallesUsuarios!A:T?key=${API_KEY}`;
-                const detallesResponse = await fetch(detallesUrl);
-
-                if (!detallesResponse.ok) {
-                    // Si no hay detalles, retornar valores vacíos
-                    return obtenerDetallesVacios();
-                }
-
-                const detallesData = await detallesResponse.json();
-                const detallesRows = detallesData.values || [];
-
-                // Buscar por ID (columna A)
-                for (let i = 1; i < detallesRows.length; i++) {
-                    const row = detallesRows[i];
-                    if (row[0] == userId) {
-                        return {
-                            nombreCompleto: row[1] || 'Por completar',
-                            fechaNacimiento: row[2] || '',
-                            telefono: row[3] || '',
-                            whatsapp: row[4] || '',
-                            departamento: row[5] || 'Beni',
-                            ciudad: row[6] || 'Trinidad',
-                            institucion: row[7] || 'GDB Beni',
-                            carrera: row[8] || '',
-                            semestre: row[9] || '',
-                            genero: row[10] || '',
-                            facebook: row[11] || '',
-                            instagram: row[12] || '',
-                            biografia: row[13] || 'Perfil en construcción',
-                            intereses: row[15] || '',
-                            habilidades: row[16] || '',
-                            idiomas: row[17] || 'Español'
-                        };
-                    }
-                }
-
-                // Si no encontró detalles, retornar valores vacíos
-                return obtenerDetallesVacios();
-
-            } catch (error) {
-                console.error('Error obteniendo detalles:', error);
-                return obtenerDetallesVacios();
-            }
-        }
-        function obtenerDetallesVacios() {
-            return {
-                nombreCompleto: 'Por completar',
-                fechaNacimiento: '',
-                telefono: '',
-                whatsapp: '',
-                departamento: 'Beni',
-                ciudad: 'Trinidad',
-                institucion: 'GDB Beni',
-                carrera: '',
-                semestre: '',
-                genero: '',
-                facebook: '',
-                instagram: '',
-                biografia: 'Perfil en construcción',
-                intereses: '',
-                habilidades: '',
-                idiomas: 'Español'
-            };
-        }
-
-        // ============================================
-        // FUNCIONES AUXILIARES
-        // ============================================
-        function extraerNombreDesdeEmail(email) {
-            if (!email) return 'Usuario GDB';
-
-            try {
-                let nombre = email.split('@')[0];
-                nombre = nombre.replace(/[._-]/g, ' ')
-                    .replace(/\d+/g, '')
-                    .trim();
-
-                nombre = nombre.split(/\s+/)
-                    .filter(palabra => palabra.length > 0)
-                    .map(palabra => {
-                        if (palabra.length <= 2) return palabra.toLowerCase();
-                        return palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase();
-                    })
-                    .join(' ');
-
-                return nombre || 'Usuario GDB';
-            } catch (error) {
-                return 'Usuario GDB';
-            }
-        }
-
-        function obtenerIniciales(nombre) {
-            if (!nombre) return 'G';
-
-            const partes = nombre.split(' ');
-            if (partes.length >= 2) {
-                return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
-            }
-
-            return nombre.charAt(0).toUpperCase();
-        }
-
         function cargarDatosDePrueba() {
             const datosPrueba = {
                 id: usuarioActual?.id || "1",
@@ -864,25 +975,26 @@
                 fechaRegistro: "2024-01-01",
                 ultimoAcceso: new Date().toISOString(),
 
-                // Detalles (vacíos o por completar)
+                // Detalles
                 nombreCompleto: "Por completar",
                 telefono: "",
                 whatsapp: "",
                 departamento: "Beni",
                 ciudad: "Trinidad",
                 institucion: "GDB Beni",
+                colegio: "", // ← NUEVO CAMPO
                 carrera: "",
                 semestre: "",
                 genero: "",
                 facebook: "",
                 instagram: "",
-                biografia: "Perfil en construcción",
+                biografia: "Miembro de GDB Beni",
                 fechaNacimiento: "",
-                intereses: "",
-                habilidades: "",
+                intereses: "Diplomacia, Liderazgo",
+                habilidades: "Comunicación",
                 idiomas: "Español",
 
-                // Estadísticas VACÍAS
+                // Estadísticas
                 estadisticas: {
                     eventosAsistidos: 0,
                     horasVoluntariado: 0,
@@ -891,17 +1003,16 @@
                     ranking: "Nuevo"
                 },
 
-                // Actividades VACÍAS
+                // Actividades
                 actividadesRecientes: []
             };
 
             datosUsuarioCompletos = datosPrueba;
             mostrarDatosUsuario(datosPrueba);
-            mostrarNotificacion('⚠️ Usando datos de demostración', 'info');
         }
 
         // ============================================
-        // MOSTRAR DATOS EN LA INTERFAZ (MANTENER TU CÓDIGO)
+        // MOSTRAR DATOS EN LA INTERFAZ
         // ============================================
         function mostrarDatosUsuario(datos) {
             // Actualizar encabezado
@@ -919,6 +1030,8 @@
                 titulo = "Administrador GDB Beni";
             } else if (datos.tipo === 'delegado') {
                 titulo = "Delegado GDB Beni";
+            } else if (datos.tipo === 'directivo') {
+                titulo = "Miembro Directivo GDB Beni";
             }
             document.getElementById('user-title').textContent = titulo;
 
@@ -938,7 +1051,7 @@
             // Actualizar información de contacto
             actualizarInformacionContacto(datos);
 
-            // Actualizar estadísticas (siempre vacías o reales)
+            // Actualizar estadísticas
             actualizarEstadisticas(datos.estadisticas || {});
         }
 
@@ -955,7 +1068,8 @@
                 {
                     label: 'Tipo de Usuario',
                     value: datos.tipo === 'admin' ? 'Administrador' :
-                        datos.tipo === 'delegado' ? 'Delegado' : 'Miembro',
+                        datos.tipo === 'delegado' ? 'Delegado' :
+                        datos.tipo === 'directivo' ? 'Miembro Directivo' : 'Miembro',
                     icon: 'fas fa-user-tag',
                     valorPorDefecto: 'Miembro'
                 },
@@ -978,7 +1092,13 @@
                     valorPorDefecto: 'Beni'
                 },
                 {
-                    label: 'Institución',
+                    label: 'Colegio',
+                    value: datos.colegio || 'Por completar', // ← NUEVO CAMPO
+                    icon: 'fas fa-school',
+                    valorPorDefecto: 'Por completar'
+                },
+                {
+                    label: 'Institución (Universidad)',
                     value: datos.institucion || 'GDB Beni',
                     icon: 'fas fa-university',
                     valorPorDefecto: 'GDB Beni'
@@ -990,7 +1110,7 @@
                     valorPorDefecto: 'Por completar'
                 },
                 {
-                    label: 'Semestre',
+                    label: 'Semestre/Año',
                     value: datos.semestre || 'Por completar',
                     icon: 'fas fa-calendar-alt',
                     valorPorDefecto: 'Por completar'
@@ -998,27 +1118,16 @@
             ];
 
             personalDataDiv.innerHTML = datosPersonales.map(item => `
-        <div class="dato-item">
-            <div class="dato-label">
-                <i class="${item.icon}"></i> ${item.label}
-            </div>
-            <div class="dato-valor ${!item.value || item.value === item.valorPorDefecto ? 'texto-suave' : ''}">
-                ${item.value}
-            </div>
-        </div>
-    `).join('');
-
-            // Agregar estilos para texto suave
-            const style = document.createElement('style');
-            style.textContent = `
-        .texto-suave {
-            color: var(--medium-gray) !important;
-            font-style: italic;
+                <div class="dato-item">
+                    <div class="dato-label">
+                        <i class="${item.icon}"></i> ${item.label}
+                    </div>
+                    <div class="dato-valor ${!item.value || item.value === item.valorPorDefecto ? 'texto-suave' : ''}">
+                        ${item.value}
+                    </div>
+                </div>
+            `).join('');
         }
-    `;
-            document.head.appendChild(style);
-        }
-
 
         function actualizarInformacionContacto(datos) {
             const contactDataDiv = document.getElementById('contact-data');
@@ -1062,42 +1171,36 @@
             ];
 
             contactDataDiv.innerHTML = datosContacto.map(item => `
-        <div class="lista-item">
-            <div class="lista-icono">
-                <i class="${item.icon}"></i>
-            </div>
-            <div style="flex-grow: 1;">
-                <div style="font-weight: 600; margin-bottom: 5px;">${item.label}</div>
-                <div class="${!item.value || item.value === item.valorPorDefecto ? 'texto-suave' : ''}">${item.value}</div>
-            </div>
-            ${item.value !== 'Por completar' && item.value !== 'No especificado' && item.type !== 'email' ? `
-            <a href="${getLinkPorTipo(item.type, item.value)}" target="_blank" 
-               class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
-                <i class="fas fa-external-link-alt"></i>
-            </a>
-            ` : ''}
-        </div>
-    `).join('');
+                <div class="lista-item">
+                    <div class="lista-icono">
+                        <i class="${item.icon}"></i>
+                    </div>
+                    <div style="flex-grow: 1;">
+                        <div style="font-weight: 600; margin-bottom: 5px;">${item.label}</div>
+                        <div class="${!item.value || item.value === item.valorPorDefecto ? 'texto-suave' : ''}">${item.value}</div>
+                    </div>
+                    ${item.value !== 'Por completar' && item.value !== 'No especificado' && item.type !== 'email' ? `
+                    <a href="${getLinkPorTipo(item.type, item.value)}" target="_blank" 
+                       class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
+                        <i class="fas fa-external-link-alt"></i>
+                    </a>
+                    ` : ''}
+                </div>
+            `).join('');
         }
 
-
         function actualizarEstadisticas(stats) {
-            // Si no hay estadísticas o están vacías, mostrar ceros
-            const eventos = stats?.eventosAsistidos || stats?.eventos || 0;
-            const horas = stats?.horasVoluntariado || stats?.horas || 0;
-            const proyectos = stats?.proyectosParticipados || stats?.proyectos || 0;
-
-            document.getElementById('stat-events').textContent = eventos;
-            document.getElementById('stat-hours').textContent = horas;
-            document.getElementById('stat-projects').textContent = proyectos;
-
-            // Ranking siempre será "Nuevo" hasta que se asignen puntos
-            document.getElementById('stat-ranking').textContent = '#0';
+            document.getElementById('stat-events').textContent = stats?.eventosAsistidos || 0;
+            document.getElementById('stat-hours').textContent = stats?.horasVoluntariado || 0;
+            document.getElementById('stat-projects').textContent = stats?.proyectosParticipados || 0;
+            
+            // Ranking
+            const ranking = stats?.ranking || 'Nuevo';
+            document.getElementById('stat-ranking').textContent = ranking === 'Nuevo' ? 'Nuevo' : `#${ranking}`;
         }
 
         function formatearFecha(fechaISO) {
             if (!fechaISO) return '';
-
             try {
                 const fecha = new Date(fechaISO);
                 return fecha.toLocaleDateString('es-ES', {
@@ -1113,7 +1216,7 @@
         function getLinkPorTipo(tipo, valor) {
             switch (tipo) {
                 case 'email': return `mailto:${valor}`;
-                case 'tel': return `tel:${valor.replace(/\D/g, '')}`;
+                case 'tel': return `tel:+591${valor.replace(/\D/g, '')}`;
                 case 'whatsapp':
                     const numero = valor.replace(/\D/g, '');
                     return `https://wa.me/591${numero}`;
@@ -1126,19 +1229,23 @@
         }
 
         // ============================================
-        // FUNCIONES DE UI (MANTENER TU CÓDIGO)
+        // FUNCIONES DE UI
         // ============================================
         function configurarEventos() {
             document.getElementById('logout-btn').addEventListener('click', cerrarSesion);
             document.getElementById('edit-info-btn').addEventListener('click', abrirModalEdicion);
             document.getElementById('save-password-btn').addEventListener('click', cambiarPassword);
             document.getElementById('delete-account-btn').addEventListener('click', eliminarCuenta);
-
-            document.getElementById('edit-modal').addEventListener('click', function (e) {
-                if (e.target === this) {
-                    cerrarModal();
-                }
+            
+            // Modal
+            document.getElementById('modal-close').addEventListener('click', cerrarModal);
+            document.getElementById('cancel-edit-btn').addEventListener('click', cerrarModal);
+            document.getElementById('edit-modal').addEventListener('click', function(e) {
+                if (e.target === this) cerrarModal();
             });
+            
+            // Formulario
+            document.getElementById('edit-form').addEventListener('submit', guardarCambios);
         }
 
         function inicializarTabs() {
@@ -1161,26 +1268,144 @@
         }
 
         // ============================================
-        // MODAL DE EDICIÓN (SIMULADO)
+        // MODAL DE EDICIÓN
         // ============================================
         function abrirModalEdicion() {
             if (!datosUsuarioCompletos) return;
-
-            mostrarNotificacion('⚠️ Edición disponible próximamente', 'info');
-
-            // Por ahora, solo simulamos
+            
+            const modal = document.getElementById('edit-modal');
+            
+            // Llenar formulario con datos actuales
+            document.getElementById('edit-nombre').value = datosUsuarioCompletos.nombreCompleto || '';
+            document.getElementById('edit-fechaNacimiento').value = datosUsuarioCompletos.fechaNacimiento ? 
+                datosUsuarioCompletos.fechaNacimiento.split('T')[0] : '';
+            document.getElementById('edit-telefono').value = datosUsuarioCompletos.telefono || '';
+            document.getElementById('edit-whatsapp').value = datosUsuarioCompletos.whatsapp || datosUsuarioCompletos.telefono || '';
+            document.getElementById('edit-genero').value = datosUsuarioCompletos.genero || '';
+            document.getElementById('edit-departamento').value = datosUsuarioCompletos.departamento || 'Beni';
+            document.getElementById('edit-ciudad').value = datosUsuarioCompletos.ciudad || '';
+            document.getElementById('edit-institucion').value = datosUsuarioCompletos.institucion || '';
+            document.getElementById('edit-colegio').value = datosUsuarioCompletos.colegio || ''; // ← NUEVO CAMPO
+            document.getElementById('edit-carrera').value = datosUsuarioCompletos.carrera || '';
+            document.getElementById('edit-semestre').value = datosUsuarioCompletos.semestre || '';
+            document.getElementById('edit-facebook').value = datosUsuarioCompletos.facebook || '';
+            document.getElementById('edit-instagram').value = datosUsuarioCompletos.instagram || '';
+            document.getElementById('edit-biografia').value = datosUsuarioCompletos.biografia || '';
+            document.getElementById('edit-intereses').value = datosUsuarioCompletos.intereses || '';
+            document.getElementById('edit-habilidades').value = datosUsuarioCompletos.habilidades || '';
+            document.getElementById('edit-idiomas').value = datosUsuarioCompletos.idiomas || 'Español';
+            
+            // Mostrar modal
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            
+            // Enfocar primer campo
             setTimeout(() => {
-                mostrarNotificacion('✅ Perfil actualizado (simulación)', 'success');
-            }, 1000);
+                document.getElementById('edit-nombre').focus();
+            }, 100);
         }
 
         function cerrarModal() {
-            document.getElementById('edit-modal').style.display = 'none';
+            const modal = document.getElementById('edit-modal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Limpiar validaciones
+            const form = document.getElementById('edit-form');
+            form.classList.remove('was-validated');
         }
 
-        function guardarCambios() {
-            mostrarNotificacion('✅ Cambios guardados localmente', 'success');
-            cerrarModal();
+        async function guardarCambios(e) {
+            e.preventDefault();
+            
+            if (!usuarioActual || !datosUsuarioCompletos) return;
+            
+            // Validar formulario
+            const form = document.getElementById('edit-form');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                mostrarNotificacion('Por favor, completa los campos requeridos', 'warning');
+                return;
+            }
+            
+            // Recolectar datos
+            const datosActualizados = {
+                userId: usuarioActual.id,
+                sessionToken: usuarioActual.sessionToken,
+                action: 'updateProfile',
+                nombreCompleto: document.getElementById('edit-nombre').value.trim(),
+                fechaNacimiento: document.getElementById('edit-fechaNacimiento').value || null,
+                telefono: document.getElementById('edit-telefono').value.trim(),
+                whatsapp: document.getElementById('edit-whatsapp').value.trim(),
+                genero: document.getElementById('edit-genero').value,
+                departamento: document.getElementById('edit-departamento').value,
+                ciudad: document.getElementById('edit-ciudad').value.trim(),
+                institucion: document.getElementById('edit-institucion').value.trim(),
+                colegio: document.getElementById('edit-colegio').value.trim(), // ← NUEVO CAMPO
+                carrera: document.getElementById('edit-carrera').value.trim(),
+                semestre: document.getElementById('edit-semestre').value.trim(),
+                facebook: document.getElementById('edit-facebook').value.trim(),
+                instagram: document.getElementById('edit-instagram').value.trim(),
+                biografia: document.getElementById('edit-biografia').value.trim(),
+                intereses: document.getElementById('edit-intereses').value.trim(),
+                habilidades: document.getElementById('edit-habilidades').value.trim(),
+                idiomas: document.getElementById('edit-idiomas').value.trim()
+            };
+            
+            // Validar que el colegio esté completado
+            if (!datosActualizados.colegio) {
+                mostrarNotificacion('El campo Colegio es obligatorio para los delegados', 'warning');
+                document.getElementById('edit-colegio').focus();
+                return;
+            }
+            
+            mostrarLoading('Guardando cambios...');
+            
+            try {
+                // Enviar datos al servidor
+                const formData = new FormData();
+                for (const key in datosActualizados) {
+                    if (datosActualizados[key] !== null && datosActualizados[key] !== undefined) {
+                        formData.append(key, datosActualizados[key]);
+                    }
+                }
+                
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Actualizar datos locales
+                    Object.assign(datosUsuarioCompletos, datosActualizados);
+                    
+                    // Actualizar caché
+                    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
+                    
+                    // Actualizar interfaz
+                    mostrarDatosUsuario(datosUsuarioCompletos);
+                    
+                    cerrarModal();
+                    mostrarNotificacion('✅ Perfil actualizado correctamente', 'success');
+                    
+                    // Recargar datos completos desde servidor
+                    setTimeout(() => {
+                        cargarDatosUsuario();
+                    }, 1000);
+                    
+                } else {
+                    throw new Error(result.error || 'Error al guardar');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error guardando cambios:', error);
+                mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+                
+            } finally {
+                ocultarLoading();
+            }
         }
 
         // ============================================
@@ -1200,33 +1425,33 @@
             const notificacion = document.createElement('div');
             notificacion.className = 'notificacion-flotante';
             notificacion.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
-                <i class="fas fa-${icono}" style="font-size: 1.2rem;"></i>
-                <span>${mensaje}</span>
-            </div>
-            <button onclick="this.parentElement.remove()" 
-                    style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin-left: 15px;">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
+                <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
+                    <i class="fas fa-${icono}" style="font-size: 1.2rem;"></i>
+                    <span>${mensaje}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" 
+                        style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin-left: 15px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
 
             notificacion.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${color};
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-width: 300px;
-            max-width: 500px;
-            animation: slideIn 0.3s ease;
-        `;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${color};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                min-width: 300px;
+                max-width: 500px;
+                animation: slideIn 0.3s ease;
+            `;
 
             document.body.appendChild(notificacion);
 
@@ -1241,82 +1466,49 @@
             ocultarLoading();
 
             const overlay = document.createElement('div');
-            overlay.id = 'loading-overlay';
-            overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            flex-direction: column;
-            color: white;
-            font-size: 1.1rem;
-        `;
-
+            overlay.className = 'loading-overlay';
             overlay.innerHTML = `
-            <div class="spinner" style="
-                border: 5px solid rgba(255, 255, 255, 0.3);
-                border-radius: 50%;
-                border-top: 5px solid var(--gold);
-                width: 50px;
-                height: 50px;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-            "></div>
-            <div>${mensaje}</div>
-        `;
-
-            const style = document.createElement('style');
-            style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-            document.head.appendChild(style);
+                <div class="loading-spinner"></div>
+                <div>${mensaje}</div>
+            `;
 
             document.body.appendChild(overlay);
+            document.body.style.overflow = 'hidden';
         }
 
         function ocultarLoading() {
-            const overlay = document.getElementById('loading-overlay');
+            const overlay = document.querySelector('.loading-overlay');
             if (overlay) {
                 overlay.remove();
+                document.body.style.overflow = 'auto';
             }
         }
 
-        // Funciones globales
-        window.cerrarModal = cerrarModal;
-        window.guardarCambios = guardarCambios;
-
-        // Funciones de ejemplo para pestañas
+        // ============================================
+        // FUNCIONES DE EJEMPLO PARA PESTAÑAS
+        // ============================================
         function cargarActividades() {
             const activitiesList = document.getElementById('activities-list');
 
             activitiesList.innerHTML = `
-        <div style="text-align: center; padding: 50px 20px;">
-            <i class="fas fa-calendar-plus" style="font-size: 3rem; color: var(--medium-gray); margin-bottom: 20px;"></i>
-            <h3 style="color: var(--medium-gray); margin-bottom: 10px;">Sin actividades registradas</h3>
-            <p style="color: var(--medium-gray);">Tus actividades aparecerán aquí cuando participes en eventos GDB</p>
-        </div>
-    `;
+                <div style="text-align: center; padding: 50px 20px;">
+                    <i class="fas fa-calendar-plus" style="font-size: 3rem; color: var(--medium-gray); margin-bottom: 20px;"></i>
+                    <h3 style="color: var(--medium-gray); margin-bottom: 10px;">Sin actividades registradas</h3>
+                    <p style="color: var(--medium-gray);">Tus actividades aparecerán aquí cuando participes en eventos GDB</p>
+                </div>
+            `;
         }
 
         function cargarDocumentos() {
             const documentsList = document.getElementById('documents-list');
 
             documentsList.innerHTML = `
-        <div style="text-align: center; padding: 50px 20px;">
-            <i class="fas fa-folder-open" style="font-size: 3rem; color: var(--medium-gray); margin-bottom: 20px;"></i>
-            <h3 style="color: var(--medium-gray); margin-bottom: 10px;">Sin documentos</h3>
-            <p style="color: var(--medium-gray);">Tus certificados y documentos aparecerán aquí cuando estén disponibles</p>
-        </div>
-    `;
+                <div style="text-align: center; padding: 50px 20px;">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; color: var(--medium-gray); margin-bottom: 20px;"></i>
+                    <h3 style="color: var(--medium-gray); margin-bottom: 10px;">Sin documentos</h3>
+                    <p style="color: var(--medium-gray);">Tus certificados y documentos aparecerán aquí cuando estén disponibles</p>
+                </div>
+            `;
         }
 
         function cambiarPassword() {
@@ -1324,8 +1516,30 @@
         }
 
         function eliminarCuenta() {
-            mostrarNotificacion('❌ Esta función no está disponible', 'error');
+            if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+                mostrarNotificacion('❌ Esta función no está disponible', 'error');
+            }
         }
+
+        // ============================================
+        // INICIALIZAR ESTILOS PARA TEXTO SUAVE
+        // ============================================
+        const style = document.createElement('style');
+        style.textContent = `
+            .texto-suave {
+                color: var(--medium-gray) !important;
+                font-style: italic;
+            }
+            .was-validated input:invalid,
+            .was-validated select:invalid {
+                border-color: #dc3545 !important;
+            }
+            .was-validated input:valid,
+            .was-validated select:valid {
+                border-color: #198754 !important;
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 
