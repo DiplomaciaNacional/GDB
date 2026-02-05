@@ -364,7 +364,6 @@
 
             .login-form input {
                 font-size: 16px;
-                /* Evita zoom en iOS */
             }
         }
 
@@ -531,22 +530,16 @@
 
     <script>
         // ============================================
-        // CONFIGURACIÓN SEGURA
+        // CONFIGURACIÓN SEGURA - USANDO APPS SCRIPT
         // ============================================
-        const SHEET_ID = '15W3jXoLSyIRVpSlMu2itSxJ8fGoiQgmS6oq5Ie2WjIM';
-        const API_KEY = 'AIzaSyAQ7uEfcEcN0-0YLC1nhFafL2-uSGaAWUo';
-        const STORAGE_KEYS = {
-            SESSION: 'gdb_session',
-            REMEMBER_ME: 'gdb_remember_me'
-        };
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGsjRWOwKO7Z_qkRvW9CnadK5TAy46CZgJiIfHycrxfy8_DMYkDPZ-pShFNJVEhOmd/exec';
 
         // ============================================
         // INICIALIZACIÓN
         // ============================================
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('🔐 Sistema de login GDB - Versión Segura');
+            console.log('🔐 Sistema de login GDB - Conectado a Apps Script');
 
-            // Verificar parámetros de URL
             const urlParams = new URLSearchParams(window.location.search);
 
             if (urlParams.get('logout') === 'true') {
@@ -558,27 +551,20 @@
                 mostrarNotificacion('🔒 Inicia sesión para acceder a tu perfil', 'warning');
             }
 
-            // Cargar email guardado (solo si el usuario marcó "recordar")
             cargarEmailGuardado();
-
-            // Configurar eventos
             configurarEventos();
         });
 
         // ============================================
-        // FUNCIÓN PRINCIPAL DE LOGIN (SEGURA)
+        // FUNCIÓN PRINCIPAL DE LOGIN
         // ============================================
         async function iniciarSesion(event) {
-            // Prevenir envío tradicional del formulario
-            if (event) {
-                event.preventDefault();
-            }
+            if (event) event.preventDefault();
 
             const email = document.getElementById('email').value.trim().toLowerCase();
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember-me').checked;
 
-            // Validaciones básicas
             if (!email || !password) {
                 mostrarNotificacion('❌ Email y contraseña son requeridos', 'error');
                 return false;
@@ -589,207 +575,117 @@
                 return false;
             }
 
-            mostrarLoading('🔐 Verificando credenciales...');
+            mostrarLoading('🔐 Conectando con servidor GDB...');
 
             try {
-                // CONSULTAR GOOGLE SHEETS API
-                const usuario = await verificarCredencialesSheetsAPI(email, password);
+                // USAR APPS SCRIPT PARA LOGIN
+                const usuario = await verificarCredencialesConAppsScript(email, password);
 
                 if (usuario) {
-                    // ✅ LOGIN EXITOSO
                     crearSesionUsuario(usuario, rememberMe, email);
-                    mostrarNotificacion(`✅ ¡Bienvenido/a a GDB Beni!`, 'success');
+                    mostrarNotificacion(`✅ ¡Bienvenido/a ${usuario.nombre}!`, 'success');
 
-                    // Redirigir después de 1 segundo
                     setTimeout(() => {
-                        console.log('Redirigiendo a perfil-privado.html con ID:', usuario.id);
-                        // Usar ruta relativa correcta
-                        window.location.href = `perfil-privado.html?id=${usuario.id}`;
-                    }, 1000);
+                        window.location.href = 'perfil-privado.html';
+                    }, 1500);
                     return true;
                 }
 
             } catch (error) {
                 console.error('❌ Error en autenticación:', error);
 
-                // Mostrar mensaje genérico de error (no detalles técnicos)
-                if (error.message.includes('no encontrado')) {
+                if (error.message.includes('no registrado')) {
                     mostrarNotificacion('❌ Email no registrado en el sistema', 'error');
                 } else if (error.message.includes('inactiva')) {
-                    mostrarNotificacion('❌ Tu cuenta está inactiva. Contacta al administrador.', 'error');
+                    mostrarNotificacion('❌ Tu cuenta está inactiva', 'error');
                 } else if (error.message.includes('incorrecta')) {
                     mostrarNotificacion('❌ Contraseña incorrecta. Formato: ID + "GDB"', 'error');
-                } else {
+                } else if (error.message.includes('conexión')) {
                     mostrarNotificacion('❌ Error de conexión. Intenta nuevamente.', 'error');
+                } else {
+                    mostrarNotificacion('❌ Error: ' + error.message, 'error');
                 }
-
-                // NO mostrar detalles técnicos al usuario
             } finally {
                 ocultarLoading();
             }
-            
+
             return false;
         }
 
         // ============================================
-        // VERIFICAR CREDENCIALES CON GOOGLE SHEETS API
+        // VERIFICAR CREDENCIALES CON APPS SCRIPT (JSONP)
         // ============================================
-        async function verificarCredencialesSheetsAPI(email, password) {
-            console.log('📊 Verificando credenciales...');
+        async function verificarCredencialesConAppsScript(email, password) {
+            return new Promise((resolve, reject) => {
+                const callbackName = 'loginCallback_' + Date.now();
 
-            try {
-                const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Credenciales!A:I?key=${API_KEY}`;
-                const response = await fetch(url);
+                window[callbackName] = function (response) {
+                    console.log('📥 Respuesta login:', response);
 
-                if (!response.ok) {
-                    throw new Error('Error al conectar con el servidor');
-                }
+                    delete window[callbackName];
+                    const script = document.getElementById('login-script');
+                    if (script) script.remove();
 
-                const data = await response.json();
-                const rows = data.values || [];
-
-                // Buscar usuario por email (columna B)
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-
-                    // Validar que la fila tenga datos
-                    if (!row || row.length < 2) continue;
-
-                    const emailUsuario = row[1]; // Columna B = Email
-
-                    if (emailUsuario && emailUsuario.toString().trim().toLowerCase() === email) {
-                        const id = row[0];
-                        const tipo = row[4] || 'delegado';
-                        const activo = row[5] === 'TRUE' || row[5] === true || row[5] === 'true';
-
-                        // Verificar que el ID sea válido
-                        if (!id || isNaN(parseInt(id))) {
-                            throw new Error('ID de usuario inválido');
-                        }
-
-                        // Verificar cuenta activa
-                        if (!activo) {
-                            throw new Error('Cuenta inactiva');
-                        }
-
-                        // Verificar contraseña - FORMATO: ID(4 dígitos) + "GDB"
-                        const passwordEsperada = parseInt(id).toString().padStart(4, '0') + 'GDB';
-
-                        if (password === passwordEsperada) {
-                            // Obtener nombre para mostrar (sin exponer información sensible)
-                            const nombre = extraerNombreDesdeEmail(email);
-
-                            return {
-                                id: parseInt(id),
-                                email: email,
-                                nombre: nombre,
-                                tipo: tipo,
-                                iniciales: obtenerIniciales(nombre)
-                            };
-                        } else {
-                            throw new Error('Contraseña incorrecta');
-                        }
+                    if (response.success && response.data) {
+                        resolve(response.data);
+                    } else {
+                        reject(new Error(response.error || 'Error de autenticación'));
                     }
-                }
+                };
 
-                throw new Error('Usuario no encontrado');
+                const url = `${APPS_SCRIPT_URL}?action=login&email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&callback=${callbackName}`;
 
-            } catch (error) {
-                console.error('❌ Error en verificación:', error);
-                throw error;
-            }
+                console.log('🔗 Login URL:', url);
+
+                const script = document.createElement('script');
+                script.id = 'login-script';
+                script.src = url;
+                script.onerror = function () {
+                    reject(new Error('Error de conexión con el servidor'));
+                };
+
+                document.head.appendChild(script);
+
+                setTimeout(() => {
+                    if (document.getElementById('login-script')) {
+                        reject(new Error('Tiempo de espera agotado'));
+                    }
+                }, 10000);
+            });
         }
 
         // ============================================
         // CREAR SESIÓN SEGURA
         // ============================================
         function crearSesionUsuario(usuario, rememberMe, email) {
-            // Generar token seguro
             const sessionData = {
                 id: usuario.id,
                 email: usuario.email,
                 nombre: usuario.nombre,
                 tipo: usuario.tipo,
                 iniciales: usuario.iniciales,
-                sessionToken: generarTokenSesionSeguro(usuario.id),
+                sessionToken: usuario.sessionToken,
                 timestamp: Date.now(),
-                expiracion: Date.now() + (24 * 60 * 60 * 1000) // 24 horas
+                expiracion: usuario.expiracion || Date.now() + (24 * 60 * 60 * 1000)
             };
 
-            // Guardar sesión (localStorage para "recordar", sessionStorage para sesión temporal)
             if (rememberMe) {
-                localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
-                localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
-            } else {
-                sessionStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(sessionData));
-            }
-
-            // Guardar solo el email para autocompletado (no la contraseña)
-            if (rememberMe) {
+                localStorage.setItem('gdb_session', JSON.stringify(sessionData));
+                localStorage.setItem('gdb_remember_me', 'true');
                 localStorage.setItem('gdb_last_email', email);
             } else {
-                // Limpiar email guardado si no marcó "recordar"
+                sessionStorage.setItem('gdb_session', JSON.stringify(sessionData));
                 localStorage.removeItem('gdb_last_email');
             }
+
+            console.log('✅ Sesión creada:', sessionData);
         }
 
         // ============================================
-        // FUNCIONES AUXILIARES SEGURAS
+        // FUNCIONES AUXILIARES
         // ============================================
-        function extraerNombreDesdeEmail(email) {
-            if (!email) return 'Usuario GDB';
-
-            try {
-                // Extraer parte antes del @
-                let nombre = email.split('@')[0];
-
-                // Reemplazar caracteres especiales
-                nombre = nombre.replace(/[._-]/g, ' ')
-                    .replace(/\d+/g, '')
-                    .trim();
-
-                // Capitalizar palabras (solo primera letra)
-                nombre = nombre.split(/\s+/)
-                    .filter(palabra => palabra.length > 0)
-                    .map(palabra => {
-                        if (palabra.length <= 2) return palabra.toLowerCase();
-                        return palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase();
-                    })
-                    .join(' ');
-
-                return nombre || 'Usuario GDB';
-            } catch (error) {
-                return 'Usuario GDB';
-            }
-        }
-
-        function obtenerIniciales(nombre) {
-            if (!nombre) return 'G';
-
-            const partes = nombre.split(' ');
-            if (partes.length >= 2) {
-                return (partes[0].charAt(0) + partes[1].charAt(0)).toUpperCase();
-            }
-
-            return nombre.charAt(0).toUpperCase();
-        }
-
-        function generarTokenSesionSeguro(userId) {
-            // Generar token seguro con múltiples componentes
-            const timestamp = Date.now();
-            const random1 = Math.random().toString(36).substring(2, 15);
-            const random2 = Math.random().toString(36).substring(2, 15);
-            const combinado = `${userId}_${timestamp}_${random1}_${random2}`;
-
-            // Codificar en base64 y limpiar caracteres especiales
-            return btoa(combinado)
-                .replace(/[+/=]/g, '')
-                .substring(0, 40);
-        }
-
         function cargarEmailGuardado() {
-            // Solo cargar email si el usuario marcó "recordar" anteriormente
-            const rememberMe = localStorage.getItem(STORAGE_KEYS.REMEMBER_ME) === 'true';
+            const rememberMe = localStorage.getItem('gdb_remember_me') === 'true';
             const savedEmail = localStorage.getItem('gdb_last_email');
 
             if (rememberMe && savedEmail) {
@@ -799,38 +695,23 @@
         }
 
         function limpiarSesion() {
-            // Limpiar todos los datos de sesión
-            localStorage.removeItem(STORAGE_KEYS.SESSION);
-            sessionStorage.removeItem(STORAGE_KEYS.SESSION);
-            localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-
-            // NO limpiar el email guardado si el usuario marcó "recordar"
-            // Solo se limpia al hacer logout explícito
+            localStorage.removeItem('gdb_session');
+            sessionStorage.removeItem('gdb_session');
+            localStorage.removeItem('gdb_remember_me');
         }
 
         // ============================================
-        // CONFIGURACIÓN DE EVENTOS SEGURA
+        // CONFIGURACIÓN DE EVENTOS
         // ============================================
         function configurarEventos() {
-            // Formulario - prevenir envío tradicional
             const loginForm = document.getElementById('login-form');
             if (loginForm) {
-                loginForm.addEventListener('submit', function(event) {
+                loginForm.addEventListener('submit', function (event) {
                     event.preventDefault();
                     iniciarSesion(event);
                 });
             }
 
-            // Botón de login principal
-            const loginBtn = document.getElementById('login-btn');
-            if (loginBtn) {
-                loginBtn.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    iniciarSesion(event);
-                });
-            }
-
-            // Enter en el campo de contraseña
             const passwordInput = document.getElementById('password');
             if (passwordInput) {
                 passwordInput.addEventListener('keypress', function (e) {
@@ -841,7 +722,6 @@
                 });
             }
 
-            // Mostrar/ocultar contraseña
             const togglePassword = document.getElementById('toggle-password');
             if (togglePassword) {
                 togglePassword.addEventListener('click', function () {
@@ -859,140 +739,107 @@
                 });
             }
 
-            // Enlace de recuperación de contraseña
             const forgotLinks = document.querySelectorAll('a[href*="#"], a[href*="forgot"], a[href*="recuperar"]');
             forgotLinks.forEach(link => {
                 link.addEventListener('click', function (e) {
                     e.preventDefault();
-                    mostrarNotificacion('📧 Para recuperar tu contraseña, contacta al administrador del sistema.', 'info');
+                    mostrarNotificacion('📧 Para recuperar tu contraseña, contacta al administrador.', 'info');
                 });
             });
         }
 
         // ============================================
-        // NOTIFICACIONES Y LOADING (SEGURO)
+        // NOTIFICACIONES Y LOADING
         // ============================================
         function mostrarNotificacion(mensaje, tipo = 'info') {
-            // Eliminar notificación existente
             const existente = document.querySelector('.notificacion-flotante');
             if (existente) existente.remove();
 
-            // Determinar color e icono
-            let icono = 'info-circle';
-            let color = '#2196F3';
-
+            let icono = 'info-circle', color = '#2196F3';
             switch (tipo) {
-                case 'success':
-                    icono = 'check-circle';
-                    color = '#4CAF50';
-                    break;
-                case 'error':
-                    icono = 'exclamation-circle';
-                    color = '#f44336';
-                    break;
-                case 'warning':
-                    icono = 'exclamation-triangle';
-                    color = '#FF9800';
-                    break;
+                case 'success': icono = 'check-circle'; color = '#4CAF50'; break;
+                case 'error': icono = 'exclamation-circle'; color = '#f44336'; break;
+                case 'warning': icono = 'exclamation-triangle'; color = '#FF9800'; break;
             }
 
-            // Crear notificación
             const notificacion = document.createElement('div');
             notificacion.className = 'notificacion-flotante';
             notificacion.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
-                <i class="fas fa-${icono}" style="font-size: 1.2rem;"></i>
-                <span>${mensaje}</span>
-            </div>
-            <button onclick="this.parentElement.remove()" 
-                    style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin-left: 15px;">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
+                <div style="display: flex; align-items: center; gap: 12px; flex-grow: 1;">
+                    <i class="fas fa-${icono}" style="font-size: 1.2rem;"></i>
+                    <span>${mensaje}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" 
+                        style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin-left: 15px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
 
-            // Aplicar estilos
             notificacion.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${color};
-            color: white;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-width: 300px;
-            max-width: 500px;
-            animation: slideIn 0.3s ease;
-        `;
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${color};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                min-width: 300px;
+                max-width: 500px;
+                animation: slideIn 0.3s ease;
+            `;
 
             document.body.appendChild(notificacion);
 
-            // Auto-eliminar después de 5 segundos
             setTimeout(() => {
-                if (notificacion.parentNode) {
-                    notificacion.remove();
-                }
+                if (notificacion.parentNode) notificacion.remove();
             }, 5000);
         }
 
         function mostrarLoading(mensaje = 'Cargando...') {
-            // Ocultar loading previo
             ocultarLoading();
 
-            // Crear overlay
             const overlay = document.createElement('div');
             overlay.id = 'loading-overlay';
             overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            flex-direction: column;
-            color: white;
-            font-size: 1.1rem;
-        `;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                flex-direction: column;
+                color: white;
+                font-size: 1.1rem;
+            `;
 
             overlay.innerHTML = `
-            <div class="spinner" style="
-                border: 5px solid rgba(255, 255, 255, 0.3);
-                border-radius: 50%;
-                border-top: 5px solid #4CAF50;
-                width: 50px;
-                height: 50px;
-                animation: spin 1s linear infinite;
-                margin-bottom: 20px;
-            "></div>
-            <div>${mensaje}</div>
-        `;
-
-            // Agregar animación
-            const style = document.createElement('style');
-            style.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-            document.head.appendChild(style);
+                <div class="spinner" style="
+                    border: 5px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    border-top: 5px solid #4CAF50;
+                    width: 50px;
+                    height: 50px;
+                    animation: spin 1s linear infinite;
+                    margin-bottom: 20px;
+                "></div>
+                <div>${mensaje}</div>
+            `;
 
             document.body.appendChild(overlay);
         }
 
         function ocultarLoading() {
             const overlay = document.getElementById('loading-overlay');
-            if (overlay) {
-                overlay.remove();
-            }
+            if (overlay) overlay.remove();
         }
     </script>
 </body>

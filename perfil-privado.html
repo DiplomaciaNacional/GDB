@@ -377,31 +377,6 @@
             }
         }
 
-        /* ESTILOS PARA CAMPOS EDITABLES */
-        .campo-editable {
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .campo-editable:hover {
-            background-color: rgba(0, 100, 0, 0.05);
-            border-radius: 4px;
-            padding-left: 5px;
-        }
-
-        .campo-editable::after {
-            content: '✏️';
-            margin-left: 8px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            font-size: 0.9em;
-        }
-
-        .campo-editable:hover::after {
-            opacity: 1;
-        }
-
         /* MODAL */
         .modal-overlay {
             display: none;
@@ -502,17 +477,19 @@
                 transform: rotate(360deg);
             }
         }
-        
+
         /* ESTILOS PARA FORMULARIOS */
         .form-group {
             margin-bottom: 1rem;
         }
+
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 600;
             color: var(--dark-gray);
         }
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -523,6 +500,7 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
+
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
@@ -530,6 +508,7 @@
             border-color: var(--dark-green);
             box-shadow: 0 0 0 3px rgba(0, 100, 0, 0.1);
         }
+
         .form-group small {
             display: block;
             margin-top: 0.25rem;
@@ -574,7 +553,6 @@
         </div>
 
         <!-- CONTENIDO DE PESTAÑAS -->
-
         <!-- PESTAÑA 1: INFORMACIÓN PERSONAL -->
         <div class="tab-content active" id="tab-info">
             <div class="perfil-card">
@@ -733,7 +711,8 @@
                         <small>Tu nombre completo como aparece en documentos oficiales</small>
                     </div>
                     <div class="form-group">
-                        <label for="edit-fechaNacimiento"><i class="fas fa-birthday-cake"></i> Fecha de Nacimiento</label>
+                        <label for="edit-fechaNacimiento"><i class="fas fa-birthday-cake"></i> Fecha de
+                            Nacimiento</label>
                         <input type="date" id="edit-fechaNacimiento">
                         <small>Formato: DD/MM/AAAA</small>
                     </div>
@@ -776,7 +755,8 @@
                         <small>Ciudad o municipio donde resides</small>
                     </div>
                     <div class="form-group">
-                        <label for="edit-institucion"><i class="fas fa-university"></i> Institución (Universidad)</label>
+                        <label for="edit-institucion"><i class="fas fa-university"></i> Institución
+                            (Universidad)</label>
                         <input type="text" id="edit-institucion" placeholder="Ej: Universidad Autónoma del Beni">
                         <small>Nombre de tu universidad o institución superior</small>
                     </div>
@@ -853,17 +833,11 @@
         </div>
     </div>
 
-    <!-- SCRIPT PRINCIPAL COMPLETO Y CORREGIDO -->
     <script>
         // ============================================
         // CONFIGURACIÓN
         // ============================================
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxGsjRWOwKO7Z_qkRvW9CnadK5TAy46CZgJiIfHycrxfy8_DMYkDPZ-pShFNJVEhOmd/exec';
-        
-        const STORAGE_KEYS = {
-            SESSION: 'gdb_session',
-            USER_DATA: 'gdb_user_data'
-        };
 
         // ============================================
         // VARIABLES GLOBALES
@@ -877,29 +851,39 @@
         document.addEventListener('DOMContentLoaded', async function () {
             console.log('🚀 Perfil privado inicializado');
 
-            // 1. Verificar sesión
+            // DEBUG: Mostrar sesión actual
+            debugSession();
+
             if (!verificarSesion()) {
                 window.location.href = 'login.html?auth_required=true';
                 return;
             }
 
-            // 2. Cargar datos del usuario
             await cargarDatosUsuario();
-
-            // 3. Configurar eventos
             configurarEventos();
-
-            // 4. Inicializar pestañas
             inicializarTabs();
         });
+
+        // ============================================
+        // DEBUG: VERIFICAR SESIÓN
+        // ============================================
+        function debugSession() {
+            console.log('🔍 DEBUG - Verificando sesión:');
+
+            const localSession = localStorage.getItem('gdb_session');
+            const sessionSession = sessionStorage.getItem('gdb_session');
+
+            console.log('📦 localStorage:', localSession ? JSON.parse(localSession) : 'Vacío');
+            console.log('💼 sessionStorage:', sessionSession ? JSON.parse(sessionSession) : 'Vacío');
+        }
 
         // ============================================
         // FUNCIONES DE SESIÓN
         // ============================================
         function verificarSesion() {
             try {
-                const sesionStr = localStorage.getItem(STORAGE_KEYS.SESSION) ||
-                    sessionStorage.getItem(STORAGE_KEYS.SESSION);
+                const sesionStr = localStorage.getItem('gdb_session') ||
+                    sessionStorage.getItem('gdb_session');
 
                 if (!sesionStr) {
                     console.log('❌ No hay sesión activa');
@@ -907,6 +891,13 @@
                 }
 
                 const sesion = JSON.parse(sesionStr);
+                console.log('📋 Sesión encontrada para:', sesion.email);
+
+                // Verificar que tenga sessionToken (CRUCIAL)
+                if (!sesion.sessionToken) {
+                    console.log('❌ No hay sessionToken en la sesión');
+                    return false;
+                }
 
                 // Verificar expiración
                 if (sesion.expiracion && Date.now() > sesion.expiracion) {
@@ -916,7 +907,7 @@
                 }
 
                 usuarioActual = sesion;
-                console.log('✅ Sesión activa para:', usuarioActual.email);
+                console.log('✅ Sesión válida para:', usuarioActual.email);
                 return true;
 
             } catch (error) {
@@ -927,9 +918,9 @@
         }
 
         function limpiarSesion() {
-            localStorage.removeItem(STORAGE_KEYS.SESSION);
-            sessionStorage.removeItem(STORAGE_KEYS.SESSION);
-            localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+            localStorage.removeItem('gdb_session');
+            sessionStorage.removeItem('gdb_session');
+            localStorage.removeItem('gdb_user_data');
             usuarioActual = null;
             datosUsuarioCompletos = null;
         }
@@ -943,62 +934,63 @@
         }
 
         // ============================================
-        // CARGA DE DATOS DEL USUARIO (JSONP)
+        // CARGA DE DATOS DEL USUARIO (JSONP MEJORADO)
         // ============================================
         async function cargarDatosUsuario() {
-            if (!usuarioActual) return;
+            if (!usuarioActual) {
+                console.log('❌ No hay usuario actual para cargar datos');
+                cargarDesdeCache();
+                return;
+            }
 
             mostrarLoading('Cargando tu perfil...');
 
             try {
                 return new Promise((resolve, reject) => {
-                    // Crear callback único para esta solicitud
                     const callbackName = 'handleProfileData_' + Date.now();
-                    
-                    window[callbackName] = function(response) {
-                        console.log('📥 Respuesta recibida:', response);
-                        
-                        if (response.success && response.data) {
+
+                    window[callbackName] = function (response) {
+                        console.log('📥 Respuesta del servidor:', response);
+
+                        // Limpiar script
+                        delete window[callbackName];
+                        const script = document.getElementById('jsonp-script');
+                        if (script) script.remove();
+
+                        if (response && response.success && response.data) {
                             datosUsuarioCompletos = response.data;
                             mostrarDatosUsuario(datosUsuarioCompletos);
-                            
-                            // Guardar en caché
-                            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
-                            
+
+                            localStorage.setItem('gdb_user_data', JSON.stringify(datosUsuarioCompletos));
+
                             console.log('✅ Datos cargados desde servidor');
                             mostrarNotificacion('✅ Perfil actualizado', 'success');
                             resolve(response);
                         } else {
-                            console.error('❌ Error del servidor:', response.error);
+                            console.error('❌ Error del servidor:', response ? response.error : 'Respuesta vacía');
                             cargarDesdeCache();
-                            mostrarNotificacion('⚠️ ' + (response.error || 'No se pudieron cargar los datos'), 'warning');
-                            reject(new Error(response.error));
+                            mostrarNotificacion('⚠️ ' + (response ? response.error : 'Error de conexión'), 'warning');
+                            reject(new Error(response ? response.error : 'Error de conexión'));
                         }
-                        
-                        // Limpiar
-                        delete window[callbackName];
-                        const script = document.getElementById('jsonp-script');
-                        if (script) script.remove();
                     };
-                    
-                    // Construir URL JSONP
-                    const url = `${APPS_SCRIPT_URL}?action=getUserData&userId=${usuarioActual.id}&sessionToken=${usuarioActual.sessionToken}&callback=${callbackName}`;
-                    
-                    console.log('📡 Conectando a:', url.substring(0, 100) + '...');
-                    
-                    // Crear script JSONP
+
+                    // IMPORTANTE: Usar el sessionToken que viene del login
+                    const url = `${APPS_SCRIPT_URL}?action=getUserData&userId=${usuarioActual.id}&sessionToken=${encodeURIComponent(usuarioActual.sessionToken)}&callback=${callbackName}&_=${Date.now()}`;
+
+                    console.log('📡 Solicitando datos a:', url);
+
                     const script = document.createElement('script');
                     script.id = 'jsonp-script';
                     script.src = url;
-                    script.onerror = function() {
+                    script.onerror = function () {
                         console.error('❌ Error de conexión JSONP');
                         cargarDesdeCache();
                         mostrarNotificacion('⚠️ Error de conexión al servidor', 'warning');
                         reject(new Error('Error de conexión'));
                     };
-                    
+
                     document.head.appendChild(script);
-                    
+
                     // Timeout de seguridad
                     setTimeout(() => {
                         if (document.getElementById('jsonp-script')) {
@@ -1015,9 +1007,9 @@
                 ocultarLoading();
             }
         }
-        
+
         function cargarDesdeCache() {
-            const datosCache = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+            const datosCache = localStorage.getItem('gdb_user_data');
             if (datosCache) {
                 console.log('📂 Usando datos en caché');
                 datosUsuarioCompletos = JSON.parse(datosCache);
@@ -1039,8 +1031,6 @@
                 iniciales: usuarioActual?.iniciales || "G",
                 fechaRegistro: "2024-01-01",
                 ultimoAcceso: new Date().toISOString(),
-
-                // Detalles
                 nombreCompleto: "Por completar",
                 telefono: "",
                 whatsapp: "",
@@ -1058,8 +1048,6 @@
                 intereses: "Diplomacia, Liderazgo",
                 habilidades: "Comunicación",
                 idiomas: "Español",
-
-                // Estadísticas
                 estadisticas: {
                     eventosAsistidos: 0,
                     horasVoluntariado: 0,
@@ -1067,8 +1055,6 @@
                     puntosAcumulados: 0,
                     ranking: "Nuevo"
                 },
-
-                // Actividades
                 actividadesRecientes: []
             };
 
@@ -1080,6 +1066,8 @@
         // MOSTRAR DATOS EN LA INTERFAZ
         // ============================================
         function mostrarDatosUsuario(datos) {
+
+            debugDatosRecibidos(datos);
             // Actualizar encabezado
             document.getElementById('user-name').textContent = datos.nombre || datos.nombreCompleto || 'Usuario';
             document.getElementById('user-email').textContent = datos.email || '';
@@ -1091,13 +1079,9 @@
 
             // Título según tipo de usuario
             let titulo = "Miembro GDB";
-            if (datos.tipo === 'admin') {
-                titulo = "Administrador GDB Beni";
-            } else if (datos.tipo === 'delegado') {
-                titulo = "Delegado GDB Beni";
-            } else if (datos.tipo === 'directivo') {
-                titulo = "Miembro Directivo GDB Beni";
-            }
+            if (datos.tipo === 'admin') titulo = "Administrador GDB Beni";
+            else if (datos.tipo === 'delegado') titulo = "Delegado GDB Beni";
+            else if (datos.tipo === 'directivo') titulo = "Miembro Directivo GDB Beni";
             document.getElementById('user-title').textContent = titulo;
 
             // Avatar grande
@@ -1112,11 +1096,7 @@
 
             // Actualizar datos personales
             actualizarDatosPersonales(datos);
-
-            // Actualizar información de contacto
             actualizarInformacionContacto(datos);
-
-            // Actualizar estadísticas
             actualizarEstadisticas(datos.estadisticas || {});
         }
 
@@ -1124,142 +1104,66 @@
             const personalDataDiv = document.getElementById('personal-data');
 
             const datosPersonales = [
-                {
-                    label: 'ID GDB',
-                    value: datos.id || 'No asignado',
-                    icon: 'fas fa-id-badge',
-                    valorPorDefecto: 'No asignado'
-                },
-                {
-                    label: 'Tipo de Usuario',
-                    value: datos.tipo === 'admin' ? 'Administrador' :
-                        datos.tipo === 'delegado' ? 'Delegado' :
-                        datos.tipo === 'directivo' ? 'Miembro Directivo' : 'Miembro',
-                    icon: 'fas fa-user-tag',
-                    valorPorDefecto: 'Miembro'
-                },
-                {
-                    label: 'Fecha de Nacimiento',
-                    value: datos.fechaNacimiento ? formatearFecha(datos.fechaNacimiento) : 'Por completar',
-                    icon: 'fas fa-birthday-cake',
-                    valorPorDefecto: 'Por completar'
-                },
-                {
-                    label: 'Género',
-                    value: datos.genero || 'Por completar',
-                    icon: 'fas fa-venus-mars',
-                    valorPorDefecto: 'Por completar'
-                },
-                {
-                    label: 'Departamento',
-                    value: datos.departamento || 'Beni',
-                    icon: 'fas fa-map-marker-alt',
-                    valorPorDefecto: 'Beni'
-                },
-                {
-                    label: 'Colegio',
-                    value: datos.colegio || 'Por completar',
-                    icon: 'fas fa-school',
-                    valorPorDefecto: 'Por completar'
-                },
-                {
-                    label: 'Institución (Universidad)',
-                    value: datos.institucion || 'GDB Beni',
-                    icon: 'fas fa-university',
-                    valorPorDefecto: 'GDB Beni'
-                },
-                {
-                    label: 'Carrera',
-                    value: datos.carrera || 'Por completar',
-                    icon: 'fas fa-graduation-cap',
-                    valorPorDefecto: 'Por completar'
-                },
-                {
-                    label: 'Semestre/Año',
-                    value: datos.semestre || 'Por completar',
-                    icon: 'fas fa-calendar-alt',
-                    valorPorDefecto: 'Por completar'
-                }
+                { label: 'ID GDB', value: datos.id || 'No asignado', icon: 'fas fa-id-badge' },
+                { label: 'Tipo de Usuario', value: datos.tipo === 'admin' ? 'Administrador' : datos.tipo === 'delegado' ? 'Delegado' : datos.tipo === 'directivo' ? 'Miembro Directivo' : 'Miembro', icon: 'fas fa-user-tag' },
+                { label: 'Fecha de Nacimiento', value: datos.fechaNacimiento ? formatearFecha(datos.fechaNacimiento) : 'Por completar', icon: 'fas fa-birthday-cake' },
+                { label: 'Género', value: datos.genero || 'Por completar', icon: 'fas fa-venus-mars' },
+                { label: 'Departamento', value: datos.departamento || 'Beni', icon: 'fas fa-map-marker-alt' },
+                { label: 'Colegio', value: datos.colegio || 'Por completar', icon: 'fas fa-school' },
+                { label: 'Institución (Universidad)', value: datos.institucion || 'GDB Beni', icon: 'fas fa-university' },
+                { label: 'Carrera', value: datos.carrera || 'Por completar', icon: 'fas fa-graduation-cap' },
+                { label: 'Semestre/Año', value: datos.semestre || 'Por completar', icon: 'fas fa-calendar-alt' }
             ];
 
             personalDataDiv.innerHTML = datosPersonales.map(item => `
-                <div class="dato-item">
-                    <div class="dato-label">
-                        <i class="${item.icon}"></i> ${item.label}
-                    </div>
-                    <div class="dato-valor ${!item.value || item.value === item.valorPorDefecto ? 'texto-suave' : ''}">
-                        ${item.value}
-                    </div>
-                </div>
-            `).join('');
+        <div class="dato-item">
+            <div class="dato-label">
+                <i class="${item.icon}"></i> ${item.label}
+            </div>
+            <div class="dato-valor ${!item.value || item.value === 'Por completar' || item.value === 'No asignado' ? 'texto-suave' : ''}">
+                ${item.value}
+            </div>
+        </div>
+    `).join('');
         }
 
         function actualizarInformacionContacto(datos) {
             const contactDataDiv = document.getElementById('contact-data');
 
             const datosContacto = [
-                {
-                    label: 'Email',
-                    value: datos.email || 'No especificado',
-                    icon: 'fas fa-envelope',
-                    type: 'email',
-                    valorPorDefecto: 'No especificado'
-                },
-                {
-                    label: 'Teléfono',
-                    value: datos.telefono || 'Por completar',
-                    icon: 'fas fa-phone',
-                    type: 'tel',
-                    valorPorDefecto: 'Por completar'
-                },
-                {
-                    label: 'WhatsApp',
-                    value: datos.whatsapp || datos.telefono || 'Por completar',
-                    icon: 'fab fa-whatsapp',
-                    type: 'whatsapp',
-                    valorPorDefecto: 'Por completar'
-                },
-                {
-                    label: 'Facebook',
-                    value: datos.facebook || 'Por completar',
-                    icon: 'fab fa-facebook',
-                    type: 'facebook',
-                    valorPorDefecto: 'Por completar'
-                },
-                {
-                    label: 'Instagram',
-                    value: datos.instagram || 'Por completar',
-                    icon: 'fab fa-instagram',
-                    type: 'instagram',
-                    valorPorDefecto: 'Por completar'
-                }
+                { label: 'Email', value: datos.email || 'No especificado', icon: 'fas fa-envelope', type: 'email' },
+                { label: 'Teléfono', value: datos.telefono || 'Por completar', icon: 'fas fa-phone', type: 'tel' },
+                { label: 'WhatsApp', value: datos.whatsapp || datos.telefono || 'Por completar', icon: 'fab fa-whatsapp', type: 'whatsapp' },
+                { label: 'Facebook', value: datos.facebook || 'Por completar', icon: 'fab fa-facebook', type: 'facebook' },
+                { label: 'Instagram', value: datos.instagram || 'Por completar', icon: 'fab fa-instagram', type: 'instagram' }
             ];
 
             contactDataDiv.innerHTML = datosContacto.map(item => `
-                <div class="lista-item">
-                    <div class="lista-icono">
-                        <i class="${item.icon}"></i>
-                    </div>
-                    <div style="flex-grow: 1;">
-                        <div style="font-weight: 600; margin-bottom: 5px;">${item.label}</div>
-                        <div class="${!item.value || item.value === item.valorPorDefecto ? 'texto-suave' : ''}">${item.value}</div>
-                    </div>
-                    ${item.value !== 'Por completar' && item.value !== 'No especificado' && item.type !== 'email' ? `
-                    <a href="${getLinkPorTipo(item.type, item.value)}" target="_blank" 
-                       class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
-                        <i class="fas fa-external-link-alt"></i>
-                    </a>
-                    ` : ''}
+        <div class="lista-item">
+            <div class="lista-icono">
+                <i class="${item.icon}"></i>
+            </div>
+            <div style="flex-grow: 1;">
+                <div style="font-weight: 600; margin-bottom: 5px;">${item.label}</div>
+                <div class="${!item.value || item.value === 'Por completar' || item.value === 'No especificado' ? 'texto-suave' : ''}">
+                    ${item.value}
                 </div>
-            `).join('');
+            </div>
+            ${item.value && item.value !== 'Por completar' && item.value !== 'No especificado' && item.type !== 'email' ? `
+            <a href="${getLinkPorTipo(item.type, item.value)}" target="_blank" 
+               class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
+                <i class="fas fa-external-link-alt"></i>
+            </a>
+            ` : ''}
+        </div>
+    `).join('');
         }
 
         function actualizarEstadisticas(stats) {
             document.getElementById('stat-events').textContent = stats?.eventosAsistidos || 0;
             document.getElementById('stat-hours').textContent = stats?.horasVoluntariado || 0;
             document.getElementById('stat-projects').textContent = stats?.proyectosParticipados || 0;
-            
-            // Ranking
+
             const ranking = stats?.ranking || 'Nuevo';
             document.getElementById('stat-ranking').textContent = ranking === 'Nuevo' ? 'Nuevo' : `#${ranking}`;
         }
@@ -1301,15 +1205,13 @@
             document.getElementById('edit-info-btn').addEventListener('click', abrirModalEdicion);
             document.getElementById('save-password-btn').addEventListener('click', cambiarPassword);
             document.getElementById('delete-account-btn').addEventListener('click', eliminarCuenta);
-            
-            // Modal
+
             document.getElementById('modal-close').addEventListener('click', cerrarModal);
             document.getElementById('cancel-edit-btn').addEventListener('click', cerrarModal);
-            document.getElementById('edit-modal').addEventListener('click', function(e) {
+            document.getElementById('edit-modal').addEventListener('click', function (e) {
                 if (e.target === this) cerrarModal();
             });
-            
-            // Formulario
+
             document.getElementById('edit-form').addEventListener('submit', guardarCambios);
         }
 
@@ -1340,14 +1242,13 @@
                 mostrarNotificacion('❌ No hay datos de usuario cargados', 'error');
                 return;
             }
-            
+
             console.log('📝 Abriendo modal de edición');
-            
+
             const modal = document.getElementById('edit-modal');
-            
-            // Llenar formulario con datos actuales
+
             document.getElementById('edit-nombre').value = datosUsuarioCompletos.nombreCompleto || '';
-            document.getElementById('edit-fechaNacimiento').value = datosUsuarioCompletos.fechaNacimiento ? 
+            document.getElementById('edit-fechaNacimiento').value = datosUsuarioCompletos.fechaNacimiento ?
                 datosUsuarioCompletos.fechaNacimiento.split('T')[0] : '';
             document.getElementById('edit-telefono').value = datosUsuarioCompletos.telefono || '';
             document.getElementById('edit-whatsapp').value = datosUsuarioCompletos.whatsapp || datosUsuarioCompletos.telefono || '';
@@ -1364,16 +1265,14 @@
             document.getElementById('edit-intereses').value = datosUsuarioCompletos.intereses || '';
             document.getElementById('edit-habilidades').value = datosUsuarioCompletos.habilidades || '';
             document.getElementById('edit-idiomas').value = datosUsuarioCompletos.idiomas || 'Español';
-            
-            // Mostrar modal
+
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-            
-            // Enfocar primer campo
+
             setTimeout(() => {
                 document.getElementById('edit-nombre').focus();
             }, 100);
-            
+
             mostrarNotificacion('📝 Modo edición activado', 'info');
         }
 
@@ -1381,34 +1280,31 @@
             const modal = document.getElementById('edit-modal');
             modal.style.display = 'none';
             document.body.style.overflow = 'auto';
-            
-            // Limpiar validaciones
+
             const form = document.getElementById('edit-form');
             form.classList.remove('was-validated');
         }
 
         // ============================================
-        // GUARDAR CAMBIOS (JSONP)
+        // GUARDAR CAMBIOS (JSONP MEJORADO)
         // ============================================
         async function guardarCambios(e) {
             e.preventDefault();
-            
+
             if (!usuarioActual || !datosUsuarioCompletos) {
                 mostrarNotificacion('❌ No hay sesión activa', 'error');
                 return;
             }
-            
+
             console.log('💾 Iniciando guardado de cambios...');
-            
-            // Validar formulario
+
             const form = document.getElementById('edit-form');
             if (!form.checkValidity()) {
                 form.classList.add('was-validated');
                 mostrarNotificacion('⚠️ Por favor, completa los campos requeridos', 'warning');
                 return;
             }
-            
-            // Recolectar datos
+
             const datosActualizados = {
                 userId: usuarioActual.id,
                 sessionToken: usuarioActual.sessionToken,
@@ -1431,115 +1327,130 @@
                 habilidades: document.getElementById('edit-habilidades').value.trim(),
                 idiomas: document.getElementById('edit-idiomas').value.trim()
             };
-            
-            // Validar que el colegio esté completado
+
             if (!datosActualizados.colegio) {
-                mostrarNotificacion('⚠️ El campo Colegio es obligatorio para los delegados', 'warning');
+                mostrarNotificacion('⚠️ El campo Colegio es obligatorio', 'warning');
                 document.getElementById('edit-colegio').focus();
                 return;
             }
-            
-            mostrarLoading('💾 Guardando cambios...');
-            
+
+            mostrarLoading('💾 Guardando cambios en el servidor...');
+
             try {
                 return new Promise((resolve, reject) => {
-                    // Crear callback único para esta solicitud
                     const callbackName = 'handleSaveResponse_' + Date.now();
-                    
-                    window[callbackName] = function(response) {
+
+                    window[callbackName] = function (response) {
                         console.log('📥 Respuesta de guardado:', response);
-                        
+
+                        delete window[callbackName];
+                        const script = document.getElementById('save-script');
+                        if (script) script.remove();
+
+                        ocultarLoading();
+
                         if (response.success) {
-                            // Actualizar datos locales
+                            // Actualizar datos locales con los NUEVOS datos
                             Object.assign(datosUsuarioCompletos, datosActualizados);
-                            
+
                             // Actualizar caché
-                            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
-                            
+                            localStorage.setItem('gdb_user_data', JSON.stringify(datosUsuarioCompletos));
+
                             // Actualizar interfaz
                             mostrarDatosUsuario(datosUsuarioCompletos);
-                            
+
                             cerrarModal();
                             mostrarNotificacion('✅ Cambios guardados exitosamente', 'success');
-                            
+
                             // Recargar datos desde servidor
                             setTimeout(() => {
                                 cargarDatosUsuario();
                             }, 1000);
-                            
+
                             resolve(response);
                         } else {
                             mostrarNotificacion('❌ Error: ' + (response.error || 'Error al guardar'), 'error');
                             reject(new Error(response.error));
                         }
-                        
-                        // Limpiar
-                        delete window[callbackName];
-                        const script = document.getElementById('save-script');
-                        if (script) script.remove();
                     };
-                    
-                    // Construir URL con parámetros
+
                     let url = `${APPS_SCRIPT_URL}?action=updateProfile&callback=${callbackName}`;
-                    
-                    // Agregar todos los parámetros
+
                     for (const key in datosActualizados) {
                         if (datosActualizados[key] !== null && datosActualizados[key] !== undefined) {
                             url += `&${encodeURIComponent(key)}=${encodeURIComponent(datosActualizados[key])}`;
                         }
                     }
-                    
+
                     console.log('📤 Enviando a:', url.substring(0, 150) + '...');
-                    
-                    // Crear script JSONP
+
                     const script = document.createElement('script');
                     script.id = 'save-script';
                     script.src = url;
-                    script.onerror = function() {
+                    script.onerror = function () {
                         console.error('❌ Error de conexión al guardar');
-                        
+                        ocultarLoading();
+
                         // Guardar localmente de todos modos
                         Object.assign(datosUsuarioCompletos, datosActualizados);
-                        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
+                        localStorage.setItem('gdb_user_data', JSON.stringify(datosUsuarioCompletos));
                         mostrarDatosUsuario(datosUsuarioCompletos);
-                        
+
                         cerrarModal();
                         mostrarNotificacion('✅ Cambios guardados localmente (sin conexión al servidor)', 'warning');
                         reject(new Error('Error de conexión'));
                     };
-                    
+
                     document.head.appendChild(script);
-                    
-                    // Timeout de seguridad
+
                     setTimeout(() => {
                         if (document.getElementById('save-script')) {
                             console.log('⌛ Timeout de guardado');
-                            
+                            ocultarLoading();
+
                             // Guardar localmente
                             Object.assign(datosUsuarioCompletos, datosActualizados);
-                            localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
+                            localStorage.setItem('gdb_user_data', JSON.stringify(datosUsuarioCompletos));
                             mostrarDatosUsuario(datosUsuarioCompletos);
-                            
+
                             cerrarModal();
                             mostrarNotificacion('✅ Cambios guardados localmente (timeout)', 'warning');
                         }
                     }, 10000);
                 });
-                
+
             } catch (error) {
                 console.error('❌ Error:', error);
-                
+                ocultarLoading();
+
                 // Guardar en caché local
                 Object.assign(datosUsuarioCompletos, datosActualizados);
-                localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(datosUsuarioCompletos));
+                localStorage.setItem('gdb_user_data', JSON.stringify(datosUsuarioCompletos));
                 mostrarDatosUsuario(datosUsuarioCompletos);
-                
+
                 cerrarModal();
                 mostrarNotificacion('✅ Cambios guardados localmente (error)', 'warning');
-                
-            } finally {
-                ocultarLoading();
             }
+        }
+
+        // ============================================
+        // DEBUG: VER DATOS RECIBIDOS DEL SERVIDOR
+        // ============================================
+        function debugDatosRecibidos(datos) {
+            console.log('🔍 DEBUG - Datos recibidos del servidor:');
+            console.log('- ID:', datos.id);
+            console.log('- Email:', datos.email);
+            console.log('- Nombre:', datos.nombre);
+            console.log('- Nombre Completo:', datos.nombreCompleto);
+            console.log('- Tipo:', datos.tipo);
+            console.log('- Colegio:', datos.colegio);
+            console.log('- Teléfono:', datos.telefono);
+            console.log('- Carrera:', datos.carrera);
+            console.log('- Semestre:', datos.semestre);
+            console.log('- Género:', datos.genero);
+            console.log('- Facebook:', datos.facebook);
+            console.log('- Instagram:', datos.instagram);
+            console.log('- Datos completos:', datos);
         }
 
         // ============================================
@@ -1564,9 +1475,7 @@
             document.body.appendChild(notificacion);
 
             setTimeout(() => {
-                if (notificacion.parentNode) {
-                    notificacion.remove();
-                }
+                if (notificacion.parentNode) notificacion.remove();
             }, 5000);
         }
 
@@ -1593,11 +1502,10 @@
         }
 
         // ============================================
-        // FUNCIONES DE EJEMPLO PARA PESTAÑAS
+        // FUNCIONES DE EJEMPLO
         // ============================================
         function cargarActividades() {
             const activitiesList = document.getElementById('activities-list');
-
             activitiesList.innerHTML = `
                 <div style="text-align: center; padding: 50px 20px;">
                     <i class="fas fa-calendar-plus" style="font-size: 3rem; color: var(--medium-gray); margin-bottom: 20px;"></i>
@@ -1609,7 +1517,6 @@
 
         function cargarDocumentos() {
             const documentsList = document.getElementById('documents-list');
-
             documentsList.innerHTML = `
                 <div style="text-align: center; padding: 50px 20px;">
                     <i class="fas fa-folder-open" style="font-size: 3rem; color: var(--medium-gray); margin-bottom: 20px;"></i>
@@ -1630,7 +1537,7 @@
         }
 
         // ============================================
-        // INICIALIZAR ESTILOS PARA TEXTO SUAVE
+        // INICIALIZAR ESTILOS ADICIONALES
         // ============================================
         const style = document.createElement('style');
         style.textContent = `
