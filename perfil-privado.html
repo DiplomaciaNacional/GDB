@@ -1164,32 +1164,73 @@
             const contactDataDiv = document.getElementById('contact-data');
 
             const datosContacto = [
-                { label: 'Email', value: datos.email || 'No especificado', icon: 'fas fa-envelope', type: 'email' },
-                { label: 'Teléfono', value: datos.telefono || 'Por completar', icon: 'fas fa-phone', type: 'tel' },
-                { label: 'WhatsApp', value: datos.whatsapp || datos.telefono || 'Por completar', icon: 'fab fa-whatsapp', type: 'whatsapp' },
-                { label: 'Facebook', value: datos.facebook || 'Por completar', icon: 'fab fa-facebook', type: 'facebook' },
-                { label: 'Instagram', value: datos.instagram || 'Por completar', icon: 'fab fa-instagram', type: 'instagram' }
+                {
+                    label: 'Email',
+                    value: datos.email || 'No especificado',
+                    icon: 'fas fa-envelope',
+                    type: 'email',
+                    mostrarEnlace: true
+                },
+                {
+                    label: 'Teléfono',
+                    value: datos.telefono || 'Por completar',
+                    icon: 'fas fa-phone',
+                    type: 'tel',
+                    mostrarEnlace: true
+                },
+                {
+                    label: 'WhatsApp',
+                    value: datos.whatsapp || datos.telefono || 'Por completar',
+                    icon: 'fab fa-whatsapp',
+                    type: 'whatsapp',
+                    mostrarEnlace: true
+                },
+                {
+                    label: 'Facebook',
+                    value: datos.facebook || 'Por completar',
+                    icon: 'fab fa-facebook',
+                    type: 'facebook',
+                    mostrarEnlace: true
+                },
+                {
+                    label: 'Instagram',
+                    value: datos.instagram || 'Por completar',
+                    icon: 'fab fa-instagram',
+                    type: 'instagram',
+                    mostrarEnlace: true
+                }
             ];
 
-            contactDataDiv.innerHTML = datosContacto.map(item => `
-           <div class="lista-item">
-            <div class="lista-icono">
-                <i class="${item.icon}"></i>
-            </div>
-            <div style="flex-grow: 1;">
-                <div style="font-weight: 600; margin-bottom: 5px;">${item.label}</div>
-                <div class="${!item.value || item.value === 'Por completar' || item.value === 'No especificado' ? 'texto-suave' : ''}">
-                    ${item.value}
+            contactDataDiv.innerHTML = datosContacto.map(item => {
+                // Convertir valor a string y limpiar
+                let valor = '';
+                if (item.value !== null && item.value !== undefined) {
+                    valor = String(item.value).trim();
+                }
+
+                const estaVacio = !valor || valor === '' || valor === 'Por completar' || valor === 'No especificado';
+                const mostrarEnlace = !estaVacio && item.mostrarEnlace;
+
+                return `
+            <div class="lista-item">
+                <div class="lista-icono">
+                    <i class="${item.icon}"></i>
                 </div>
+                <div style="flex-grow: 1;">
+                    <div style="font-weight: 600; margin-bottom: 5px;">${item.label}</div>
+                    <div class="${estaVacio ? 'texto-suave' : ''}">
+                        ${estaVacio ? (item.value === 'No especificado' ? 'No especificado' : 'Por completar') : valor}
+                    </div>
+                </div>
+                ${mostrarEnlace ? `
+                <a href="${getLinkPorTipo(item.type, valor)}" target="_blank" 
+                   class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
+                    <i class="fas fa-external-link-alt"></i>
+                </a>
+                ` : ''}
             </div>
-            ${item.value && item.value !== 'Por completar' && item.value !== 'No especificado' && item.type !== 'email' ? `
-            <a href="${getLinkPorTipo(item.type, item.value)}" target="_blank" 
-               class="btn-secondary" style="padding: 8px 15px; font-size: 0.9rem;">
-                <i class="fas fa-external-link-alt"></i>
-            </a>
-            ` : ''}
-           </div>
-                `).join('');
+        `;
+            }).join('');
         }
         // ============================================
         // ACTUALIZAR BIOGRAFÍA
@@ -1243,20 +1284,51 @@
         }
 
         function getLinkPorTipo(tipo, valor) {
+            // Validación exhaustiva
+            if (!valor || typeof valor !== 'string') {
+                console.warn(`❌ Valor inválido para ${tipo}:`, valor);
+                return '#';
+            }
+
+            const valorLimpio = valor.trim();
+
+            if (!valorLimpio || valorLimpio === 'Por completar' || valorLimpio === 'No especificado') {
+                return '#';
+            }
+
             switch (tipo) {
-                case 'email': return `mailto:${valor}`;
-                case 'tel': return `tel:+591${valor.replace(/\D/g, '')}`;
+                case 'email':
+                    return valorLimpio.includes('@') ? `mailto:${valorLimpio}` : '#';
+
+                case 'tel':
+                    const numerosTel = valorLimpio.replace(/\D/g, '');
+                    return numerosTel.length >= 7 ? `tel:+591${numerosTel}` : '#';
+
                 case 'whatsapp':
-                    const numero = valor.replace(/\D/g, '');
-                    return `https://wa.me/591${numero}`;
+                    const numerosWhatsApp = valorLimpio.replace(/\D/g, '');
+                    return numerosWhatsApp.length >= 7 ? `https://wa.me/591${numerosWhatsApp}` : '#';
+
                 case 'facebook':
-                    return valor.includes('http') ? valor : `https://facebook.com/${valor}`;
+                    if (valorLimpio.includes('http')) {
+                        return valorLimpio;
+                    } else if (valorLimpio.includes('facebook.com/')) {
+                        return `https://${valorLimpio}`;
+                    } else {
+                        return `https://facebook.com/${valorLimpio}`;
+                    }
+
                 case 'instagram':
-                    return valor.includes('http') ? valor : `https://instagram.com/${valor.replace('@', '')}`;
-                default: return '#';
+                    let usuarioInstagram = valorLimpio;
+                    if (usuarioInstagram.includes('instagram.com/')) {
+                        usuarioInstagram = usuarioInstagram.split('instagram.com/')[1] || usuarioInstagram;
+                    }
+                    usuarioInstagram = usuarioInstagram.replace('@', '').trim();
+                    return usuarioInstagram ? `https://instagram.com/${usuarioInstagram}` : '#';
+
+                default:
+                    return '#';
             }
         }
-
         // ============================================
         // FUNCIONES DE UI
         // ============================================
