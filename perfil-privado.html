@@ -182,6 +182,22 @@
             letter-spacing: 0.5px;
         }
 
+        /* AGREGAR EN LA SECCIÓN DE ESTILOS DEL PERFIL-PRIVADO.HTML */
+        #biografia-texto {
+            white-space: pre-line;
+            line-height: 1.6;
+            padding: 10px;
+            background-color: rgba(0, 100, 0, 0.03);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        #biografia-texto::first-letter {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--dark-green);
+        }
+
         .dato-valor {
             color: var(--dark-green);
             font-size: 1.1rem;
@@ -586,6 +602,22 @@
                 </h3>
                 <div class="lista-datos" id="contact-data">
                     <!-- Los datos se cargarán con JavaScript -->
+                </div>
+                <!-- DESPUÉS de la sección de Información de Contacto (línea ~150) -->
+                <!-- Biografía -->
+                <h3 class="seccion-titulo">
+                    <i class="fas fa-book-open"></i> Biografía
+                </h3>
+                <div class="perfil-card" style="margin-top: 0; padding: 20px;">
+                    <div class="dato-item" style="border-left: 4px solid var(--gold);">
+                        <div class="dato-label">
+                            <i class="fas fa-edit"></i> Sobre mí
+                        </div>
+                        <div class="dato-valor" id="biografia-texto"
+                            style="font-size: 1rem; line-height: 1.6; color: var(--dark-gray);">
+                            Cargando biografía...
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ESTADÍSTICAS -->
@@ -1097,6 +1129,7 @@
             // Actualizar datos personales
             actualizarDatosPersonales(datos);
             actualizarInformacionContacto(datos);
+            actualizarBiografia(datos.biografia || '');
             actualizarEstadisticas(datos.estadisticas || {});
         }
 
@@ -1116,15 +1149,15 @@
             ];
 
             personalDataDiv.innerHTML = datosPersonales.map(item => `
-        <div class="dato-item">
-            <div class="dato-label">
+                <div class="dato-item">
+              <div class="dato-label">
                 <i class="${item.icon}"></i> ${item.label}
-            </div>
-            <div class="dato-valor ${!item.value || item.value === 'Por completar' || item.value === 'No asignado' ? 'texto-suave' : ''}">
+                </div>
+               <div class="dato-valor ${!item.value || item.value === 'Por completar' || item.value === 'No asignado' ? 'texto-suave' : ''}">
                 ${item.value}
-            </div>
-        </div>
-    `).join('');
+                  </div>
+                        </div>
+                    `).join('');
         }
 
         function actualizarInformacionContacto(datos) {
@@ -1139,7 +1172,7 @@
             ];
 
             contactDataDiv.innerHTML = datosContacto.map(item => `
-        <div class="lista-item">
+           <div class="lista-item">
             <div class="lista-icono">
                 <i class="${item.icon}"></i>
             </div>
@@ -1155,8 +1188,35 @@
                 <i class="fas fa-external-link-alt"></i>
             </a>
             ` : ''}
-        </div>
-    `).join('');
+           </div>
+                `).join('');
+        }
+        // ============================================
+        // ACTUALIZAR BIOGRAFÍA
+        // ============================================
+        function actualizarBiografia(biografia) {
+            const biografiaElement = document.getElementById('biografia-texto');
+
+            if (!biografia || biografia.trim() === '') {
+                biografiaElement.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: var(--medium-gray); font-style: italic;">
+                <i class="fas fa-quote-left"></i>
+                <p style="margin: 10px 0;">Aún no has escrito tu biografía.</p>
+                <p style="font-size: 0.9rem;">Haz clic en "Editar Información" para agregar una descripción sobre ti.</p>
+                <i class="fas fa-quote-right"></i>
+            </div>
+        `;
+                biografiaElement.classList.add('texto-suave');
+            } else {
+                // Formatear la biografía (convertir saltos de línea en <br>)
+                const biografiaFormateada = biografia
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                biografiaElement.innerHTML = biografiaFormateada;
+                biografiaElement.classList.remove('texto-suave');
+            }
         }
 
         function actualizarEstadisticas(stats) {
