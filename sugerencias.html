@@ -516,7 +516,6 @@
             </div>
 
             <div class="sugerencias-list" id="sugerenciasList">
-                <!-- Las sugerencias se cargarán aquí -->
             </div>
         </div>
     </section>
@@ -549,8 +548,9 @@
                     <div class="social-icons">
                         <a href="https://instagram.com/delegacion_gdb" target="_blank"><i
                                 class="fab fa-instagram"></i></a>
-                           <a href="https://www.tiktok.com/@delegacion_gdb?_r=1&_d=dgiagblm5bm3hd&sec_uid=MS4wLjABAAAAMxlvrNaJlCGHWlHdMhy750KlXhfRDKaD8Mu7-6c-HBnxa4kpp7bdiXvD2icfULOm&share_author_id=7190130381126599685&sharer_language=es&source=h5_m&u_code=db831d8a2jk4a7&timestamp=1768083296&user_id=6801283179456119813&sec_user_id=MS4wLjABAAAAxcaST7xaQBgL-wuI9lI_yhuepvKbOU_K3oEBgkByVudlDsYkgIvMpXXbbTltqxyD&item_author_type=2&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7587075252682786578&share_link_id=d1d1efe4-3b6a-49bb-86c0-31815cecef16&share_app_id=1233&ugbiz_name=ACCOUNT&ug_btm=b6880%2Cb2878&social_share_type=5&enable_checksum=1"><i
-                                    class="fab fa-tiktok"></i></a>
+                        <a
+                            href="https://www.tiktok.com/@delegacion_gdb?_r=1&_d=dgiagblm5bm3hd&sec_uid=MS4wLjABAAAAMxlvrNaJlCGHWlHdMhy750KlXhfRDKaD8Mu7-6c-HBnxa4kpp7bdiXvD2icfULOm&share_author_id=7190130381126599685&sharer_language=es&source=h5_m&u_code=db831d8a2jk4a7&timestamp=1768083296&user_id=6801283179456119813&sec_user_id=MS4wLjABAAAAxcaST7xaQBgL-wuI9lI_yhuepvKbOU_K3oEBgkByVudlDsYkgIvMpXXbbTltqxyD&item_author_type=2&utm_source=copy&utm_campaign=client_share&utm_medium=android&share_iid=7587075252682786578&share_link_id=d1d1efe4-3b6a-49bb-86c0-31815cecef16&share_app_id=1233&ugbiz_name=ACCOUNT&ug_btm=b6880%2Cb2878&social_share_type=5&enable_checksum=1"><i
+                                class="fab fa-tiktok"></i></a>
                     </div>
                 </div>
             </div>
@@ -566,22 +566,26 @@
         // CONFIGURACIÓN JSONBIN.IO
         // ============================================
         // ⚠️ REEMPLAZA ESTOS VALORES CON TUS CREDENCIALES ⚠️
+        // ============================================
+        // CONFIGURACIÓN JSONBIN.IO - CORREGIDA
+        // ============================================
         const JSONBIN_CONFIG = {
-            // TU Bin ID (ej: 65f1a2b3c4d5e6f7a8b9c0d1)
-            BIN_ID: '69761cbdae596e708ff4bc5c',
+            // TU Bin ID (correcto)
+            BIN_ID: '697699f4ae596e708ff59f00',
 
-            // TU Access Key (ej: $2a$10$abcdefghijklmnopqrstuvwxyz123456)
+            // TU Access Key (la que usas para autenticarte)
             API_KEY: '$2a$10$tEBUkZ/3ImBOEFY.n2IUBOkJaC39V8iOTDF8aGdgVMlVRW9rUSfCy',
 
             // URLs de la API
             BASE_URL: 'https://api.jsonbin.io/v3/b',
 
-            // Headers para las peticiones
+            // Headers para las peticiones - AHORA CORRECTO
             getHeaders: function () {
                 return {
                     'Content-Type': 'application/json',
-                    'X-Master-Key': '$2a$10$4V7916fByND/DyXLtXxg/.64CWCr2XK85bVAOD5qGZusnrj2eauPy',
-                    'X-Bin-Versioning': 'false'
+                    'X-Master-Key': this.API_KEY,  // ← Usando la MISMA key
+                    'X-Bin-Versioning': 'false',
+                    'X-Bin-Meta': 'false'  // ← Esto evita metadatos extras
                 };
             }
         };
