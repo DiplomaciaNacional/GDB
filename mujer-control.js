@@ -310,7 +310,7 @@ function controlarAcceso() {
                 
                 <div class="datos-curiosos">
                     <h4>¿Sabías que...?</h4>
-                    <p>🇧🇴 Bolivia es uno de los países con mayor representación parlamentaria femenina en el mundo.</p>
+                    <p> Bolivia es uno de los países con mayor representación parlamentaria femenina en el mundo.</p>
                 </div>
                 
                 <a href="index.html" class="boton-volver-mini">
