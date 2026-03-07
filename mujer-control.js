@@ -1,13 +1,9 @@
-// mujer-control.js - VERSIÓN CORREGIDA
+// mujer-control.js - VERSIÓN PRODUCCIÓN (solo visible el 8 de marzo)
 
 // --- CONFIGURACIÓN ---
-// PARA PRUEBAS: Muestra el contenido hoy
-const MES_OBJETIVO = new Date().getMonth();
-const DIA_OBJETIVO = new Date().getDate();
-
-// PARA PRODUCCIÓN (8 de marzo): Descomenta estas líneas y comenta las de arriba
-// const MES_OBJETIVO = 2; // Marzo
-// const DIA_OBJETIVO = 8;
+// PRODUCCIÓN: Solo se muestra el 8 de marzo
+const MES_OBJETIVO = 2; // Marzo (Enero=0, Febrero=1, Marzo=2)
+const DIA_OBJETIVO = 8;
 
 // --- OBTENER FECHA ACTUAL ---
 function obtenerFechaActual() {
@@ -24,9 +20,9 @@ function controlarAcceso() {
     if (!contenedor) return; // Por si no encuentra el elemento
     
     const fechaActual = obtenerFechaActual();
-    const esFechaObjetivo = (fechaActual.mes === MES_OBJETIVO && fechaActual.dia === DIA_OBJETIVO);
+    const es8DeMarzo = (fechaActual.mes === MES_OBJETIVO && fechaActual.dia === DIA_OBJETIVO);
 
-    if (esFechaObjetivo) {
+    if (es8DeMarzo) {
         // CONTENIDO ESPECIAL COMPLETO PARA EL 8 DE MARZO
         contenedor.innerHTML = `
             <!-- HERO SECTION CON EFECTO ESPECIAL -->
@@ -206,7 +202,6 @@ function controlarAcceso() {
             </section>
 
             <!-- LÍNEA DE TIEMPO: HITOS DE LA MUJER EN BOLIVIA -->
-                        <!-- LÍNEA DE TIEMPO: HITOS DE LA MUJER EN BOLIVIA -->
             <section class="seccion linea-tiempo">
                 <div class="contenedor-seccion">
                     <h2 class="titulo-seccion">Hitos en la lucha por los derechos de las mujeres en Bolivia</h2>
@@ -323,7 +318,7 @@ function controlarAcceso() {
                 </a>
                 
                 <p class="nota-prueba" style="margin-top: 30px; font-size: 0.8rem; color: #999; border-top: 1px solid #eee; padding-top: 15px;">
-                    <em>⚡ Modo administrador: Para previsualizar el contenido, el equipo de GDB ha habilitado la vista previa.</em>
+                    <em>⚡ Este contenido solo está disponible el 8 de marzo.</em>
                 </p>
             </div>
         `;
