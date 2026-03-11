@@ -554,19 +554,18 @@
     <div class="notificacion" id="notificacion"></div>
 
     <script>
+        // CONFIGURACIÓN JSONBIN.IO - ACTUALIZADA
         // ============================================
-        // CONFIGURACIÓN JSONBIN.IO
-        // ============================================
-         const JSONBIN_CONFIG = {
-            BIN_ID: '69b1b6c1b7ec241ddc5e4077',
-            API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2',
+        const JSONBIN_CONFIG = {
+            BIN_ID: '69b1b6c1b7ec241ddc5e4077', // MISMO BIN que sugerencias y delegados
+            API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2', // MISMA API KEY
             BASE_URL: 'https://api.jsonbin.io/v3/b',
             getHeaders: function () {
                 return {
                     'Content-Type': 'application/json',
                     'X-Master-Key': this.API_KEY,
                     'X-Bin-Versioning': 'false',
-                    'X-Bin-Meta': 'false' // Importante para evitar metadatos
+                    'X-Bin-Meta': 'false'
                 };
             }
         };
@@ -580,6 +579,7 @@
         // ============================================
         // FUNCIONES PARA JSONBIN.IO
         // ============================================
+        // Función para crear estructura inicial (SI EL BIN ESTÁ VACÍO)
         // Función para crear estructura inicial (SI EL BIN ESTÁ VACÍO)
         function crearEstructuraInicialAdmin() {
             const fecha = new Date();
@@ -606,7 +606,9 @@
                         }
                     }
                 },
-                nominaciones: [],
+                nominaciones: [], // Mantener nominaciones
+                sugerencias: [],  // ¡AÑADIR! Para mantener compatibilidad con sugerencias.html
+                delegados_destacados: {}, // ¡AÑADIR!
                 configuracion: {
                     mes_actual: mes,
                     ultima_actualizacion: fecha.toISOString().split('T')[0],
@@ -615,6 +617,7 @@
             };
         }
 
+        // Obtener datos - AUTO-CREA si está vacío
         // Obtener datos - AUTO-CREA si está vacío
         async function obtenerDatosCompletos() {
             try {
@@ -633,19 +636,22 @@
                 }
 
                 const data = await response.json();
+                const datos = data.record || data;
 
-                // Si el BIN está vacío
-                if (!data.record || Object.keys(data.record).length === 0) {
-                    console.log('BIN vacío, creando estructura inicial...');
-                    const estructura = crearEstructuraInicialAdmin();
-
-                    // Guardar la estructura
-                    await actualizarDatosEnJSONBin(estructura);
-
-                    return estructura;
+                // Verificar que tenga la estructura completa
+                if (!datos.periodos) datos.periodos = {};
+                if (!datos.nominaciones) datos.nominaciones = [];
+                if (!datos.sugerencias) datos.sugerencias = []; // ¡Importante!
+                if (!datos.delegados_destacados) datos.delegados_destacados = {};
+                if (!datos.configuracion) {
+                    datos.configuracion = {
+                        mes_actual: obtenerMesActual(),
+                        ultima_actualizacion: new Date().toISOString().split('T')[0],
+                        version: "1.0"
+                    };
                 }
 
-                return data.record;
+                return datos;
 
             } catch (error) {
                 console.error('Error obteniendo datos:', error);
@@ -690,33 +696,8 @@
             }
         }
 
-        // Obtener datos completos (para actualizar)
-        async function obtenerDatosCompletos() {
-            try {
-                const response = await fetch(
-                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
-                    {
-                        headers: JSONBIN_CONFIG.getHeaders()
-                    }
-                );
 
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
 
-                const data = await response.json();
-                return data.record;
-
-            } catch (error) {
-                console.error('Error obteniendo datos completos:', error);
-                // Fallback a localStorage
-                const datosGuardados = localStorage.getItem('delegadosDestacadosGDB');
-                if (datosGuardados) {
-                    return JSON.parse(datosGuardados);
-                }
-                return null;
-            }
-        }
 
         // Actualizar datos en JSONBin
         async function actualizarDatosEnJSONBin(datos) {
@@ -896,6 +877,12 @@
             }
         }
 
+
+        // Función auxiliar para obtener mes actual (añadir después de JSONBIN_CONFIG)
+        function obtenerMesActual() {
+            const fecha = new Date();
+            return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+        }
         // ============================================
         // FUNCIONES DE LA INTERFAZ
         // ============================================
