@@ -560,37 +560,26 @@
             </div>
         </div>
     </footer>
-
     <script>
         // ============================================
-        // CONFIGURACIÓN JSONBIN.IO
+        // CONFIGURACIÓN DE ALMACENAMIENTO
         // ============================================
-        // ⚠️ REEMPLAZA ESTOS VALORES CON TUS CREDENCIALES ⚠️
-        // ============================================
-        // CONFIGURACIÓN JSONBIN.IO - CORREGIDA
-        // ============================================
+        // Configuración para JSONBin.io 
         const JSONBIN_CONFIG = {
-            // TU Bin ID (correcto)
-            BIN_ID: '697699f4ae596e708ff59f00',
-
-            // TU Access Key (la que usas para autenticarte)
-            API_KEY: '$2a$10$tEBUkZ/3ImBOEFY.n2IUBOkJaC39V8iOTDF8aGdgVMlVRW9rUSfCy',
-
-            // URLs de la API
+            BIN_ID: '69761cbdae596e708ff4bc5c',
+            API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2',
             BASE_URL: 'https://api.jsonbin.io/v3/b',
-
-            // Headers para las peticiones - AHORA CORRECTO
             getHeaders: function () {
                 return {
                     'Content-Type': 'application/json',
-                    'X-Master-Key': this.API_KEY,  // ← Usando la MISMA key
+                    'X-Master-Key': this.API_KEY,
                     'X-Bin-Versioning': 'false',
-                    'X-Bin-Meta': 'false'  // ← Esto evita metadatos extras
+                    'X-Bin-Meta': 'false' // Importante para evitar metadatos
                 };
             }
         };
 
-        // Datos iniciales si no hay conexión
+        // Datos iniciales
         const sugerenciasIniciales = [
             {
                 id: 1,
@@ -604,15 +593,31 @@
                 estado: "aprobado",
                 fechaCreacion: "2025-01-20"
             },
+            {
+                id: 2,
+                nombre: "María González",
+                cargo: "Delegada",
+                titulo: "Simulación de la ONU",
+                categoria: "debate",
+                descripcion: "Organizar una simulación de la Asamblea General de la ONU.",
+                fecha: "2025-03-10",
+                lugar: "UMSA",
+                estado: "revision",
+                fechaCreacion: "2025-01-25"
+            }
         ];
 
         // Variables globales
         let sugerencias = [];
         let filtroEstado = 'todos';
 
-        // Función para mostrar notificación
+        // ============================================
+        // FUNCIÓN DE NOTIFICACIÓN
+        // ============================================
         function mostrarNotificacion(mensaje, tipo = 'info') {
             const notificacion = document.getElementById('notificacion');
+            if (!notificacion) return;
+
             notificacion.textContent = mensaje;
             notificacion.className = 'notificacion ' + tipo;
             notificacion.style.display = 'block';
@@ -627,104 +632,22 @@
         }
 
         // ============================================
-        // FUNCIONES PARA JSONBIN.IO
+        // FUNCIONES DE ALMACENAMIENTO LOCAL
         // ============================================
 
-        // Obtener todas las sugerencias
-        async function obtenerSugerencias() {
+        function cargarDeLocalStorage() {
             try {
-                console.log('Cargando sugerencias de JSONBin...');
-
-                const response = await fetch(
-                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
-                    {
-                        headers: JSONBIN_CONFIG.getHeaders()
-                    }
-                );
-
-                if (!response.ok) {
-                    console.error('Error HTTP:', response.status);
-                    throw new Error('Error al obtener datos');
-                }
-
-                const data = await response.json();
-                console.log('Datos recibidos:', data);
-
-                return data.record.sugerencias || [];
-
+                const guardadas = localStorage.getItem('sugerenciasGDB');
+                return guardadas ? JSON.parse(guardadas) : [];
             } catch (error) {
-                console.error('Error cargando de JSONBin:', error);
-                // Fallback a localStorage
-                const sugerenciasGuardadas = localStorage.getItem('sugerenciasGDB');
-                return sugerenciasGuardadas ? JSON.parse(sugerenciasGuardadas) : [];
+                console.error('Error leyendo localStorage:', error);
+                return [];
             }
         }
 
-        // Guardar una nueva sugerencia
-        async function guardarSugerenciaEnJSONBin(sugerencia) {
+        function guardarEnLocalStorage(sugerenciasAGuardar) {
             try {
-                console.log('Guardando sugerencia en JSONBin...');
-
-                // Obtener sugerencias existentes
-                const sugerenciasActuales = await obtenerSugerencias();
-
-                // Añadir nueva sugerencia
-                sugerencia.id = Date.now();
-                sugerencia.fechaCreacion = new Date().toISOString().split('T')[0];
-                sugerencia.estado = 'revision';
-
-                const nuevasSugerencias = [...sugerenciasActuales, sugerencia];
-
-                console.log('Enviando datos:', {
-                    sugerencias: nuevasSugerencias,
-                    delegados_destacados: {},
-                    ultima_actualizacion: new Date().toISOString()
-                });
-
-                // Actualizar en JSONBin
-                const response = await fetch(
-                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
-                    {
-                        method: 'PUT',
-                        headers: JSONBIN_CONFIG.getHeaders(),
-                        body: JSON.stringify({
-                            sugerencias: nuevasSugerencias,
-                            delegados_destacados: {},
-                            ultima_actualizacion: new Date().toISOString()
-                        })
-                    }
-                );
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Error respuesta:', errorText);
-                    throw new Error('Error al guardar en JSONBin');
-                }
-
-                // También guardar en localStorage como backup
-                localStorage.setItem('sugerenciasGDB', JSON.stringify(nuevasSugerencias));
-
-                console.log('✅ Sugerencia guardada exitosamente');
-                return true;
-
-            } catch (error) {
-                console.error('Error guardando en JSONBin:', error);
-                // Fallback a solo localStorage
-                return guardarSugerenciaEnLocalStorage(sugerencia);
-            }
-        }
-
-        // Guardar solo en localStorage (fallback)
-        function guardarSugerenciaEnLocalStorage(sugerencia) {
-            try {
-                sugerencia.id = Date.now();
-                sugerencia.fechaCreacion = new Date().toISOString().split('T')[0];
-                sugerencia.estado = 'revision';
-
-                const sugerenciasGuardadas = JSON.parse(localStorage.getItem('sugerenciasGDB') || '[]');
-                sugerenciasGuardadas.push(sugerencia);
-                localStorage.setItem('sugerenciasGDB', JSON.stringify(sugerenciasGuardadas));
-
+                localStorage.setItem('sugerenciasGDB', JSON.stringify(sugerenciasAGuardar));
                 return true;
             } catch (error) {
                 console.error('Error guardando en localStorage:', error);
@@ -733,79 +656,235 @@
         }
 
         // ============================================
-        // FUNCIONES PRINCIPALES
+        // FUNCIONES PARA JSONBIN.IO - CORREGIDAS
         // ============================================
 
-        // Cargar sugerencias
-        async function cargarSugerencias() {
+        // Verificar si la API key es válida (AHORA SÍ acepta tu key)
+        function tieneApiKeyValida() {
+            // Simple: si tiene más de 10 caracteres, la consideramos válida
+            return JSONBIN_CONFIG.API_KEY && JSONBIN_CONFIG.API_KEY.length > 10;
+        }
+
+        // Inicializar JSONBin si está vacío
+        async function inicializarJSONBin() {
             try {
-                console.log('Iniciando carga de sugerencias...');
+                console.log('Inicializando JSONBin con datos iniciales...');
 
-                // Intentar cargar desde JSONBin primero
-                sugerencias = await obtenerSugerencias();
-                console.log('Sugerencias cargadas:', sugerencias);
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
+                    {
+                        method: 'PUT',
+                        headers: JSONBIN_CONFIG.getHeaders(),
+                        body: JSON.stringify({
+                            sugerencias: sugerenciasIniciales,
+                            ultima_actualizacion: new Date().toISOString()
+                        })
+                    }
+                );
 
-                // Si no hay sugerencias en JSONBin, usar datos iniciales
-                if (sugerencias.length === 0) {
-                    console.log('No hay sugerencias, usando datos iniciales');
-                    sugerencias = [...sugerenciasIniciales];
-
-                    // Guardar datos iniciales en JSONBin
-                    await fetch(
-                        `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
-                        {
-                            method: 'PUT',
-                            headers: JSONBIN_CONFIG.getHeaders(),
-                            body: JSON.stringify({
-                                sugerencias: sugerenciasIniciales,
-                                delegados_destacados: {},
-                                ultima_actualizacion: new Date().toISOString()
-                            })
-                        }
-                    );
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
                 }
 
-                mostrarSugerencias();
-                mostrarNotificacion('✅ Datos cargados desde la nube', 'success');
-
+                console.log('✅ JSONBin inicializado');
+                return true;
             } catch (error) {
-                console.warn('Error cargando de JSONBin:', error);
-                // Fallback a localStorage
-                const sugerenciasGuardadas = localStorage.getItem('sugerenciasGDB');
-                sugerencias = sugerenciasGuardadas ? JSON.parse(sugerenciasGuardadas) : [...sugerenciasIniciales];
-                mostrarSugerencias();
-                mostrarNotificacion('⚠️ Usando datos locales (modo offline)', 'warning');
+                console.error('Error inicializando JSONBin:', error);
+                return false;
             }
         }
 
-        // Mostrar sugerencias filtradas
+        // Cargar desde JSONBin
+        async function cargarDeJSONBin() {
+            try {
+                console.log('Intentando cargar de JSONBin...');
+
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
+                    {
+                        headers: JSONBIN_CONFIG.getHeaders(),
+                        cache: 'no-cache'
+                    }
+                );
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        console.log('Bin no encontrado, inicializando...');
+                        await inicializarJSONBin();
+                        return sugerenciasIniciales;
+                    }
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Datos recibidos de JSONBin:', data);
+
+                // Si la respuesta es un array directamente o tiene estructura de record
+                if (Array.isArray(data)) {
+                    return data;
+                } else if (data.record && data.record.sugerencias) {
+                    return data.record.sugerencias;
+                } else if (data.sugerencias) {
+                    return data.sugerencias;
+                }
+
+                return [];
+
+            } catch (error) {
+                console.error('Error cargando de JSONBin:', error.message);
+                return null;
+            }
+        }
+
+        // Guardar en JSONBin
+        async function guardarEnJSONBin(sugerenciasAGuardar) {
+            try {
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
+                    {
+                        method: 'PUT',
+                        headers: JSONBIN_CONFIG.getHeaders(),
+                        body: JSON.stringify({
+                            sugerencias: sugerenciasAGuardar,
+                            ultima_actualizacion: new Date().toISOString()
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                console.log('✅ Datos guardados en JSONBin');
+                return true;
+            } catch (error) {
+                console.error('Error guardando en JSONBin:', error.message);
+                return false;
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN PRINCIPAL DE CARGA - CORREGIDA
+        // ============================================
+        async function cargarSugerencias() {
+            try {
+                console.log('🔄 Iniciando carga de sugerencias...');
+                console.log('📦 Bin ID:', JSONBIN_CONFIG.BIN_ID);
+                console.log('🔑 API Key presente:', tieneApiKeyValida() ? 'Sí' : 'No');
+
+                // SIEMPRE intentar cargar de JSONBin primero
+                const datosNube = await cargarDeJSONBin();
+
+                if (datosNube && datosNube.length > 0) {
+                    sugerencias = datosNube;
+                    guardarEnLocalStorage(sugerencias);
+                    console.log('☁️ Cargado desde JSONBin:', sugerencias.length, 'sugerencias');
+                    mostrarNotificacion('☁️ Datos cargados desde la nube', 'success');
+                } else {
+                    // Si no hay JSONBin, cargar de localStorage
+                    const datosLocales = cargarDeLocalStorage();
+                    if (datosLocales.length > 0) {
+                        sugerencias = datosLocales;
+                        console.log('💾 Cargado desde localStorage:', sugerencias.length, 'sugerencias');
+                        mostrarNotificacion('💾 Datos cargados localmente', 'info');
+
+                        // Intentar subir los datos locales a JSONBin
+                        if (tieneApiKeyValida()) {
+                            await guardarEnJSONBin(sugerencias);
+                        }
+                    } else {
+                        // Si no hay datos, usar iniciales
+                        sugerencias = [...sugerenciasIniciales];
+                        guardarEnLocalStorage(sugerencias);
+
+                        if (tieneApiKeyValida()) {
+                            await guardarEnJSONBin(sugerencias);
+                        }
+
+                        console.log('📝 Usando datos iniciales');
+                        mostrarNotificacion('📝 Datos iniciales cargados', 'info');
+                    }
+                }
+
+                mostrarSugerencias();
+
+            } catch (error) {
+                console.error('Error crítico:', error);
+                sugerencias = [...sugerenciasIniciales];
+                mostrarSugerencias();
+                mostrarNotificacion('⚠️ Usando datos de respaldo', 'warning');
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN PARA GUARDAR NUEVA SUGERENCIA
+        // ============================================
+        async function guardarSugerencia(sugerencia) {
+            try {
+                const nuevaSugerencia = {
+                    ...sugerencia,
+                    id: Date.now(),
+                    fechaCreacion: new Date().toISOString().split('T')[0],
+                    estado: 'revision'
+                };
+
+                const nuevasSugerencias = [...sugerencias, nuevaSugerencia];
+
+                // Guardar en localStorage
+                guardarEnLocalStorage(nuevasSugerencias);
+                sugerencias = nuevasSugerencias;
+
+                // Guardar en JSONBin (esperamos la respuesta para confirmar)
+                if (tieneApiKeyValida()) {
+                    const exito = await guardarEnJSONBin(nuevasSugerencias);
+                    if (exito) {
+                        console.log('✅ Respaldo en nube exitoso');
+                        mostrarNotificacion('✅ Guardado en nube y local', 'success');
+                    } else {
+                        mostrarNotificacion('⚠️ Guardado solo localmente', 'warning');
+                    }
+                } else {
+                    mostrarNotificacion('✅ Guardado localmente', 'success');
+                }
+
+                return true;
+
+            } catch (error) {
+                console.error('Error guardando sugerencia:', error);
+                return false;
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN PARA MOSTRAR SUGERENCIAS
+        // ============================================
         function mostrarSugerencias() {
             const lista = document.getElementById('sugerenciasList');
+            if (!lista) return;
 
             let sugerenciasFiltradas = [...sugerencias];
+
             if (filtroEstado !== 'todos') {
                 sugerenciasFiltradas = sugerenciasFiltradas.filter(s => s.estado === filtroEstado);
             }
 
-            // Ordenar por fecha (más recientes primero)
             sugerenciasFiltradas.sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
 
             if (sugerenciasFiltradas.length === 0) {
                 lista.innerHTML = `
-                <div class="no-sugerencias">
-                    <i class="fas fa-lightbulb"></i>
-                    <h3>No hay sugerencias</h3>
-                    <p>¡Sé el primero en proponer una actividad!</p>
-                </div>
+            <div class="no-sugerencias">
+                <i class="fas fa-lightbulb"></i>
+                <h3>No hay sugerencias</h3>
+                <p>¡Sé el primero en proponer una actividad!</p>
+            </div>
             `;
                 return;
             }
 
-            lista.innerHTML = sugerenciasFiltradas.map(sugerencia => {
+            lista.innerHTML = sugerenciasFiltradas.map(s => {
                 let estadoText = '';
                 let estadoClass = '';
-
-                switch (sugerencia.estado) {
+                switch (s.estado) {
                     case 'revision':
                         estadoText = 'En Revisión';
                         estadoClass = 'estado-revision';
@@ -818,51 +897,52 @@
                         estadoText = 'Denegado';
                         estadoClass = 'estado-denegado';
                         break;
+                    default:
+                        estadoText = 'En Revisión';
+                        estadoClass = 'estado-revision';
                 }
 
-                let categoriaText = '';
-                switch (sugerencia.categoria) {
-                    case 'taller': categoriaText = 'Taller'; break;
-                    case 'debate': categoriaText = 'Debate'; break;
-                    case 'social': categoriaText = 'Social'; break;
-                    case 'cultural': categoriaText = 'Cultural'; break;
-                    case 'recreativo': categoriaText = 'Recreativo'; break;
-                    default: categoriaText = 'Otro';
-                }
+                let categoriaText = s.categoria === 'taller' ? 'Taller' :
+                    s.categoria === 'debate' ? 'Debate' :
+                        s.categoria === 'social' ? 'Social' :
+                            s.categoria === 'cultural' ? 'Cultural' :
+                                s.categoria === 'recreativo' ? 'Recreativo' : 'Otro';
 
                 return `
-                <div class="sugerencia-card">
-                    <div class="sugerencia-header">
-                        <h3 class="sugerencia-titulo">
-                            ${sugerencia.titulo}
-                            <span class="sugerencia-categoria">${categoriaText}</span>
-                            <span class="estado-badge ${estadoClass}">${estadoText}</span>
-                        </h3>
+            <div class="sugerencia-card">
+                <div class="sugerencia-header">
+                    <h3 class="sugerencia-titulo">
+                        ${s.titulo}
+                        <span class="sugerencia-categoria">${categoriaText}</span>
+                        <span class="estado-badge ${estadoClass}">${estadoText}</span>
+                    </h3>
+                </div>
+
+                <p class="sugerencia-descripcion">${s.descripcion}</p>
+
+                <div class="sugerencia-meta">
+                    <div>
+                        <span class="sugerencia-autor">${s.nombre}</span>
+                        ${s.cargo ? ` · ${s.cargo}` : ''}
+                        ${s.lugar ? ` · <i class="fas fa-map-marker-alt"></i> ${s.lugar}` : ''}
                     </div>
-                    
-                    <p class="sugerencia-descripcion">${sugerencia.descripcion}</p>
-                    
-                    <div class="sugerencia-meta">
-                        <div>
-                            <span class="sugerencia-autor">${sugerencia.nombre}</span>
-                            ${sugerencia.cargo ? ` · ${sugerencia.cargo}` : ''}
-                        </div>
-                        <div class="sugerencia-fecha">
-                            <i class="far fa-calendar"></i>
-                            ${sugerencia.fechaCreacion}
-                        </div>
+                    <div class="sugerencia-fecha">
+                        <i class="far fa-calendar"></i>
+                        ${s.fechaCreacion}
                     </div>
                 </div>
+            </div>
             `;
             }).join('');
         }
 
-        // Función para limpiar formulario
+        // ============================================
+        // FUNCIONES DEL FORMULARIO
+        // ============================================
         function limpiarFormulario() {
             document.getElementById('sugerenciaForm').reset();
         }
 
-        // Función para validar formulario
         function validarFormulario() {
             const nombre = document.getElementById('nombre').value.trim();
             const titulo = document.getElementById('titulo').value.trim();
@@ -875,7 +955,7 @@
             }
 
             if (!titulo) {
-                mostrarNotificacion('Por favor ingresa un título para la actividad', 'error');
+                mostrarNotificacion('Por favor ingresa un título', 'error');
                 return false;
             }
 
@@ -885,10 +965,9 @@
             }
 
             if (!descripcion || descripcion.length < 20) {
-                mostrarNotificacion('Por favor ingresa una descripción más detallada (mínimo 20 caracteres)', 'error');
+                mostrarNotificacion('La descripción debe tener al menos 20 caracteres', 'error');
                 return false;
             }
-
             return true;
         }
 
@@ -896,25 +975,33 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM cargado, iniciando...');
+            console.log('🚀 Inicializando página de sugerencias...');
 
-            // Cargar sugerencias existentes
+            // Verificar configuración
+            if (tieneApiKeyValida()) {
+                console.log('🔑 API key configurada, modo: Local + Nube');
+                console.log('API Key (primeros 10 chars):', JSONBIN_CONFIG.API_KEY.substring(0, 10) + '...');
+            } else {
+                console.log('💾 Modo: Solo localStorage');
+            }
+
+            // Cargar sugerencias
             cargarSugerencias();
 
-            // Botón limpiar formulario
-            document.getElementById('limpiarBtn').addEventListener('click', limpiarFormulario);
+            // Botón limpiar
+            document.getElementById('limpiarBtn')?.addEventListener('click', limpiarFormulario);
 
-            // Botón enviar sugerencia
-            document.getElementById('enviarBtn').addEventListener('click', () => {
+            // Botón enviar
+            document.getElementById('enviarBtn')?.addEventListener('click', () => {
                 if (validarFormulario()) {
                     document.getElementById('modalTitle').textContent = 'Confirmar Envío';
-                    document.getElementById('modalMessage').textContent = '¿Estás seguro de enviar esta sugerencia? Una vez enviada, será revisada por la directiva.';
+                    document.getElementById('modalMessage').textContent = '¿Estás seguro de enviar esta sugerencia?';
                     document.getElementById('confirmModal').style.display = 'flex';
                 }
             });
 
             // Confirmar envío
-            document.getElementById('confirmBtn').addEventListener('click', async () => {
+            document.getElementById('confirmBtn')?.addEventListener('click', async () => {
                 const form = document.getElementById('sugerenciaForm');
                 const sugerencia = {
                     nombre: form.nombre.value.trim(),
@@ -932,14 +1019,11 @@
                 guardandoBtn.disabled = true;
 
                 try {
-                    const exito = await guardarSugerenciaEnJSONBin(sugerencia);
+                    const exito = await guardarSugerencia(sugerencia);
 
                     if (exito) {
-                        mostrarNotificacion('✅ Sugerencia enviada exitosamente. Será revisada por la directiva.', 'success');
                         limpiarFormulario();
-                        await cargarSugerencias(); // Recargar lista
-                    } else {
-                        mostrarNotificacion('❌ Error al enviar la sugerencia. Intenta nuevamente.', 'error');
+                        mostrarSugerencias();
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -962,52 +1046,22 @@
             });
 
             // Modal
-            document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('modalClose')?.addEventListener('click', () => {
                 document.getElementById('confirmModal').style.display = 'none';
             });
 
-            document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('cancelBtn')?.addEventListener('click', () => {
                 document.getElementById('confirmModal').style.display = 'none';
             });
 
-            // Menú móvil
-            const menuToggle = document.querySelector('.menu-toggle');
-            const navLinks = document.querySelector('.nav-links');
-
-            if (menuToggle && navLinks) {
-                // Crear overlay para móviles
-                const overlay = document.createElement('div');
-                overlay.className = 'overlay';
-                document.body.appendChild(overlay);
-
-                menuToggle.addEventListener('click', () => {
-                    navLinks.classList.toggle('active');
-                    overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
-                    // Cambiar ícono
-                    menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
-                });
-
-                // Cerrar menú al hacer clic en overlay
-                overlay.addEventListener('click', () => {
-                    navLinks.classList.remove('active');
-                    overlay.style.display = 'none';
-                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-                });
-
-                document.querySelectorAll('.nav-links a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        navLinks.classList.remove('active');
-                        overlay.style.display = 'none';
-                        menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
-                    });
-                });
-            }
-
-            // Verificar la consola para ver si hay errores
-            console.log('Configuración JSONBin:', {
-                BIN_ID: JSONBIN_CONFIG.BIN_ID.substring(0, 4) + '...',
-                API_KEY: JSONBIN_CONFIG.API_KEY.substring(0, 10) + '...'
+            window.addEventListener('click', (e) => {
+                const modal = document.getElementById('confirmModal');
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
             });
+
+            console.log('✅ Inicialización completa');
         });
     </script>
 </body>
