@@ -560,343 +560,354 @@
             </div>
         </div>
     </footer>
-    <script>
-        // ============================================
-        // CONFIGURACIÓN DE ALMACENAMIENTO
-        // ============================================
-        // Configuración para JSONBin.io 
-        const JSONBIN_CONFIG = {
-            BIN_ID: '69761cbdae596e708ff4bc5c',
-            API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2',
-            BASE_URL: 'https://api.jsonbin.io/v3/b',
-            getHeaders: function () {
-                return {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': this.API_KEY,
-                    'X-Bin-Versioning': 'false',
-                    'X-Bin-Meta': 'false' // Importante para evitar metadatos
-                };
+   <script>
+    // ============================================
+    // CONFIGURACIÓN COMPARTIDA CON DELEGADOS DESTACADOS
+    // ============================================
+    const JSONBIN_CONFIG = {
+        BIN_ID: '69b1b6c1b7ec241ddc5e4077',
+        API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2',
+        BASE_URL: 'https://api.jsonbin.io/v3/b',
+        getHeaders: function () {
+            return {
+                'Content-Type': 'application/json',
+                'X-Master-Key': this.API_KEY,
+                'X-Bin-Versioning': 'false',
+                'X-Bin-Meta': 'false'
+            };
+        }
+    };
+
+    // ============================================
+    // DATOS INICIALES (SOLO PARA SUGERENCIAS)
+    // ============================================
+    const sugerenciasIniciales = [
+        {
+            id: 1,
+            nombre: "ADRIAN SUAREZ SUAREZ",
+            cargo: "Presidente Departamental",
+            titulo: "Taller de Liderazgo",
+            categoria: "taller",
+            descripcion: "Capacitación y charla acerca del liderazgo.",
+            fecha: "2026-03-15",
+            lugar: "Salón del Corregimiento",
+            estado: "revision",
+            fechaCreacion: "2026-03-08"
+        },
+    ];
+
+    // Variables globales
+    let sugerencias = [];
+    let filtroEstado = 'todos';
+
+    // ============================================
+    // FUNCIÓN DE NOTIFICACIÓN
+    // ============================================
+    function mostrarNotificacion(mensaje, tipo = 'info') {
+        const notificacion = document.getElementById('notificacion');
+        if (!notificacion) return;
+
+        notificacion.textContent = mensaje;
+        notificacion.className = 'notificacion ' + tipo;
+        notificacion.style.display = 'block';
+
+        setTimeout(() => {
+            notificacion.style.animation = 'fadeOut 0.3s ease';
+            setTimeout(() => {
+                notificacion.style.display = 'none';
+                notificacion.style.animation = '';
+            }, 300);
+        }, 4000);
+    }
+
+    // ============================================
+    // FUNCIONES DE LOCALSTORAGE (BACKUP)
+    // ============================================
+    function cargarDeLocalStorage() {
+        try {
+            const guardadas = localStorage.getItem('sugerenciasGDB');
+            return guardadas ? JSON.parse(guardadas) : [];
+        } catch (error) {
+            console.error('Error leyendo localStorage:', error);
+            return [];
+        }
+    }
+
+    function guardarEnLocalStorage(sugerenciasAGuardar) {
+        try {
+            localStorage.setItem('sugerenciasGDB', JSON.stringify(sugerenciasAGuardar));
+            return true;
+        } catch (error) {
+            console.error('Error guardando en localStorage:', error);
+            return false;
+        }
+    }
+
+    // ============================================
+    // FUNCIONES PARA JSONBIN (ESTRUCTURA COMPLETA)
+    // ============================================
+
+    // Obtener mes actual en formato YYYY-MM
+    function obtenerMesActual() {
+        const fecha = new Date();
+        const año = fecha.getFullYear();
+        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+        return `${año}-${mes}`;
+    }
+
+    // Crear estructura completa del BIN (compatible con delegados)
+    function crearEstructuraCompleta() {
+        const mesActual = obtenerMesActual();
+        return {
+            periodos: {
+                [mesActual]: {
+                    ganador_mes: null,
+                    ranking: {
+                        todos: [],
+                        directiva: [],
+                        delegados: [],
+                        oradores: [],
+                        voluntarios: [],
+                        nuevos: []
+                    },
+                    estadisticas: {
+                        total_reconocidos: 0,
+                        promedio_puntuacion: 0,
+                        crecimiento_mensual: "0%",
+                        nominaciones_recibidas: 0,
+                        miembros_evaluados: 0
+                    }
+                }
+            },
+            nominaciones: [],
+            sugerencias: [...sugerenciasIniciales],
+            delegados_destacados: {},
+            configuracion: {
+                mes_actual: mesActual,
+                ultima_actualizacion: new Date().toISOString().split('T')[0],
+                version: "1.0"
             }
         };
+    }
 
-        // Datos iniciales
-        const sugerenciasIniciales = [
-            {
-                id: 1,
-                nombre: "ADRIAN SUAREZ SUAREZ",
-                cargo: "Presidente Departamental",
-                titulo: "Taller de Diplomacia Digital",
-                categoria: "taller",
-                descripcion: "Capacitación sobre el uso de redes sociales y herramientas digitales para la diplomacia moderna.",
-                fecha: "2025-02-15",
-                lugar: "Sede GDB",
-                estado: "aprobado",
-                fechaCreacion: "2025-01-20"
-            },
-        ];
+    // Cargar datos COMPLETOS del BIN
+    async function cargarDatosCompletos() {
+        try {
+            console.log('Cargando datos completos del Bin...');
+            const response = await fetch(
+                `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
+                { headers: JSONBIN_CONFIG.getHeaders() }
+            );
 
-        // Variables globales
-        let sugerencias = [];
-        let filtroEstado = 'todos';
-
-        // ============================================
-        // FUNCIÓN DE NOTIFICACIÓN
-        // ============================================
-        function mostrarNotificacion(mensaje, tipo = 'info') {
-            const notificacion = document.getElementById('notificacion');
-            if (!notificacion) return;
-
-            notificacion.textContent = mensaje;
-            notificacion.className = 'notificacion ' + tipo;
-            notificacion.style.display = 'block';
-
-            setTimeout(() => {
-                notificacion.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => {
-                    notificacion.style.display = 'none';
-                    notificacion.style.animation = '';
-                }, 300);
-            }, 4000);
-        }
-
-        // ============================================
-        // FUNCIONES DE ALMACENAMIENTO LOCAL
-        // ============================================
-
-        function cargarDeLocalStorage() {
-            try {
-                const guardadas = localStorage.getItem('sugerenciasGDB');
-                return guardadas ? JSON.parse(guardadas) : [];
-            } catch (error) {
-                console.error('Error leyendo localStorage:', error);
-                return [];
-            }
-        }
-
-        function guardarEnLocalStorage(sugerenciasAGuardar) {
-            try {
-                localStorage.setItem('sugerenciasGDB', JSON.stringify(sugerenciasAGuardar));
-                return true;
-            } catch (error) {
-                console.error('Error guardando en localStorage:', error);
-                return false;
-            }
-        }
-
-        // ============================================
-        // FUNCIONES PARA JSONBIN.IO - CORREGIDAS
-        // ============================================
-
-        // Verificar si la API key es válida (AHORA SÍ acepta tu key)
-        function tieneApiKeyValida() {
-            // Simple: si tiene más de 10 caracteres, la consideramos válida
-            return JSONBIN_CONFIG.API_KEY && JSONBIN_CONFIG.API_KEY.length > 10;
-        }
-
-        // Inicializar JSONBin si está vacío
-        async function inicializarJSONBin() {
-            try {
-                console.log('Inicializando JSONBin con datos iniciales...');
-
-                const response = await fetch(
-                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
-                    {
-                        method: 'PUT',
-                        headers: JSONBIN_CONFIG.getHeaders(),
-                        body: JSON.stringify({
-                            sugerencias: sugerenciasIniciales,
-                            ultima_actualizacion: new Date().toISOString()
-                        })
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.log('Bin no encontrado, creando estructura inicial...');
+                    const estructuraInicial = crearEstructuraCompleta();
+                    await guardarDatosCompletos(estructuraInicial);
+                    return estructuraInicial;
                 }
-
-                console.log('✅ JSONBin inicializado');
-                return true;
-            } catch (error) {
-                console.error('Error inicializando JSONBin:', error);
-                return false;
+                throw new Error(`HTTP ${response.status}`);
             }
-        }
 
-        // Cargar desde JSONBin
-        async function cargarDeJSONBin() {
-            try {
-                console.log('Intentando cargar de JSONBin...');
+            const data = await response.json();
+            const datosCompletos = data.record || data;
 
-                const response = await fetch(
-                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
-                    {
-                        headers: JSONBIN_CONFIG.getHeaders(),
-                        cache: 'no-cache'
-                    }
-                );
-
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        console.log('Bin no encontrado, inicializando...');
-                        await inicializarJSONBin();
-                        return sugerenciasIniciales;
-                    }
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Datos recibidos de JSONBin:', data);
-
-                // Si la respuesta es un array directamente o tiene estructura de record
-                if (Array.isArray(data)) {
-                    return data;
-                } else if (data.record && data.record.sugerencias) {
-                    return data.record.sugerencias;
-                } else if (data.sugerencias) {
-                    return data.sugerencias;
-                }
-
-                return [];
-
-            } catch (error) {
-                console.error('Error cargando de JSONBin:', error.message);
-                return null;
-            }
-        }
-
-        // Guardar en JSONBin
-        async function guardarEnJSONBin(sugerenciasAGuardar) {
-            try {
-                const response = await fetch(
-                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
-                    {
-                        method: 'PUT',
-                        headers: JSONBIN_CONFIG.getHeaders(),
-                        body: JSON.stringify({
-                            sugerencias: sugerenciasAGuardar,
-                            ultima_actualizacion: new Date().toISOString()
-                        })
-                    }
-                );
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                console.log('✅ Datos guardados en JSONBin');
-                return true;
-            } catch (error) {
-                console.error('Error guardando en JSONBin:', error.message);
-                return false;
-            }
-        }
-
-        // ============================================
-        // FUNCIÓN PRINCIPAL DE CARGA - CORREGIDA
-        // ============================================
-        async function cargarSugerencias() {
-            try {
-                console.log('🔄 Iniciando carga de sugerencias...');
-                console.log('📦 Bin ID:', JSONBIN_CONFIG.BIN_ID);
-                console.log('🔑 API Key presente:', tieneApiKeyValida() ? 'Sí' : 'No');
-
-                // SIEMPRE intentar cargar de JSONBin primero
-                const datosNube = await cargarDeJSONBin();
-
-                if (datosNube && datosNube.length > 0) {
-                    sugerencias = datosNube;
-                    guardarEnLocalStorage(sugerencias);
-                    console.log('☁️ Cargado desde JSONBin:', sugerencias.length, 'sugerencias');
-                    mostrarNotificacion('☁️ Datos cargados desde la nube', 'success');
-                } else {
-                    // Si no hay JSONBin, cargar de localStorage
-                    const datosLocales = cargarDeLocalStorage();
-                    if (datosLocales.length > 0) {
-                        sugerencias = datosLocales;
-                        console.log('💾 Cargado desde localStorage:', sugerencias.length, 'sugerencias');
-                        mostrarNotificacion('💾 Datos cargados localmente', 'info');
-
-                        // Intentar subir los datos locales a JSONBin
-                        if (tieneApiKeyValida()) {
-                            await guardarEnJSONBin(sugerencias);
-                        }
-                    } else {
-                        // Si no hay datos, usar iniciales
-                        sugerencias = [...sugerenciasIniciales];
-                        guardarEnLocalStorage(sugerencias);
-
-                        if (tieneApiKeyValida()) {
-                            await guardarEnJSONBin(sugerencias);
-                        }
-
-                        console.log('📝 Usando datos iniciales');
-                        mostrarNotificacion('📝 Datos iniciales cargados', 'info');
-                    }
-                }
-
-                mostrarSugerencias();
-
-            } catch (error) {
-                console.error('Error crítico:', error);
-                sugerencias = [...sugerenciasIniciales];
-                mostrarSugerencias();
-                mostrarNotificacion('⚠️ Usando datos de respaldo', 'warning');
-            }
-        }
-
-        // ============================================
-        // FUNCIÓN PARA GUARDAR NUEVA SUGERENCIA
-        // ============================================
-        async function guardarSugerencia(sugerencia) {
-            try {
-                const nuevaSugerencia = {
-                    ...sugerencia,
-                    id: Date.now(),
-                    fechaCreacion: new Date().toISOString().split('T')[0],
-                    estado: 'revision'
+            // Verificar que tenga la estructura completa
+            if (!datosCompletos.sugerencias) datosCompletos.sugerencias = [];
+            if (!datosCompletos.periodos) datosCompletos.periodos = {};
+            if (!datosCompletos.nominaciones) datosCompletos.nominaciones = [];
+            if (!datosCompletos.delegados_destacados) datosCompletos.delegados_destacados = {};
+            if (!datosCompletos.configuracion) {
+                datosCompletos.configuracion = {
+                    mes_actual: obtenerMesActual(),
+                    ultima_actualizacion: new Date().toISOString().split('T')[0],
+                    version: "1.0"
                 };
+            }
 
-                const nuevasSugerencias = [...sugerencias, nuevaSugerencia];
+            return datosCompletos;
+        } catch (error) {
+            console.error('Error cargando del Bin:', error.message);
+            return null;
+        }
+    }
 
-                // Guardar en localStorage
-                guardarEnLocalStorage(nuevasSugerencias);
-                sugerencias = nuevasSugerencias;
+    // Guardar datos COMPLETOS en el BIN
+    async function guardarDatosCompletos(datosCompletos) {
+        try {
+            datosCompletos.configuracion.ultima_actualizacion = new Date().toISOString().split('T')[0];
+            
+            const response = await fetch(
+                `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
+                {
+                    method: 'PUT',
+                    headers: JSONBIN_CONFIG.getHeaders(),
+                    body: JSON.stringify(datosCompletos)
+                }
+            );
 
-                // Guardar en JSONBin (esperamos la respuesta para confirmar)
-                if (tieneApiKeyValida()) {
-                    const exito = await guardarEnJSONBin(nuevasSugerencias);
-                    if (exito) {
-                        console.log('✅ Respaldo en nube exitoso');
-                        mostrarNotificacion('✅ Guardado en nube y local', 'success');
-                    } else {
-                        mostrarNotificacion('⚠️ Guardado solo localmente', 'warning');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            console.log('✅ Datos guardados en el Bin');
+            return true;
+        } catch (error) {
+            console.error('Error guardando en Bin:', error.message);
+            return false;
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN PRINCIPAL PARA SUGERENCIAS
+    // ============================================
+    async function cargarSugerencias() {
+        try {
+            console.log('Cargando sugerencias...');
+            
+            // 1. Intentar cargar del BIN
+            const datosCompletos = await cargarDatosCompletos();
+            
+            if (datosCompletos && datosCompletos.sugerencias && datosCompletos.sugerencias.length > 0) {
+                sugerencias = datosCompletos.sugerencias;
+                guardarEnLocalStorage(sugerencias);
+                console.log('☁️ Cargado del Bin:', sugerencias.length, 'sugerencias');
+                mostrarNotificacion('☁️ Datos cargados de la nube', 'success');
+            } else {
+                // 2. Si no hay en el BIN, intentar localStorage
+                const locales = cargarDeLocalStorage();
+                if (locales.length > 0) {
+                    sugerencias = locales;
+                    console.log('💾 Cargado de localStorage');
+                    mostrarNotificacion('💾 Modo local', 'info');
+                    
+                    // Sincronizar con el BIN
+                    if (datosCompletos) {
+                        datosCompletos.sugerencias = locales;
+                        await guardarDatosCompletos(datosCompletos);
                     }
                 } else {
-                    mostrarNotificacion('✅ Guardado localmente', 'success');
+                    // 3. Usar datos iniciales
+                    sugerencias = [...sugerenciasIniciales];
+                    guardarEnLocalStorage(sugerencias);
+                    
+                    // Guardar en el BIN respetando estructura completa
+                    const nuevaEstructura = datosCompletos || crearEstructuraCompleta();
+                    nuevaEstructura.sugerencias = sugerencias;
+                    await guardarDatosCompletos(nuevaEstructura);
+                    
+                    console.log('📝 Datos iniciales');
+                    mostrarNotificacion('📝 Datos iniciales cargados', 'info');
                 }
-
-                return true;
-
-            } catch (error) {
-                console.error('Error guardando sugerencia:', error);
-                return false;
             }
+            
+            mostrarSugerencias();
+            
+        } catch (error) {
+            console.error('Error crítico:', error);
+            sugerencias = [...sugerenciasIniciales];
+            mostrarSugerencias();
+            mostrarNotificacion('⚠️ Modo de respaldo', 'warning');
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN PARA GUARDAR NUEVA SUGERENCIA
+    // ============================================
+    async function guardarSugerencia(sugerencia) {
+        try {
+            // 1. Cargar datos actuales del BIN
+            let datosCompletos = await cargarDatosCompletos();
+            if (!datosCompletos) {
+                datosCompletos = crearEstructuraCompleta();
+            }
+            
+            // 2. Crear nueva sugerencia
+            const nuevaSugerencia = {
+                ...sugerencia,
+                id: Date.now(),
+                fechaCreacion: new Date().toISOString().split('T')[0],
+                estado: 'revision'
+            };
+            
+            // 3. Agregar a la lista
+            if (!datosCompletos.sugerencias) datosCompletos.sugerencias = [];
+            datosCompletos.sugerencias.push(nuevaSugerencia);
+            
+            // 4. Guardar en el BIN (estructura completa)
+            const exito = await guardarDatosCompletos(datosCompletos);
+            
+            if (exito) {
+                sugerencias = datosCompletos.sugerencias;
+                guardarEnLocalStorage(sugerencias);
+                mostrarNotificacion('✅ Guardado en nube y local', 'success');
+            } else {
+                // Fallback a localStorage
+                const nuevas = [...sugerencias, nuevaSugerencia];
+                guardarEnLocalStorage(nuevas);
+                sugerencias = nuevas;
+                mostrarNotificacion('⚠️ Guardado solo localmente', 'warning');
+            }
+            
+            return true;
+            
+        } catch (error) {
+            console.error('Error guardando sugerencia:', error);
+            return false;
+        }
+    }
+
+    // ============================================
+    // FUNCIÓN PARA MOSTRAR SUGERENCIAS
+    // ============================================
+    function mostrarSugerencias() {
+        const lista = document.getElementById('sugerenciasList');
+        if (!lista) return;
+
+        let sugerenciasFiltradas = [...sugerencias];
+
+        if (filtroEstado !== 'todos') {
+            sugerenciasFiltradas = sugerenciasFiltradas.filter(s => s.estado === filtroEstado);
         }
 
-        // ============================================
-        // FUNCIÓN PARA MOSTRAR SUGERENCIAS
-        // ============================================
-        function mostrarSugerencias() {
-            const lista = document.getElementById('sugerenciasList');
-            if (!lista) return;
+        sugerenciasFiltradas.sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
 
-            let sugerenciasFiltradas = [...sugerencias];
-
-            if (filtroEstado !== 'todos') {
-                sugerenciasFiltradas = sugerenciasFiltradas.filter(s => s.estado === filtroEstado);
-            }
-
-            sugerenciasFiltradas.sort((a, b) => new Date(b.fechaCreacion) - new Date(a.fechaCreacion));
-
-            if (sugerenciasFiltradas.length === 0) {
-                lista.innerHTML = `
+        if (sugerenciasFiltradas.length === 0) {
+            lista.innerHTML = `
             <div class="no-sugerencias">
                 <i class="fas fa-lightbulb"></i>
                 <h3>No hay sugerencias</h3>
                 <p>¡Sé el primero en proponer una actividad!</p>
             </div>
             `;
-                return;
+            return;
+        }
+
+        lista.innerHTML = sugerenciasFiltradas.map(s => {
+            let estadoText = '';
+            let estadoClass = '';
+            switch (s.estado) {
+                case 'revision':
+                    estadoText = 'En Revisión';
+                    estadoClass = 'estado-revision';
+                    break;
+                case 'aprobado':
+                    estadoText = 'Aprobado';
+                    estadoClass = 'estado-aprobado';
+                    break;
+                case 'denegado':
+                    estadoText = 'Denegado';
+                    estadoClass = 'estado-denegado';
+                    break;
+                default:
+                    estadoText = 'En Revisión';
+                    estadoClass = 'estado-revision';
             }
 
-            lista.innerHTML = sugerenciasFiltradas.map(s => {
-                let estadoText = '';
-                let estadoClass = '';
-                switch (s.estado) {
-                    case 'revision':
-                        estadoText = 'En Revisión';
-                        estadoClass = 'estado-revision';
-                        break;
-                    case 'aprobado':
-                        estadoText = 'Aprobado';
-                        estadoClass = 'estado-aprobado';
-                        break;
-                    case 'denegado':
-                        estadoText = 'Denegado';
-                        estadoClass = 'estado-denegado';
-                        break;
-                    default:
-                        estadoText = 'En Revisión';
-                        estadoClass = 'estado-revision';
-                }
+            let categoriaText = s.categoria === 'taller' ? 'Taller' :
+                               s.categoria === 'debate' ? 'Debate' :
+                               s.categoria === 'social' ? 'Social' :
+                               s.categoria === 'cultural' ? 'Cultural' :
+                               s.categoria === 'recreativo' ? 'Recreativo' : 'Otro';
 
-                let categoriaText = s.categoria === 'taller' ? 'Taller' :
-                    s.categoria === 'debate' ? 'Debate' :
-                        s.categoria === 'social' ? 'Social' :
-                            s.categoria === 'cultural' ? 'Cultural' :
-                                s.categoria === 'recreativo' ? 'Recreativo' : 'Otro';
-
-                return `
+            return `
             <div class="sugerencia-card">
                 <div class="sugerencia-header">
                     <h3 class="sugerencia-titulo">
@@ -905,9 +916,7 @@
                         <span class="estado-badge ${estadoClass}">${estadoText}</span>
                     </h3>
                 </div>
-
                 <p class="sugerencia-descripcion">${s.descripcion}</p>
-
                 <div class="sugerencia-meta">
                     <div>
                         <span class="sugerencia-autor">${s.nombre}</span>
@@ -921,137 +930,148 @@
                 </div>
             </div>
             `;
-            }).join('');
+        }).join('');
+    }
+
+    // ============================================
+    // FUNCIONES DEL FORMULARIO
+    // ============================================
+    function limpiarFormulario() {
+        document.getElementById('sugerenciaForm').reset();
+    }
+
+    function validarFormulario() {
+        const nombre = document.getElementById('nombre').value.trim();
+        const titulo = document.getElementById('titulo').value.trim();
+        const categoria = document.getElementById('categoria').value;
+        const descripcion = document.getElementById('descripcion').value.trim();
+
+        if (!nombre) {
+            mostrarNotificacion('Por favor ingresa tu nombre', 'error');
+            return false;
         }
-
-        // ============================================
-        // FUNCIONES DEL FORMULARIO
-        // ============================================
-        function limpiarFormulario() {
-            document.getElementById('sugerenciaForm').reset();
+        if (!titulo) {
+            mostrarNotificacion('Por favor ingresa un título', 'error');
+            return false;
         }
-
-        function validarFormulario() {
-            const nombre = document.getElementById('nombre').value.trim();
-            const titulo = document.getElementById('titulo').value.trim();
-            const categoria = document.getElementById('categoria').value;
-            const descripcion = document.getElementById('descripcion').value.trim();
-
-            if (!nombre) {
-                mostrarNotificacion('Por favor ingresa tu nombre', 'error');
-                return false;
-            }
-
-            if (!titulo) {
-                mostrarNotificacion('Por favor ingresa un título', 'error');
-                return false;
-            }
-
-            if (!categoria) {
-                mostrarNotificacion('Por favor selecciona una categoría', 'error');
-                return false;
-            }
-
-            if (!descripcion || descripcion.length < 20) {
-                mostrarNotificacion('La descripción debe tener al menos 20 caracteres', 'error');
-                return false;
-            }
-            return true;
+        if (!categoria) {
+            mostrarNotificacion('Por favor selecciona una categoría', 'error');
+            return false;
         }
+        if (!descripcion || descripcion.length < 20) {
+            mostrarNotificacion('La descripción debe tener al menos 20 caracteres', 'error');
+            return false;
+        }
+        return true;
+    }
 
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 Inicializando página de sugerencias...');
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Inicializando sugerencias...');
 
-            // Verificar configuración
-            if (tieneApiKeyValida()) {
-                console.log('🔑 API key configurada, modo: Local + Nube');
-                console.log('API Key (primeros 10 chars):', JSONBIN_CONFIG.API_KEY.substring(0, 10) + '...');
-            } else {
-                console.log('💾 Modo: Solo localStorage');
+        // Cargar sugerencias
+        cargarSugerencias();
+
+        // Botón limpiar
+        document.getElementById('limpiarBtn')?.addEventListener('click', limpiarFormulario);
+
+        // Botón enviar
+        document.getElementById('enviarBtn')?.addEventListener('click', () => {
+            if (validarFormulario()) {
+                document.getElementById('confirmModal').style.display = 'flex';
+            }
+        });
+
+        // Confirmar envío
+        document.getElementById('confirmBtn')?.addEventListener('click', async () => {
+            const form = document.getElementById('sugerenciaForm');
+            const sugerencia = {
+                nombre: form.nombre.value.trim(),
+                cargo: form.cargo.value.trim(),
+                titulo: form.titulo.value.trim(),
+                categoria: form.categoria.value,
+                descripcion: form.descripcion.value.trim(),
+                fecha: form.fecha.value,
+                lugar: form.lugar.value.trim()
+            };
+
+            const btn = document.getElementById('confirmBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+            btn.disabled = true;
+
+            const exito = await guardarSugerencia(sugerencia);
+
+            if (exito) {
+                limpiarFormulario();
+                mostrarSugerencias();
             }
 
-            // Cargar sugerencias
-            cargarSugerencias();
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            document.getElementById('confirmModal').style.display = 'none';
+        });
 
-            // Botón limpiar
-            document.getElementById('limpiarBtn')?.addEventListener('click', limpiarFormulario);
+        // Filtros
+        document.querySelectorAll('.filtro-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                filtroEstado = this.dataset.estado;
+                mostrarSugerencias();
+            });
+        });
 
-            // Botón enviar
-            document.getElementById('enviarBtn')?.addEventListener('click', () => {
-                if (validarFormulario()) {
-                    document.getElementById('modalTitle').textContent = 'Confirmar Envío';
-                    document.getElementById('modalMessage').textContent = '¿Estás seguro de enviar esta sugerencia?';
-                    document.getElementById('confirmModal').style.display = 'flex';
-                }
+        // Modal
+        document.getElementById('modalClose')?.addEventListener('click', () => {
+            document.getElementById('confirmModal').style.display = 'none';
+        });
+
+        document.getElementById('cancelBtn')?.addEventListener('click', () => {
+            document.getElementById('confirmModal').style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('confirmModal');
+            if (e.target === modal) modal.style.display = 'none';
+        });
+
+        // Menú móvil
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (menuToggle && navLinks) {
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.style.cssText = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999;';
+            document.body.appendChild(overlay);
+
+            menuToggle.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+                overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
+                menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
             });
 
-            // Confirmar envío
-            document.getElementById('confirmBtn')?.addEventListener('click', async () => {
-                const form = document.getElementById('sugerenciaForm');
-                const sugerencia = {
-                    nombre: form.nombre.value.trim(),
-                    cargo: form.cargo.value.trim(),
-                    titulo: form.titulo.value.trim(),
-                    categoria: form.categoria.value,
-                    descripcion: form.descripcion.value.trim(),
-                    fecha: form.fecha.value,
-                    lugar: form.lugar.value.trim()
-                };
-
-                const guardandoBtn = document.getElementById('confirmBtn');
-                const originalText = guardandoBtn.innerHTML;
-                guardandoBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-                guardandoBtn.disabled = true;
-
-                try {
-                    const exito = await guardarSugerencia(sugerencia);
-
-                    if (exito) {
-                        limpiarFormulario();
-                        mostrarSugerencias();
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    mostrarNotificacion('❌ Error al procesar la solicitud', 'error');
-                } finally {
-                    guardandoBtn.innerHTML = originalText;
-                    guardandoBtn.disabled = false;
-                    document.getElementById('confirmModal').style.display = 'none';
-                }
+            overlay.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                overlay.style.display = 'none';
+                menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
             });
 
-            // Filtros
-            document.querySelectorAll('.filtro-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    filtroEstado = this.dataset.estado;
-                    mostrarSugerencias();
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    navLinks.classList.remove('active');
+                    overlay.style.display = 'none';
+                    menuToggle.innerHTML = '<i class="fas fa-bars"></i>';
                 });
             });
+        }
 
-            // Modal
-            document.getElementById('modalClose')?.addEventListener('click', () => {
-                document.getElementById('confirmModal').style.display = 'none';
-            });
-
-            document.getElementById('cancelBtn')?.addEventListener('click', () => {
-                document.getElementById('confirmModal').style.display = 'none';
-            });
-
-            window.addEventListener('click', (e) => {
-                const modal = document.getElementById('confirmModal');
-                if (e.target === modal) {
-                    modal.style.display = 'none';
-                }
-            });
-
-            console.log('✅ Inicialización completa');
-        });
-    </script>
+        console.log('✅ Inicialización completa');
+    });
+</script>
 </body>
 
 </html>
