@@ -557,16 +557,16 @@
         // ============================================
         // CONFIGURACIÓN JSONBIN.IO
         // ============================================
-        const JSONBIN_CONFIG = {
-            BIN_ID: '697699f4ae596e708ff59f00', // MISMO que en delegados-destacados.html
-            API_KEY: '$2a$10$lHcTe8y8yofr8Q/pQySnCuZVAn.YZDKZ0bgKv7oGKqPs8FXL/DAC2', // MISMA API KEY
+         const JSONBIN_CONFIG = {
+            BIN_ID: '69b1b6c1b7ec241ddc5e4077',
+            API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2',
             BASE_URL: 'https://api.jsonbin.io/v3/b',
-
             getHeaders: function () {
                 return {
                     'Content-Type': 'application/json',
-                    'X-Master-Key': '$2a$10$4V7916fByND/DyXLtXxg/.64CWCr2XK85bVAOD5qGZusnrj2eauPy',
-                    'X-Bin-Versioning': 'false'
+                    'X-Master-Key': this.API_KEY,
+                    'X-Bin-Versioning': 'false',
+                    'X-Bin-Meta': 'false' // Importante para evitar metadatos
                 };
             }
         };
