@@ -634,30 +634,38 @@
         }
 
         .nominar-form {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
         .form-row-destacado {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: 20px;
             margin-bottom: 25px;
-            flex-wrap: wrap;
+        }
+
+        .form-group-full {
+            grid-column: span 2;
         }
 
         .form-group-half {
-            flex: 1;
-            min-width: 250px;
+            display: flex;
+            flex-direction: column;
         }
 
         .form-group-half label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: var(--dark-gray);
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .form-group-half label i {
+            color: var(--gold);
+            width: 20px;
         }
 
         .form-group-half input,
@@ -670,6 +678,7 @@
             font-family: 'Montserrat', sans-serif;
             font-size: 1rem;
             transition: all 0.3s ease;
+            background: white;
         }
 
         .form-group-half input:focus,
@@ -678,6 +687,93 @@
             outline: none;
             border-color: var(--burgundy);
             box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        }
+
+        .form-group-half input.error,
+        .form-group-half select.error,
+        .form-group-half textarea.error {
+            border-color: var(--estado-denegado);
+        }
+
+        /* Estilos para la sección de imagen */
+        .image-upload-container {
+            grid-column: span 2;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 15px;
+            border: 2px dashed var(--gold);
+        }
+
+        .image-upload-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: var(--dark-green);
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .image-upload-label i {
+            color: var(--gold);
+            font-size: 1.3rem;
+        }
+
+        .image-preview-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .preview-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid var(--gold);
+            overflow: hidden;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-circle i {
+            font-size: 3rem;
+            color: #ccc;
+        }
+
+        .preview-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .file-input-wrapper {
+            flex: 1;
+        }
+
+        .file-input-wrapper input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .file-input-wrapper small {
+            display: block;
+            color: #666;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+
+        .file-input-wrapper small i {
+            color: var(--gold);
+            margin-right: 5px;
         }
 
         .btn-nominar-destacado {
@@ -703,6 +799,10 @@
             transform: translateY(-3px);
             box-shadow: 0 10px 25px rgba(139, 0, 0, 0.2);
             background: linear-gradient(135deg, #6a0000, var(--burgundy));
+        }
+
+        .btn-nominar-destacado i {
+            font-size: 1.2rem;
         }
 
         .loading-destacados {
@@ -831,6 +931,19 @@
             .ranking-grid {
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             }
+
+            .form-row-destacado {
+                grid-template-columns: 1fr;
+            }
+
+            .image-upload-container {
+                grid-column: span 1;
+            }
+
+            .image-preview-wrapper {
+                justify-content: center;
+                text-align: center;
+            }
         }
 
         @media (max-width: 768px) {
@@ -859,14 +972,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .form-row-destacado {
-                flex-direction: column;
-            }
-
-            .form-group-half {
-                width: 100%;
-            }
-
             .delegado-header {
                 min-height: 180px;
             }
@@ -892,6 +997,10 @@
             .ganador-info-large h3 {
                 font-size: 1.6rem;
             }
+
+            .nominar-section {
+                padding: 30px 20px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -913,10 +1022,6 @@
 
             .criterios-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .nominar-section {
-                padding: 30px 20px;
             }
         }
     </style>
@@ -1108,7 +1213,7 @@
                 <div class="form-row-destacado">
                     <div class="form-group-half">
                         <label for="nominadoNombre"><i class="fas fa-user"></i> Nombre del Nominado *</label>
-                        <input type="text" id="nominadoNombre" required placeholder="Nombre completo del miembro">
+                        <input type="text" id="nominadoNombre" required placeholder="Ej: Juan Pérez">
                     </div>
 
                     <div class="form-group-half">
@@ -1128,17 +1233,40 @@
                 <div class="form-row-destacado">
                     <div class="form-group-half">
                         <label for="nominadoCargo"><i class="fas fa-briefcase"></i> Cargo/Rol</label>
-                        <input type="text" id="nominadoCargo"
-                            placeholder="Ej: Delegado de Debate, Secretario de Marketing">
+                        <input type="text" id="nominadoCargo" placeholder="Ej: Delegado de Debate, Secretario">
                     </div>
 
                     <div class="form-group-half">
-                        <label for="nominadoTelefono"><i class="fas fa-phone"></i> Teléfono de Contacto</label>
-                        <input type="tel" id="nominadoTelefono" placeholder="Para seguimiento">
+                        <label for="nominadoTelefono"><i class="fas fa-phone"></i> Teléfono</label>
+                        <input type="tel" id="nominadoTelefono" placeholder="Ej: 76543210">
                     </div>
                 </div>
 
-                <div class="form-group-half">
+                <!-- Sección de Foto MEJORADA -->
+                <div class="image-upload-container">
+                    <div class="image-upload-label">
+                        <i class="fas fa-camera"></i> Foto del Nominado (opcional)
+                    </div>
+                    <div class="image-preview-wrapper">
+                        <div class="preview-circle" id="previewContainer">
+                            <i class="fas fa-user" id="previewIcon"></i>
+                            <img id="previewImage" src="#" alt="Vista previa" style="display: none;">
+                        </div>
+                        <div class="file-input-wrapper">
+                            <input type="file" id="nominadoImagen" accept="image/jpeg,image/png,image/webp">
+                            <small>
+                                <i class="fas fa-info-circle"></i> 
+                                Formatos: JPG, PNG, WEBP • Máximo 2MB
+                            </small>
+                            <small style="margin-top: 5px;">
+                                <i class="fas fa-star"></i> 
+                                La foto hará más reconocible al nominado
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-full">
                     <label for="nominadoRazon"><i class="fas fa-comment-alt"></i> Razones de la Nominación *</label>
                     <textarea id="nominadoRazon" required rows="5"
                         placeholder="Describe en detalle por qué merece ser reconocido. Incluye logros específicos, eventos destacados, proyectos, o cualidades especiales."></textarea>
@@ -1152,7 +1280,7 @@
 
                     <div class="form-group-half">
                         <label for="nominadorContacto"><i class="fas fa-envelope"></i> Tu Contacto *</label>
-                        <input type="email" id="nominadorContacto" required placeholder="Email para confirmación">
+                        <input type="email" id="nominadorContacto" required placeholder="tucorreo@ejemplo.com">
                     </div>
                 </div>
 
@@ -1218,7 +1346,7 @@
         // ============================================
         // CONFIGURACIÓN JSONBIN.IO - DELEGADOS DESTACADOS
         // ============================================
-       const JSONBIN_CONFIG = {
+        const JSONBIN_CONFIG = {
             BIN_ID: '69b1b6c1b7ec241ddc5e4077',
             API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2',
             BASE_URL: 'https://api.jsonbin.io/v3/b',
@@ -1227,11 +1355,10 @@
                     'Content-Type': 'application/json',
                     'X-Master-Key': this.API_KEY,
                     'X-Bin-Versioning': 'false',
-                    'X-Bin-Meta': 'false' // Importante para evitar metadatos
+                    'X-Bin-Meta': 'false'
                 };
             }
         };
-
 
         // Variables globales
         let periodoActual = '';
@@ -1242,7 +1369,6 @@
         // FUNCIONES UTILITARIAS
         // ============================================
 
-        // Función para obtener el mes actual en formato YYYY-MM
         function obtenerMesActual() {
             const fecha = new Date();
             const año = fecha.getFullYear();
@@ -1250,7 +1376,6 @@
             return `${año}-${mes}`;
         }
 
-        // Función para formatear el mes (ej: "Enero 2026")
         function formatearMes(mesString) {
             const [año, mes] = mesString.split('-');
             const meses = [
@@ -1265,7 +1390,6 @@
         // FUNCIONES PARA JSONBIN.IO
         // ============================================
 
-        // Función para crear estructura inicial
         function crearEstructuraInicial() {
             const fecha = new Date();
             const mes = obtenerMesActual();
@@ -1300,16 +1424,13 @@
             };
         }
 
-        // Obtener datos - AUTO-CREA si está vacío y maneja cambio de mes
         async function obtenerDatosDelegados() {
             try {
                 console.log('Cargando datos...');
 
                 const response = await fetch(
                     `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
-                    {
-                        headers: JSONBIN_CONFIG.getHeaders()
-                    }
+                    { headers: JSONBIN_CONFIG.getHeaders() }
                 );
 
                 if (!response.ok) {
@@ -1319,7 +1440,6 @@
 
                 const data = await response.json();
 
-                // Si el BIN está vacío o no tiene la estructura esperada
                 if (!data.record || Object.keys(data.record).length === 0 || !data.record.periodos) {
                     console.log('BIN vacío o sin estructura, creando...');
                     const estructuraInicial = crearEstructuraInicial();
@@ -1327,41 +1447,28 @@
                     return estructuraInicial;
                 }
 
-                // VERIFICAR SI NECESITAMOS CAMBIAR DE MES
                 const mesActual = obtenerMesActual();
                 const datos = data.record;
 
-                // Si el mes en la configuración es diferente al mes actual
                 if (datos.configuracion && datos.configuracion.mes_actual !== mesActual) {
                     console.log('Cambiando al nuevo mes:', mesActual);
 
-                    // Crear estructura para el nuevo mes si no existe
                     if (!datos.periodos[mesActual]) {
                         datos.periodos[mesActual] = {
                             ganador_mes: null,
                             ranking: {
-                                todos: [],
-                                directiva: [],
-                                delegados: [],
-                                oradores: [],
-                                voluntarios: [],
-                                nuevos: []
+                                todos: [], directiva: [], delegados: [], oradores: [], voluntarios: [], nuevos: []
                             },
                             estadisticas: {
-                                total_reconocidos: 0,
-                                promedio_puntuacion: 0,
-                                crecimiento_mensual: "0%",
-                                nominaciones_recibidas: 0,
-                                miembros_evaluados: 0
+                                total_reconocidos: 0, promedio_puntuacion: 0, crecimiento_mensual: "0%",
+                                nominaciones_recibidas: 0, miembros_evaluados: 0
                             }
                         };
                     }
 
-                    // Actualizar el mes actual en la configuración
                     datos.configuracion.mes_actual = mesActual;
                     datos.configuracion.ultima_actualizacion = new Date().toISOString().split('T')[0];
 
-                    // Guardar los cambios
                     await guardarDatosEnJSONBin(datos);
                     console.log('✅ Mes actualizado a:', mesActual);
                 }
@@ -1374,7 +1481,6 @@
             }
         }
 
-        // Guardar datos en JSONBin
         async function guardarDatosEnJSONBin(datos) {
             try {
                 const response = await fetch(
@@ -1386,9 +1492,7 @@
                     }
                 );
 
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Error ${response.status}`);
 
                 console.log('✅ Datos guardados en JSONBin');
                 return true;
@@ -1400,101 +1504,82 @@
             }
         }
 
-        // Guardar nominación
-        async function guardarNominacionJSONBin(nominacion) {
-            try {
-                let datos = await obtenerDatosDelegados();
+        // ============================================
+        // FUNCIONES PARA MANEJO DE IMÁGENES
+        // ============================================
+        function previewImagen(input) {
+            const preview = document.getElementById('previewImage');
+            const previewIcon = document.getElementById('previewIcon');
+            const previewContainer = document.getElementById('previewContainer');
 
-                const mesActual = obtenerMesActual();
-                if (datos.configuracion.mes_actual !== mesActual) {
-                    datos.configuracion.mes_actual = mesActual;
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                if (file.size > 2 * 1024 * 1024) {
+                    mostrarNotificacion('La imagen no debe superar los 2MB', 'error');
+                    input.value = '';
+                    preview.style.display = 'none';
+                    previewIcon.style.display = 'block';
+                    return;
                 }
 
-                const nuevaNominacion = {
-                    id: Date.now(),
-                    ...nominacion,
-                    fecha: new Date().toISOString().split('T')[0],
-                    estado: 'revision'
-                };
-
-                if (!datos.nominaciones) {
-                    datos.nominaciones = [];
-                }
-                datos.nominaciones.push(nuevaNominacion);
-
-                // Asegurarse de que existe el período actual
-                if (!datos.periodos[mesActual]) {
-                    datos.periodos[mesActual] = {
-                        ganador_mes: null,
-                        ranking: {
-                            todos: [],
-                            directiva: [],
-                            delegados: [],
-                            oradores: [],
-                            voluntarios: [],
-                            nuevos: []
-                        },
-                        estadisticas: {
-                            total_reconocidos: 0,
-                            promedio_puntuacion: 0,
-                            crecimiento_mensual: "0%",
-                            nominaciones_recibidas: 0,
-                            miembros_evaluados: 0
-                        }
-                    };
+                if (!file.type.match('image.*')) {
+                    mostrarNotificacion('Solo se permiten imágenes', 'error');
+                    input.value = '';
+                    preview.style.display = 'none';
+                    previewIcon.style.display = 'block';
+                    return;
                 }
 
-                datos.periodos[mesActual].estadisticas.nominaciones_recibidas += 1;
-                datos.configuracion.ultima_actualizacion = nuevaNominacion.fecha;
-
-                await guardarDatosEnJSONBin(datos);
-
-                return { success: true, id: nuevaNominacion.id };
-
-            } catch (error) {
-                console.error('Error guardando nominación:', error);
-                return { success: false, error: error.message };
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    previewIcon.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = '#';
+                preview.style.display = 'none';
+                previewIcon.style.display = 'block';
             }
+        }
+
+        function convertirImagenABase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
 
         // ============================================
         // FUNCIONES DE LA INTERFAZ
         // ============================================
 
-        // Función para mostrar notificación
         function mostrarNotificacion(mensaje, tipo = 'info') {
-            const notificacion = document.createElement('div');
+            const notificacion = document.getElementById('notificacionDestacados');
+            
             const colores = {
-                success: '#4CAF50',
-                error: '#F44336',
-                info: '#2196F3'
+                success: 'linear-gradient(135deg, #4CAF50, #388e3c)',
+                error: 'linear-gradient(135deg, #F44336, #d32f2f)',
+                info: 'linear-gradient(135deg, #006400, #008000)'
             };
 
-            notificacion.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: ${colores[tipo] || '#2196F3'};
-            color: white;
-            padding: 15px 25px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            z-index: 9999;
-            animation: slideIn 0.3s ease;
-        `;
-
+            notificacion.style.background = colores[tipo] || colores.info;
             notificacion.textContent = mensaje;
-            document.body.appendChild(notificacion);
+            notificacion.style.display = 'block';
 
             setTimeout(() => {
-                notificacion.style.animation = 'fadeOut 0.3s ease';
+                notificacion.style.animation = 'fadeOutRight 0.3s ease';
                 setTimeout(() => {
-                    document.body.removeChild(notificacion);
+                    notificacion.style.display = 'none';
+                    notificacion.style.animation = 'slideInRight 0.3s ease';
                 }, 300);
             }, 4000);
         }
 
-        // Cargar y mostrar datos
         async function cargarDatos() {
             try {
                 datosDelegados = await obtenerDatosDelegados();
@@ -1521,7 +1606,6 @@
             }
         }
 
-        // Actualizar estadísticas
         function actualizarEstadisticas() {
             const statsSection = document.getElementById('statsSection');
             if (!datosDelegados || !datosDelegados.configuracion) return;
@@ -1534,30 +1618,77 @@
             const estadisticas = periodo.estadisticas;
 
             statsSection.innerHTML = `
-            <div class="stat-card-destacado">
-                <div class="stat-icon-destacado"><i class="fas fa-award"></i></div>
-                <div class="stat-number-destacado">${estadisticas.total_reconocidos}</div>
-                <div class="stat-label-destacado">Delegados Reconocidos</div>
-            </div>
-            
-            <div class="stat-card-destacado">
-                <div class="stat-icon-destacado"><i class="fas fa-chart-line"></i></div>
-                <div class="stat-number-destacado">${estadisticas.promedio_puntuacion}/100</div>
-                <div class="stat-label-destacado">Puntuación Promedio</div>
-            </div>
-            
-            <div class="stat-card-destacado">
-                <div class="stat-icon-destacado"><i class="fas fa-rocket"></i></div>
-                <div class="stat-number-destacado">${estadisticas.crecimiento_mensual}</div>
-                <div class="stat-label-destacado">Crecimiento</div>
-            </div>
-            
-            <div class="stat-card-destacado">
-                <div class="stat-icon-destacado"><i class="fas fa-users"></i></div>
-                <div class="stat-number-destacado">${estadisticas.nominaciones_recibidas}</div>
-                <div class="stat-label-destacado">Nominaciones Recibidas</div>
-            </div>
-        `;
+                <div class="stat-card-destacado">
+                    <div class="stat-icon-destacado"><i class="fas fa-award"></i></div>
+                    <div class="stat-number-destacado">${estadisticas.total_reconocidos}</div>
+                    <div class="stat-label-destacado">Delegados Reconocidos</div>
+                </div>
+                
+                <div class="stat-card-destacado">
+                    <div class="stat-icon-destacado"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-number-destacado">${estadisticas.promedio_puntuacion}/100</div>
+                    <div class="stat-label-destacado">Puntuación Promedio</div>
+                </div>
+                
+                <div class="stat-card-destacado">
+                    <div class="stat-icon-destacado"><i class="fas fa-rocket"></i></div>
+                    <div class="stat-number-destacado">${estadisticas.crecimiento_mensual}</div>
+                    <div class="stat-label-destacado">Crecimiento</div>
+                </div>
+                
+                <div class="stat-card-destacado">
+                    <div class="stat-icon-destacado"><i class="fas fa-users"></i></div>
+                    <div class="stat-number-destacado">${estadisticas.nominaciones_recibidas}</div>
+                    <div class="stat-label-destacado">Nominaciones Recibidas</div>
+                </div>
+            `;
+        }
+
+        async function guardarNominacionJSONBin(nominacion) {
+            try {
+                let datos = await obtenerDatosDelegados();
+                const mesActual = obtenerMesActual();
+
+                let imagenBase64 = null;
+                const imagenInput = document.getElementById('nominadoImagen');
+                if (imagenInput && imagenInput.files && imagenInput.files[0]) {
+                    imagenBase64 = await convertirImagenABase64(imagenInput.files[0]);
+                }
+
+                const nuevaNominacion = {
+                    id: Date.now(),
+                    ...nominacion,
+                    imagen: imagenBase64,
+                    fecha: new Date().toISOString().split('T')[0],
+                    estado: 'revision'
+                };
+
+                if (!datos.nominaciones) datos.nominaciones = [];
+                datos.nominaciones.push(nuevaNominacion);
+
+                if (!datos.periodos[mesActual]) {
+                    datos.periodos[mesActual] = {
+                        ganador_mes: null,
+                        ranking: {
+                            todos: [], directiva: [], delegados: [], oradores: [], voluntarios: [], nuevos: []
+                        },
+                        estadisticas: {
+                            total_reconocidos: 0, promedio_puntuacion: 0, crecimiento_mensual: "0%",
+                            nominaciones_recibidas: 0, miembros_evaluados: 0
+                        }
+                    };
+                }
+
+                datos.periodos[mesActual].estadisticas.nominaciones_recibidas += 1;
+                datos.configuracion.ultima_actualizacion = nuevaNominacion.fecha;
+
+                await guardarDatosEnJSONBin(datos);
+                return { success: true, id: nuevaNominacion.id };
+
+            } catch (error) {
+                console.error('Error guardando nominación:', error);
+                return { success: false, error: error.message };
+            }
         }
 
         // ============================================
@@ -1566,12 +1697,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             console.log('Inicializando sistema...');
 
-            // Inicializar menú móvil
+            // Menú móvil
             const menuToggle = document.querySelector('.menu-toggle');
             const navLinks = document.querySelector('.nav-links');
 
             if (menuToggle && navLinks) {
-                // Crear overlay para móviles
                 const overlay = document.createElement('div');
                 overlay.className = 'overlay';
                 document.body.appendChild(overlay);
@@ -1579,11 +1709,9 @@
                 menuToggle.addEventListener('click', function () {
                     navLinks.classList.toggle('active');
                     overlay.style.display = navLinks.classList.contains('active') ? 'block' : 'none';
-                    // Cambiar ícono
                     menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
                 });
 
-                // Cerrar menú al hacer clic en overlay
                 overlay.addEventListener('click', function () {
                     navLinks.classList.remove('active');
                     overlay.style.display = 'none';
@@ -1601,6 +1729,11 @@
 
             // Cargar datos
             cargarDatos();
+
+            // Previsualización de imagen
+            document.getElementById('nominadoImagen')?.addEventListener('change', function () {
+                previewImagen(this);
+            });
 
             // Enviar nominación
             document.getElementById('formNominarDestacado').addEventListener('submit', async function (e) {
@@ -1639,6 +1772,14 @@
 
                     if (resultado.success) {
                         document.getElementById('formNominarDestacado').reset();
+                        
+                        // Resetear previsualización de imagen
+                        const preview = document.getElementById('previewImage');
+                        const previewIcon = document.getElementById('previewIcon');
+                        preview.src = '#';
+                        preview.style.display = 'none';
+                        previewIcon.style.display = 'block';
+                        
                         mostrarNotificacion('✅ Nominación enviada. La directiva la revisará pronto.', 'success');
                         setTimeout(() => {
                             cargarDatos();

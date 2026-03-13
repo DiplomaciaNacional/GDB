@@ -2347,6 +2347,7 @@ footer {
     0% {
         transform: rotate(0deg);
     }
+
     100% {
         transform: rotate(360deg);
     }
@@ -2356,9 +2357,11 @@ footer {
     0% {
         transform: translateX(-100%);
     }
+
     50% {
         transform: translateX(0%);
     }
+
     100% {
         transform: translateX(100%);
     }
@@ -2369,6 +2372,7 @@ footer {
         opacity: 0;
         transform: translateY(30px) scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -2385,6 +2389,7 @@ footer {
 
 /* Para todos los móviles - ESTILOS NUEVOS SIMPLES */
 @media screen and (max-width: 768px) {
+
     /* Chat más pequeño y centrado */
     #contenedor-chat {
         width: 95% !important;
@@ -2395,9 +2400,9 @@ footer {
         transform: translateX(50%) !important;
         bottom: 100px !important;
         border-radius: 15px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
     }
-    
+
     /* Botón normal pero un poco más pequeño */
     #boton-chat-gdb {
         padding: 12px 20px !important;
@@ -2406,11 +2411,11 @@ footer {
         right: 20px !important;
         gap: 8px !important;
     }
-    
+
     #boton-chat-gdb span:first-child {
         font-size: 1.2em !important;
     }
-    
+
     /* Mantener el texto visible */
     #boton-chat-gdb span:last-child {
         display: inline !important;
@@ -2425,7 +2430,7 @@ footer {
         max-height: 75vh !important;
         bottom: 80px !important;
     }
-    
+
     #boton-chat-gdb {
         padding: 10px 15px !important;
         font-size: 13px !important;
@@ -2447,10 +2452,73 @@ footer {
 @media (hover: none) and (pointer: coarse) {
     #boton-chat-gdb {
         touch-action: manipulation !important;
-        min-height: 44px !important; /* Tamaño mínimo para dedos */
+        min-height: 44px !important;
+        /* Tamaño mínimo para dedos */
     }
-    
+
     #boton-chat-gdb:active {
         transform: scale(0.98) !important;
     }
+}
+
+/* Estilos para la previsualización de imágenes */
+.image-preview-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.preview-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    border: 3px dashed var(--gold);
+    overflow: hidden;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-avatar i {
+    font-size: 2.5rem;
+    color: #ccc;
+}
+
+.preview-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Animación para carga de imágenes */
+@keyframes imageLoad {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.delegado-avatar img {
+    animation: imageLoad 0.3s ease;
+}
+
+/* Imagen por defecto */
+.default-avatar {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
 }
