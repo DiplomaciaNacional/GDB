@@ -23,6 +23,7 @@
 
         .admin-header {
             background-color: #006400;
+            /* dark-green */
             color: white;
             padding: 15px 5%;
             display: flex;
@@ -143,19 +144,6 @@
             border-color: var(--estado-denegado);
         }
 
-        .search-box {
-            flex: 1;
-            max-width: 400px;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
         .nominaciones-container {
             background-color: white;
             border-radius: 10px;
@@ -182,7 +170,7 @@
         .nominaciones-table td {
             padding: 15px;
             border-bottom: 1px solid #eee;
-            vertical-align: middle;
+            vertical-align: top;
         }
 
         .nominaciones-table tbody tr:hover {
@@ -346,35 +334,6 @@
             line-height: 1.6;
         }
 
-        /* Estilos para la imagen en el modal */
-        .image-preview-container {
-            display: flex;
-            justify-content: center;
-            margin: 15px 0;
-        }
-
-        .detalle-imagen {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid var(--gold);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .detalle-imagen-placeholder {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #006400, #008000);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 3rem;
-            border: 4px solid var(--gold);
-        }
-
         .modal-actions {
             display: flex;
             gap: 10px;
@@ -395,6 +354,7 @@
         }
 
         .btn-confirm {
+            background-color: #006400;
             color: white;
             border: none;
             padding: 12px 25px;
@@ -442,6 +402,7 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -452,9 +413,23 @@
             from {
                 opacity: 1;
             }
+
             to {
                 opacity: 0;
             }
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
         }
 
         @media (max-width: 768px) {
@@ -579,12 +554,11 @@
     <div class="notificacion" id="notificacion"></div>
 
     <script>
-        // ============================================
         // CONFIGURACIÓN JSONBIN.IO - ACTUALIZADA
         // ============================================
         const JSONBIN_CONFIG = {
-            BIN_ID: '69b1b6c1b7ec241ddc5e4077',
-            API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2',
+            BIN_ID: '69b1b6c1b7ec241ddc5e4077', // MISMO BIN que sugerencias y delegados
+            API_KEY: '$2a$10$J.58lzqMfmmvOgWbi5L6D.ZarrASlgC4Yt/4WAVBOcjGsswghPyc2', // MISMA API KEY
             BASE_URL: 'https://api.jsonbin.io/v3/b',
             getHeaders: function () {
                 return {
@@ -600,22 +574,16 @@
         let nominaciones = [];
         let filtroEstado = 'revision';
         let nominacionSeleccionada = null;
-        let accionPendiente = null;
-
-        // ============================================
-        // FUNCIONES UTILITARIAS
-        // ============================================
-        function obtenerMesActual() {
-            const fecha = new Date();
-            return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
-        }
+        let accionPendiente = null; // 'aceptar' o 'rechazar'
 
         // ============================================
         // FUNCIONES PARA JSONBIN.IO
         // ============================================
+        // Función para crear estructura inicial (SI EL BIN ESTÁ VACÍO)
+        // Función para crear estructura inicial (SI EL BIN ESTÁ VACÍO)
         function crearEstructuraInicialAdmin() {
             const fecha = new Date();
-            const mes = obtenerMesActual();
+            const mes = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
 
             return {
                 periodos: {
@@ -638,9 +606,9 @@
                         }
                     }
                 },
-                nominaciones: [],
-                sugerencias: [],
-                delegados_destacados: {},
+                nominaciones: [], // Mantener nominaciones
+                sugerencias: [],  // ¡AÑADIR! Para mantener compatibilidad con sugerencias.html
+                delegados_destacados: {}, // ¡AÑADIR!
                 configuracion: {
                     mes_actual: mes,
                     ultima_actualizacion: fecha.toISOString().split('T')[0],
@@ -649,26 +617,31 @@
             };
         }
 
+        // Obtener datos - AUTO-CREA si está vacío
+        // Obtener datos - AUTO-CREA si está vacío
         async function obtenerDatosCompletos() {
             try {
                 console.log('Cargando datos para administración...');
 
                 const response = await fetch(
                     `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
-                    { headers: JSONBIN_CONFIG.getHeaders() }
+                    {
+                        headers: JSONBIN_CONFIG.getHeaders()
+                    }
                 );
 
                 if (!response.ok) {
-                    console.log('BIN no encontrado, creando estructura...');
+                    console.log('BIN no encontrado o error, creando estructura...');
                     return crearEstructuraInicialAdmin();
                 }
 
                 const data = await response.json();
                 const datos = data.record || data;
 
+                // Verificar que tenga la estructura completa
                 if (!datos.periodos) datos.periodos = {};
                 if (!datos.nominaciones) datos.nominaciones = [];
-                if (!datos.sugerencias) datos.sugerencias = [];
+                if (!datos.sugerencias) datos.sugerencias = []; // ¡Importante!
                 if (!datos.delegados_destacados) datos.delegados_destacados = {};
                 if (!datos.configuracion) {
                     datos.configuracion = {
@@ -679,24 +652,58 @@
                 }
 
                 return datos;
+
             } catch (error) {
                 console.error('Error obteniendo datos:', error);
                 return crearEstructuraInicialAdmin();
             }
         }
-
+        // Obtener todas las nominaciones
         async function obtenerNominaciones() {
             try {
-                const datos = await obtenerDatosCompletos();
-                return datos.nominaciones || [];
+                console.log('Obteniendo nominaciones...');
+
+                const response = await fetch(
+                    `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`,
+                    {
+                        headers: JSONBIN_CONFIG.getHeaders()
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Datos obtenidos:', data);
+
+                // Si no hay datos o el BIN está vacío
+                if (!data.record || !data.record.nominaciones) {
+                    return [];
+                }
+
+                return data.record.nominaciones;
+
             } catch (error) {
                 console.error('Error obteniendo nominaciones:', error);
+                // Fallback a localStorage
+                const datosGuardados = localStorage.getItem('delegadosDestacadosGDB');
+                if (datosGuardados) {
+                    const datos = JSON.parse(datosGuardados);
+                    return datos.nominaciones || [];
+                }
                 return [];
             }
         }
 
+
+
+
+        // Actualizar datos en JSONBin
         async function actualizarDatosEnJSONBin(datos) {
             try {
+                console.log('Actualizando datos en JSONBin...');
+
                 const response = await fetch(
                     `${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`,
                     {
@@ -706,125 +713,181 @@
                     }
                 );
 
-                if (!response.ok) throw new Error(`Error ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${await response.text()}`);
+                }
 
+                // También actualizar localStorage
                 localStorage.setItem('delegadosDestacadosGDB', JSON.stringify(datos));
-                console.log('✅ Datos actualizados');
+
+                console.log('✅ Datos actualizados correctamente');
                 return true;
+
             } catch (error) {
-                console.error('Error actualizando:', error);
+                console.error('Error actualizando JSONBin:', error);
                 return false;
             }
         }
 
-        // ============================================
-        // FUNCIÓN MODIFICADA: aceptarNominacion (CON IMAGEN)
-        // ============================================
+        // Aceptar una nominación
         async function aceptarNominacion(nominacionId) {
             try {
+                // Obtener datos actuales
                 let datos = await obtenerDatosCompletos();
-                if (!datos) datos = crearEstructuraInicialAdmin();
 
+                // Si no hay datos, crear estructura inicial
+                if (!datos) {
+                    datos = crearEstructuraInicialAdmin();
+                }
+                // Encontrar la nominación
                 const nominacionIndex = datos.nominaciones.findIndex(n => n.id === nominacionId);
                 if (nominacionIndex === -1) {
                     mostrarNotificacion('Nominación no encontrada', 'error');
                     return false;
                 }
 
+                // Actualizar estado de la nominación
                 const nominacion = datos.nominaciones[nominacionIndex];
                 nominacion.estado = 'aprobado';
-                nominacion.revisado_por = 'Administrador';
+                nominacion.revisado_por = 'Administrador'; // Podrías cambiar esto por el usuario actual
                 nominacion.fecha_revision = new Date().toISOString().split('T')[0];
 
-                const mesActual = obtenerMesActual();
+                // Obtener mes actual
+                const fechaActual = new Date();
+                const mesActual = `${fechaActual.getFullYear()}-${String(fechaActual.getMonth() + 1).padStart(2, '0')}`;
 
-                // Crear delegado destacado CON IMAGEN
+                // Crear estructura para el delegado destacado
                 const nuevoDelegado = {
                     id: Date.now(),
                     nombre: nominacion.nominado,
                     cargo: nominacion.cargo || 'Miembro GDB',
-                    imagen: nominacion.imagen || null, // NUEVO: mantener imagen de la nominación
-                    logros: nominacion.razon.split('. ').filter(l => l.trim().length > 0),
-                    puntuacion: 85,
+                    imagen: 'img/placeholder.jpg', // Imagen por defecto
+                    logros: nominacion.razon.split('. ').filter(logro => logro.trim().length > 0),
+                    puntuacion: 85, // Puntuación base, se puede ajustar
                     categoria: nominacion.categoria,
                     fecha_aprobacion: nominacion.fecha_revision
                 };
+
+                // Añadir al ranking del mes actual
+                if (!datos.periodos) {
+                    datos.periodos = {};
+                }
 
                 if (!datos.periodos[mesActual]) {
                     datos.periodos[mesActual] = {
                         ganador_mes: null,
                         ranking: {
-                            todos: [], directiva: [], delegados: [], oradores: [], voluntarios: [], nuevos: []
+                            todos: [],
+                            directiva: [],
+                            delegados: [],
+                            oradores: [],
+                            voluntarios: [],
+                            nuevos: []
                         },
                         estadisticas: {
-                            total_reconocidos: 0, promedio_puntuacion: 0, crecimiento_mensual: "0%",
-                            nominaciones_recibidas: 0, miembros_evaluados: 0
+                            total_reconocidos: 0,
+                            promedio_puntuacion: 0,
+                            crecimiento_mensual: "0%",
+                            nominaciones_recibidas: 0,
+                            miembros_evaluados: 0
                         }
                     };
                 }
 
+                // Añadir a la categoría correspondiente
                 const ranking = datos.periodos[mesActual].ranking;
                 if (ranking[nuevoDelegado.categoria]) {
                     ranking[nuevoDelegado.categoria].push(nuevoDelegado);
                 }
+
+                // Añadir a "todos"
                 ranking.todos.push(nuevoDelegado);
 
+                // Actualizar estadísticas
                 datos.periodos[mesActual].estadisticas.total_reconocidos = ranking.todos.length;
                 datos.periodos[mesActual].estadisticas.miembros_evaluados += 1;
 
+                // Recalcular promedio de puntuación
                 const totalPuntuacion = ranking.todos.reduce((sum, d) => sum + d.puntuacion, 0);
-                datos.periodos[mesActual].estadisticas.promedio_puntuacion = 
-                    ranking.todos.length > 0 ? Math.round(totalPuntuacion / ranking.todos.length) : 0;
+                datos.periodos[mesActual].estadisticas.promedio_puntuacion = Math.round(totalPuntuacion / ranking.todos.length);
 
+                // Actualizar configuración
+                datos.configuracion = datos.configuracion || {
+                    mes_actual: mesActual,
+                    ultima_actualizacion: new Date().toISOString().split('T')[0],
+                    version: "1.0"
+                };
                 datos.configuracion.ultima_actualizacion = new Date().toISOString().split('T')[0];
 
+                // Guardar cambios
                 const exito = await actualizarDatosEnJSONBin(datos);
+
                 if (exito) {
-                    mostrarNotificacion(`✅ ${nominacion.nominado} ahora es delegado destacado`, 'success');
+                    mostrarNotificacion(`✅ Nominación aprobada. ${nominacion.nominado} ahora es delegado destacado.`, 'success');
                     return true;
+                } else {
+                    mostrarNotificacion('Error al guardar cambios', 'error');
+                    return false;
                 }
-                return false;
 
             } catch (error) {
                 console.error('Error aceptando nominación:', error);
-                mostrarNotificacion('Error al procesar', 'error');
+                mostrarNotificacion('Error al procesar la solicitud', 'error');
                 return false;
             }
         }
 
         async function rechazarNominacion(nominacionId) {
             try {
+                // Obtener datos actuales
                 let datos = await obtenerDatosCompletos();
-                if (!datos) datos = crearEstructuraInicialAdmin();
 
+                // Si no hay datos, crear estructura inicial
+                if (!datos) {
+                    datos = crearEstructuraInicialAdmin();
+                }
+
+                // Encontrar la nominación
                 const nominacionIndex = datos.nominaciones.findIndex(n => n.id === nominacionId);
                 if (nominacionIndex === -1) {
                     mostrarNotificacion('Nominación no encontrada', 'error');
                     return false;
                 }
 
+                // Actualizar estado de la nominación
                 datos.nominaciones[nominacionIndex].estado = 'denegado';
                 datos.nominaciones[nominacionIndex].revisado_por = 'Administrador';
                 datos.nominaciones[nominacionIndex].fecha_revision = new Date().toISOString().split('T')[0];
-                datos.configuracion.ultima_actualizacion = new Date().toISOString().split('T')[0];
 
+                // Guardar cambios
                 const exito = await actualizarDatosEnJSONBin(datos);
+
                 if (exito) {
                     mostrarNotificacion('❌ Nominación rechazada', 'success');
                     return true;
+                } else {
+                    mostrarNotificacion('Error al guardar cambios', 'error');
+                    return false;
                 }
-                return false;
 
             } catch (error) {
                 console.error('Error rechazando nominación:', error);
-                mostrarNotificacion('Error al procesar', 'error');
+                mostrarNotificacion('Error al procesar la solicitud', 'error');
                 return false;
             }
         }
 
+
+        // Función auxiliar para obtener mes actual (añadir después de JSONBIN_CONFIG)
+        function obtenerMesActual() {
+            const fecha = new Date();
+            return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+        }
         // ============================================
         // FUNCIONES DE LA INTERFAZ
         // ============================================
+
+        // Función para mostrar notificación
         function mostrarNotificacion(mensaje, tipo = 'info') {
             const notificacion = document.getElementById('notificacion');
             notificacion.textContent = mensaje;
@@ -840,16 +903,20 @@
             }, 4000);
         }
 
+        // Cargar y mostrar nominaciones
         async function cargarNominaciones() {
             try {
                 nominaciones = await obtenerNominaciones();
                 actualizarEstadisticas();
                 mostrarNominaciones();
+
             } catch (error) {
                 console.error('Error cargando nominaciones:', error);
+                mostrarNotificacion('Error al cargar las nominaciones', 'error');
             }
         }
 
+        // Actualizar estadísticas
         function actualizarEstadisticas() {
             const total = nominaciones.length;
             const enRevision = nominaciones.filter(n => n.estado === 'revision').length;
@@ -864,40 +931,48 @@
                 <div class="stat-card">
                     <div class="stat-label">En Revisión</div>
                     <div class="stat-number revision">${enRevision}</div>
+                    <div class="stat-label">Pendientes de revisión</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Aprobadas</div>
                     <div class="stat-number aprobado">${aprobadas}</div>
+                    <div class="stat-label">Ya son delegados destacados</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Denegadas</div>
                     <div class="stat-number denegado">${denegadas}</div>
+                    <div class="stat-label">No aprobadas</div>
                 </div>
             `;
         }
 
+        // Mostrar nominaciones en la tabla
         function mostrarNominaciones() {
             const tbody = document.getElementById('nominacionesTableBody');
             const noDataMessage = document.getElementById('noDataMessage');
 
-            let filtradas = [...nominaciones];
+            let nominacionesFiltradas = [...nominaciones];
 
+            // Aplicar filtro de estado
             if (filtroEstado !== 'todas') {
-                filtradas = filtradas.filter(n => n.estado === filtroEstado);
+                nominacionesFiltradas = nominacionesFiltradas.filter(n => n.estado === filtroEstado);
             }
 
+            // Aplicar búsqueda
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             if (searchTerm) {
-                filtradas = filtradas.filter(n =>
-                    n.nominado?.toLowerCase().includes(searchTerm) ||
-                    n.categoria?.toLowerCase().includes(searchTerm) ||
-                    n.nominador?.toLowerCase().includes(searchTerm)
+                nominacionesFiltradas = nominacionesFiltradas.filter(n =>
+                    n.nominado.toLowerCase().includes(searchTerm) ||
+                    n.categoria.toLowerCase().includes(searchTerm) ||
+                    n.nominador.toLowerCase().includes(searchTerm) ||
+                    (n.cargo && n.cargo.toLowerCase().includes(searchTerm))
                 );
             }
 
-            filtradas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            // Ordenar por fecha (más recientes primero)
+            nominacionesFiltradas.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
-            if (filtradas.length === 0) {
+            if (nominacionesFiltradas.length === 0) {
                 tbody.innerHTML = '';
                 noDataMessage.style.display = 'block';
                 return;
@@ -905,123 +980,141 @@
 
             noDataMessage.style.display = 'none';
 
-            tbody.innerHTML = filtradas.map(n => {
-                const estadoClass = {
-                    'revision': 'estado-revision',
-                    'aprobado': 'estado-aprobado',
-                    'denegado': 'estado-denegado'
-                }[n.estado] || '';
+            tbody.innerHTML = nominacionesFiltradas.map(nominacion => {
+                let estadoText = '';
+                let estadoClass = '';
 
-                const estadoText = {
-                    'revision': 'En Revisión',
-                    'aprobado': 'Aprobado',
-                    'denegado': 'Denegado'
-                }[n.estado] || n.estado;
+                switch (nominacion.estado) {
+                    case 'revision':
+                        estadoText = 'En Revisión';
+                        estadoClass = 'estado-revision';
+                        break;
+                    case 'aprobado':
+                        estadoText = 'Aprobado';
+                        estadoClass = 'estado-aprobado';
+                        break;
+                    case 'denegado':
+                        estadoText = 'Denegado';
+                        estadoClass = 'estado-denegado';
+                        break;
+                }
 
-                const categoriaText = {
-                    'directiva': 'Directiva',
-                    'delegados': 'Delegados',
-                    'oradores': 'Oradores',
-                    'voluntarios': 'Voluntarios',
-                    'innovador': 'Innovador',
-                    'lider': 'Líder'
-                }[n.categoria] || n.categoria;
+                let categoriaText = '';
+                switch (nominacion.categoria) {
+                    case 'directiva': categoriaText = 'Directiva'; break;
+                    case 'delegados': categoriaText = 'Delegados'; break;
+                    case 'oradores': categoriaText = 'Oradores'; break;
+                    case 'voluntarios': categoriaText = 'Voluntarios'; break;
+                    case 'innovador': categoriaText = 'Innovador'; break;
+                    case 'lider': categoriaText = 'Líder'; break;
+                    default: categoriaText = nominacion.categoria;
+                }
 
-                const acciones = n.estado === 'revision' ? `
-                    <div class="action-buttons">
-                        <button class="btn-ver" onclick="verDetalles(${n.id})"><i class="fas fa-eye"></i></button>
-                        <button class="btn-aceptar" onclick="mostrarConfirmacionAceptar(${n.id})"><i class="fas fa-check"></i></button>
-                        <button class="btn-rechazar" onclick="mostrarConfirmacionRechazar(${n.id})"><i class="fas fa-times"></i></button>
-                    </div>
-                ` : `
-                    <div class="action-buttons">
-                        <button class="btn-ver" onclick="verDetalles(${n.id})"><i class="fas fa-eye"></i></button>
-                    </div>
-                `;
+                let accionesHTML = '';
+                if (nominacion.estado === 'revision') {
+                    accionesHTML = `
+                        <div class="action-buttons">
+                            <button class="btn-ver" onclick="verDetalles(${nominacion.id})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                            <button class="btn-aceptar" onclick="mostrarConfirmacionAceptar(${nominacion.id})">
+                                <i class="fas fa-check"></i> Aceptar
+                            </button>
+                            <button class="btn-rechazar" onclick="mostrarConfirmacionRechazar(${nominacion.id})">
+                                <i class="fas fa-times"></i> Rechazar
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    accionesHTML = `
+                        <div class="action-buttons">
+                            <button class="btn-ver" onclick="verDetalles(${nominacion.id})">
+                                <i class="fas fa-eye"></i> Ver
+                            </button>
+                        </div>
+                    `;
+                }
 
                 return `
                     <tr>
-                        <td>#${n.id.toString().slice(-6)}</td>
-                        <td><strong>${n.nominado}</strong>${n.cargo ? `<br><small>${n.cargo}</small>` : ''}</td>
+                        <td>#${nominacion.id.toString().substring(0, 6)}</td>
+                        <td>
+                            <strong>${nominacion.nominado}</strong>
+                            ${nominacion.cargo ? `<br><small>${nominacion.cargo}</small>` : ''}
+                        </td>
                         <td>${categoriaText}</td>
-                        <td>${n.nominador}</td>
-                        <td>${n.fecha}</td>
-                        <td><span class="estado-badge ${estadoClass}">${estadoText}</span></td>
-                        <td>${acciones}</td>
+                        <td>${nominacion.nominador}</td>
+                        <td>${nominacion.fecha}</td>
+                        <td>
+                            <span class="estado-badge ${estadoClass}">${estadoText}</span>
+                        </td>
+                        <td>${accionesHTML}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // ============================================
-        // FUNCIÓN MODIFICADA: verDetalles (CON IMAGEN)
-        // ============================================
+        // Ver detalles de una nominación
         function verDetalles(nominacionId) {
             nominacionSeleccionada = nominaciones.find(n => n.id === nominacionId);
             if (!nominacionSeleccionada) return;
 
-            const categoriaText = {
-                'directiva': 'Directiva Destacada',
-                'delegados': 'Delegado Ejemplar',
-                'oradores': 'Mejor Orador',
-                'voluntarios': 'Voluntario del Mes',
-                'innovador': 'Innovador del Año',
-                'lider': 'Líder Emergente'
-            }[nominacionSeleccionada.categoria] || nominacionSeleccionada.categoria;
+            let categoriaText = '';
+            switch (nominacionSeleccionada.categoria) {
+                case 'directiva': categoriaText = 'Directiva Destacada'; break;
+                case 'delegados': categoriaText = 'Delegado Ejemplar'; break;
+                case 'oradores': categoriaText = 'Mejor Orador'; break;
+                case 'voluntarios': categoriaText = 'Voluntario del Mes'; break;
+                case 'innovador': categoriaText = 'Innovador del Año'; break;
+                case 'lider': categoriaText = 'Líder Emergente'; break;
+                default: categoriaText = nominacionSeleccionada.categoria;
+            }
 
-            const estadoClass = {
-                'revision': 'estado-revision',
-                'aprobado': 'estado-aprobado',
-                'denegado': 'estado-denegado'
-            }[nominacionSeleccionada.estado] || '';
+            let estadoText = '';
+            let estadoClass = '';
+            switch (nominacionSeleccionada.estado) {
+                case 'revision':
+                    estadoText = 'En Revisión';
+                    estadoClass = 'estado-revision';
+                    break;
+                case 'aprobado':
+                    estadoText = 'Aprobado';
+                    estadoClass = 'estado-aprobado';
+                    break;
+                case 'denegado':
+                    estadoText = 'Denegado';
+                    estadoClass = 'estado-denegado';
+                    break;
+            }
 
-            const estadoText = {
-                'revision': 'En Revisión',
-                'aprobado': 'Aprobado',
-                'denegado': 'Denegado'
-            }[nominacionSeleccionada.estado] || nominacionSeleccionada.estado;
-
-            // Generar HTML para la imagen
-            const imagenHTML = nominacionSeleccionada.imagen ? `
-                <div class="image-preview-container">
-                    <img src="${nominacionSeleccionada.imagen}" 
-                         class="detalle-imagen" 
-                         alt="Foto de ${nominacionSeleccionada.nominado}"
-                         onerror="this.src='img/default-avatar.jpg'">
-                </div>
-            ` : `
-                <div class="image-preview-container">
-                    <div class="detalle-imagen-placeholder">
-                        <i class="fas fa-user"></i>
-                    </div>
-                </div>
-            `;
-
-            const accionesHTML = nominacionSeleccionada.estado === 'revision' ? `
-                <button class="btn-cancel" id="cancelDetalle">Cerrar</button>
-                <button class="btn-confirm rechazar" onclick="mostrarConfirmacionRechazar(${nominacionSeleccionada.id})">
-                    <i class="fas fa-times"></i> Rechazar
-                </button>
-                <button class="btn-confirm aceptar" onclick="mostrarConfirmacionAceptar(${nominacionSeleccionada.id})">
-                    <i class="fas fa-check"></i> Aceptar
-                </button>
-            ` : `
-                <button class="btn-cancel" id="cancelDetalle">Cerrar</button>
-            `;
+            let accionesHTML = '';
+            if (nominacionSeleccionada.estado === 'revision') {
+                accionesHTML = `
+                    <button class="btn-cancel" id="cancelDetalle">Cerrar</button>
+                    <button class="btn-confirm rechazar" onclick="mostrarConfirmacionRechazar(${nominacionSeleccionada.id})">
+                        <i class="fas fa-times"></i> Rechazar
+                    </button>
+                    <button class="btn-confirm aceptar" onclick="mostrarConfirmacionAceptar(${nominacionSeleccionada.id})">
+                        <i class="fas fa-check"></i> Aceptar
+                    </button>
+                `;
+            } else {
+                accionesHTML = `
+                    <button class="btn-cancel" id="cancelDetalle">Cerrar</button>
+                `;
+            }
 
             document.getElementById('modalTitle').textContent = `Nominación: ${nominacionSeleccionada.nominado}`;
 
             document.getElementById('modalBody').innerHTML = `
-                ${imagenHTML}
-                
                 <div class="info-group">
                     <div class="info-label">Estado</div>
                     <div class="info-value">
                         <span class="estado-badge ${estadoClass}">${estadoText}</span>
-                        ${nominacionSeleccionada.revisado_por ? `
-                            <br><small>Revisado por: ${nominacionSeleccionada.revisado_por} 
-                            ${nominacionSeleccionada.fecha_revision ? `el ${nominacionSeleccionada.fecha_revision}` : ''}</small>
-                        ` : ''}
+                        ${nominacionSeleccionada.revisado_por ?
+                    `<br><small>Revisado por: ${nominacionSeleccionada.revisado_por} 
+                            ${nominacionSeleccionada.fecha_revision ? `el ${nominacionSeleccionada.fecha_revision}` : ''}</small>` :
+                    ''}
                     </div>
                 </div>
                 
@@ -1054,6 +1147,7 @@
             document.getElementById('detalleModal').style.display = 'flex';
         }
 
+        // Mostrar confirmación para aceptar
         function mostrarConfirmacionAceptar(nominacionId) {
             nominacionSeleccionada = nominaciones.find(n => n.id === nominacionId);
             if (!nominacionSeleccionada) return;
@@ -1063,7 +1157,7 @@
             document.getElementById('confirmTitle').textContent = 'Confirmar Aprobación';
             document.getElementById('confirmMessage').innerHTML = `
                 ¿Estás seguro de aceptar esta nominación?<br><br>
-                <strong>${nominacionSeleccionada.nominado}</strong> será añadido como delegado destacado.
+                <strong>${nominacionSeleccionada.nominado}</strong> será añadido como delegado destacado y aparecerá en la página principal.
             `;
             document.getElementById('confirmAction').className = 'btn-confirm aceptar';
             document.getElementById('confirmAction').innerHTML = '<i class="fas fa-check"></i> Sí, Aceptar';
@@ -1072,6 +1166,7 @@
             document.getElementById('confirmModal').style.display = 'flex';
         }
 
+        // Mostrar confirmación para rechazar
         function mostrarConfirmacionRechazar(nominacionId) {
             nominacionSeleccionada = nominaciones.find(n => n.id === nominacionId);
             if (!nominacionSeleccionada) return;
@@ -1081,7 +1176,7 @@
             document.getElementById('confirmTitle').textContent = 'Confirmar Rechazo';
             document.getElementById('confirmMessage').innerHTML = `
                 ¿Estás seguro de rechazar esta nominación?<br><br>
-                <strong>${nominacionSeleccionada.nominado}</strong> no será considerado.
+                <strong>${nominacionSeleccionada.nominado}</strong> no será considerado como delegado destacado.
             `;
             document.getElementById('confirmAction').className = 'btn-confirm rechazar';
             document.getElementById('confirmAction').innerHTML = '<i class="fas fa-times"></i> Sí, Rechazar';
@@ -1094,10 +1189,15 @@
         // EVENT LISTENERS
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
+            // Cargar nominaciones
             await cargarNominaciones();
 
-            setInterval(cargarNominaciones, 30000);
+            // Configurar recarga automática cada 30 segundos
+            setInterval(async () => {
+                await cargarNominaciones();
+            }, 30000);
 
+            // Filtros
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', function () {
                     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1107,8 +1207,12 @@
                 });
             });
 
-            document.getElementById('searchInput').addEventListener('keyup', mostrarNominaciones);
+            // Búsqueda
+            document.getElementById('searchInput').addEventListener('keyup', () => {
+                mostrarNominaciones();
+            });
 
+            // Cerrar modal de detalles
             document.getElementById('modalClose').addEventListener('click', () => {
                 document.getElementById('detalleModal').style.display = 'none';
                 nominacionSeleccionada = null;
@@ -1119,6 +1223,7 @@
                 nominacionSeleccionada = null;
             });
 
+            // Cerrar modal de confirmación
             document.getElementById('confirmClose').addEventListener('click', () => {
                 document.getElementById('confirmModal').style.display = 'none';
                 nominacionSeleccionada = null;
@@ -1131,6 +1236,7 @@
                 accionPendiente = null;
             });
 
+            // Confirmar acción
             document.getElementById('confirmAction').addEventListener('click', async () => {
                 if (!nominacionSeleccionada || !accionPendiente) return;
 
@@ -1141,6 +1247,7 @@
 
                 try {
                     let exito = false;
+
                     if (accionPendiente === 'aceptar') {
                         exito = await aceptarNominacion(nominacionSeleccionada.id);
                     } else if (accionPendiente === 'rechazar') {
@@ -1149,11 +1256,13 @@
 
                     if (exito) {
                         document.getElementById('confirmModal').style.display = 'none';
+                        // Recargar datos
                         await cargarNominaciones();
                     }
+
                 } catch (error) {
-                    console.error('Error:', error);
-                    mostrarNotificacion('Error al procesar', 'error');
+                    console.error('Error procesando acción:', error);
+                    mostrarNotificacion('Error al procesar la acción', 'error');
                 } finally {
                     confirmBtn.innerHTML = originalText;
                     confirmBtn.disabled = false;
@@ -1162,6 +1271,7 @@
                 }
             });
 
+            // Cerrar modal al hacer clic fuera
             document.getElementById('detalleModal').addEventListener('click', (e) => {
                 if (e.target === document.getElementById('detalleModal')) {
                     document.getElementById('detalleModal').style.display = 'none';
@@ -1177,6 +1287,7 @@
                 }
             });
 
+            // Cerrar sesión
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.removeItem('gdbAdminLoggedIn');
                 window.location.href = 'login-membresias.html';
