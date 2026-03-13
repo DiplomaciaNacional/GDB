@@ -1024,6 +1024,56 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Estilos para campos de texto completo */
+        .form-group-full {
+            grid-column: span 2;
+            margin-bottom: 25px;
+        }
+
+        .form-group-full label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .form-group-full label i {
+            color: var(--gold);
+            width: 20px;
+        }
+
+        .form-group-full textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-group-full textarea:focus {
+            outline: none;
+            border-color: var(--burgundy);
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+        }
+
+        .form-group-full textarea.error {
+            border-color: var(--estado-denegado);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .form-group-full {
+                grid-column: span 1;
+            }
+        }
     </style>
 </head>
 
@@ -1255,11 +1305,11 @@
                         <div class="file-input-wrapper">
                             <input type="file" id="nominadoImagen" accept="image/jpeg,image/png,image/webp">
                             <small>
-                                <i class="fas fa-info-circle"></i> 
+                                <i class="fas fa-info-circle"></i>
                                 Formatos: JPG, PNG, WEBP • Máximo 2MB
                             </small>
                             <small style="margin-top: 5px;">
-                                <i class="fas fa-star"></i> 
+                                <i class="fas fa-star"></i>
                                 La foto hará más reconocible al nominado
                             </small>
                         </div>
@@ -1267,7 +1317,9 @@
                 </div>
 
                 <div class="form-group-full">
-                    <label for="nominadoRazon"><i class="fas fa-comment-alt"></i> Razones de la Nominación *</label>
+                    <label for="nominadoRazon">
+                        <i class="fas fa-comment-alt"></i> Razones de la Nominación *
+                    </label>
                     <textarea id="nominadoRazon" required rows="5"
                         placeholder="Describe en detalle por qué merece ser reconocido. Incluye logros específicos, eventos destacados, proyectos, o cualidades especiales."></textarea>
                 </div>
@@ -1560,7 +1612,7 @@
 
         function mostrarNotificacion(mensaje, tipo = 'info') {
             const notificacion = document.getElementById('notificacionDestacados');
-            
+
             const colores = {
                 success: 'linear-gradient(135deg, #4CAF50, #388e3c)',
                 error: 'linear-gradient(135deg, #F44336, #d32f2f)',
@@ -1772,14 +1824,14 @@
 
                     if (resultado.success) {
                         document.getElementById('formNominarDestacado').reset();
-                        
+
                         // Resetear previsualización de imagen
                         const preview = document.getElementById('previewImage');
                         const previewIcon = document.getElementById('previewIcon');
                         preview.src = '#';
                         preview.style.display = 'none';
                         previewIcon.style.display = 'block';
-                        
+
                         mostrarNotificacion('✅ Nominación enviada. La directiva la revisará pronto.', 'success');
                         setTimeout(() => {
                             cargarDatos();
